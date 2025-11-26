@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>too.foo</title>
+    <link data-trunk rel="rust" href="Cargo.toml" data-wasm-opt="z" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .monolith {
+            pointer-events: auto;
+            position: absolute;
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-size: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 1rem 2rem;
+            background: rgba(0,0,0,0.8);
+            text-decoration: none;
+            transition: border-color 0.3s;
+        }
+        .monolith:hover {
+            border-color: rgba(255,255,255,0.8);
+        }
+        
+        /* Telemetry Dashboard - Retro Terminal Style */
+        #telemetry {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            font-family: 'Courier New', Courier, monospace;
+            color: #00ff00;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 10px 15px;
+            border-top-right-radius: 5px;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px #00ff00;
+            z-index: 1000;
+            pointer-events: auto;
+        }
+        #telemetry span {
+            margin-right: 20px;
+        }
+        #telemetry span::before {
+            content: '>';
+            margin-right: 5px;
+            opacity: 0.6;
+        }
+        
+        #console-log {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 320px;
+            height: 110px;
+            overflow-y: hidden;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.75rem;
+            color: #00ff00;
+            background: rgba(0, 0, 0, 0.85);
+            opacity: 0.8;
+            padding: 8px 10px;
+            border-top-left-radius: 5px;
+            z-index: 1000;
+            pointer-events: auto;
+            text-shadow: 0 0 3px #00ff00;
+        }
+        #console-log p {
+            margin: 0 0 3px 0;
+            padding: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #console-log p::before {
+            content: '[LOG] ';
+            opacity: 0.5;
+        }
+        #console-log .event-birth {
+            color: #00ffaa;
+        }
+        #console-log .event-death {
+            color: #ff6666;
+        }
+        #console-log .event-record {
+            color: #ffff00;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="simulation"></canvas>
+    <div id="ui-layer">
+        <a href="#" class="monolith" style="top: 20%; left: 20%">HELIOS</a>
+        <a href="#" class="monolith" style="top: 50%; left: 50%; transform: translate(-50%, -50%)">CAM</a>
+        <a href="#" class="monolith" style="bottom: 20%; right: 20%">ML</a>
+        
+        <!-- Telemetry Dashboard -->
+        <div id="telemetry">
+            <span id="stat-pop">POP: 0</span>
+            <span id="stat-gen">GEN: 0</span>
+            <span id="stat-fps">FPS: 60</span>
+        </div>
+        
+        <!-- Console Log -->
+        <div id="console-log"></div>
+    </div>
+</body>
+</html>
