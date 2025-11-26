@@ -9,8 +9,8 @@ filehash = true
 watch = ["src", "index.html"]
 
 [serve]
-address = "127.0.0.1"
-port = 8080
+addresses = ["127.0.0.1"]
+port = 8081
 
 [tools]
 wasm_bindgen = "0.2.93"
