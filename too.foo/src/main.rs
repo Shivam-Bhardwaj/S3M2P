@@ -23,17 +23,15 @@ const ARENA_CAPACITY: usize = 1024;
 const CELL_CAPACITY: usize = 32;
 
 // --- Fungal Growth System (Reaction-Diffusion) ---
-// We use a lower resolution simulation grid and scale it up for a soft, organic look.
 const SIM_WIDTH: usize = 256;
-const SIM_HEIGHT: usize = 144; // 16:9 aspect ratio approx
+const SIM_HEIGHT: usize = 144; 
 
 struct FungalGrid {
-    // Two buffers for double buffering (current/next state)
     cells: Vec<f32>,
     next_cells: Vec<f32>,
     width: usize,
     height: usize,
-    image_data: Vec<u8>, // RGBA buffer for rendering
+    image_data: Vec<u8>,
 }
 
 impl FungalGrid {
@@ -53,27 +51,24 @@ impl FungalGrid {
         
         if cx < self.width && cy < self.height {
             let idx = cy * self.width + cx;
-            self.cells[idx] = (self.cells[idx] + amount).min(100.0); // Cap density
+            self.cells[idx] = (self.cells[idx] + amount).min(100.0);
         }
     }
 
     fn update(&mut self) {
         let w = self.width as i32;
         let h = self.height as i32;
-
-        // Diffusion parameters
-        let diffusion_rate = 0.2; // How fast it spreads
-        let decay_rate = 0.015;   // How fast it dies
-        let growth_rate = 1.01;   // Slight self-replication if healthy
+        let diffusion_rate = 0.2;
+        let decay_rate = 0.015;
+        let growth_rate = 1.01;
 
         for y in 0..h {
             for x in 0..w {
                 let idx = (y * w + x) as usize;
                 let val = self.cells[idx];
 
-                // Simple kernel: Up, Down, Left, Right
                 let mut sum = 0.0;
-                let mut neighbors = 0.0;
+                let mut neighbors: f32 = 0.0;
 
                 if x > 0 { sum += self.cells[idx - 1]; neighbors += 1.0; }
                 if x < w - 1 { sum += self.cells[idx + 1]; neighbors += 1.0; }
@@ -81,27 +76,18 @@ impl FungalGrid {
                 if y < h - 1 { sum += self.cells[idx + self.width]; neighbors += 1.0; }
 
                 let avg = sum / neighbors.max(1.0);
-                
-                // Diffusion formula: Current + (Avg - Current) * Rate
                 let mut new_val = val + (avg - val) * diffusion_rate;
                 
-                // Organic non-linear growth (Logistic-like)
                 if new_val > 5.0 && new_val < 80.0 {
                     new_val *= growth_rate;
                 }
-
-                // Decay
                 new_val -= decay_rate;
-
                 self.next_cells[idx] = new_val.clamp(0.0, 100.0);
             }
         }
-
-        // Swap buffers
         std::mem::swap(&mut self.cells, &mut self.next_cells);
     }
 
-    // Cut the fungus at a position (Robot cutting)
     fn cut(&mut self, x_pct: f32, y_pct: f32, radius_pct: f32) {
         let radius_cells = (radius_pct * self.width as f32) as i32;
         let cx = (x_pct * self.width as f32) as i32;
@@ -114,7 +100,6 @@ impl FungalGrid {
 
         for y in start_y..end_y {
             for x in start_x..end_x {
-                // Circular cut
                 let dx = x - cx;
                 let dy = y - cy;
                 if dx*dx + dy*dy < radius_cells*radius_cells {
@@ -125,78 +110,44 @@ impl FungalGrid {
         }
     }
 
-    // Render to ImageData buffer
     fn render_to_buffer(&mut self) {
         for i in 0..self.cells.len() {
             let val = self.cells[i];
             let pixel_idx = i * 4;
             
             if val < 1.0 {
-                self.image_data[pixel_idx + 3] = 0; // Transparent
+                self.image_data[pixel_idx + 3] = 0;
             } else {
-                // Color mapping: Dark Green -> Toxic Bright Green
-                // Value 0-100
                 let intensity = (val / 100.0).clamp(0.0, 1.0);
-                
-                // R: 20 -> 100
-                // G: 50 -> 255
-                // B: 40 -> 150
                 self.image_data[pixel_idx] = (20.0 + intensity * 80.0) as u8;
                 self.image_data[pixel_idx + 1] = (50.0 + intensity * 205.0) as u8;
                 self.image_data[pixel_idx + 2] = (40.0 + intensity * 110.0) as u8;
-                self.image_data[pixel_idx + 3] = (intensity * 255.0) as u8; // Alpha
+                self.image_data[pixel_idx + 3] = (intensity * 255.0) as u8;
             }
         }
     }
     
-    // Draw to main canvas using a temporary offscreen-like technique via putImageData + drawImage scale
-    fn draw(&mut self, ctx: &CanvasRenderingContext2d, canvas_w: f32, canvas_h: f32) {
+    fn draw(&mut self, _ctx: &CanvasRenderingContext2d, _canvas_w: f32, _canvas_h: f32) -> ImageData {
         self.render_to_buffer();
-        
-        // Create ImageData from the buffer
-        // Note: In a real heavy app we'd cache the ImageData object and just update the buffer view,
-        // but web-sys ImageData creation is cheap enough for this resolution.
-        let data = ImageData::new_with_u8_clamped_array_and_sh(
+        ImageData::new_with_u8_clamped_array_and_sh(
             Clamped(&self.image_data), 
             self.width as u32, 
             self.height as u32
-        ).unwrap();
-
-        // We need to draw this ImageData scaled up.
-        // `put_image_data` puts it 1:1.
-        // We create a temporary canvas (or reuse one if we stored it in World) to draw the ImageData, 
-        // then draw that canvas to the main ctx scaled up.
-        
-        // Ideally, we'd have `offscreen_canvas` stored in `World`.
-        // For simplicity in this strict type system without changing `World` struct too much right now:
-        // We'll assume an offscreen canvas is available or create one on the fly (expensive) OR 
-        // use a simpler hack: putImageData to a tiny corner (hidden) then drawImage? No, that shows it.
-        
-        // BEST APPROACH: Just return the ImageData and let the caller handle the offscreen canvas logic
-        // to avoid re-creating DOM elements.
-        // But `draw` is called inside `requestAnimationFrame`.
-        
-        // Let's assume we added an `offscreen_canvas` to `World`.
-        // I will add it to the struct update below.
+        ).unwrap()
     }
 }
 
-/// Simulation state tracking
 struct SimulationStats {
     max_speed_record: f32,
     max_generation: u16,
-    total_births: u64,
-    total_deaths: u64,
 }
 
-/// Append a log event to the console-log div
 fn log_event(document: &Document, msg: &str, event_class: &str) {
     if let Some(console_log) = document.get_element_by_id("console-log") {
         if let Ok(p) = document.create_element("p") {
             p.set_text_content(Some(msg));
             let _ = p.set_attribute("class", event_class);
             let _ = console_log.append_child(&p);
-            
             if let Ok(html_el) = console_log.dyn_into::<HtmlElement>() {
                 html_el.set_scroll_top(html_el.scroll_height());
             }
@@ -217,7 +168,6 @@ struct World {
     height: f32,
     event_cooldown: f32,
     last_season: &'static str,
-    // Offscreen canvas for scaling up the simulation grid
     offscreen_canvas: HtmlCanvasElement, 
     offscreen_ctx: CanvasRenderingContext2d,
 }
@@ -228,18 +178,13 @@ const VISION_RADIUS: f32 = 60.0;
 fn scan_dom_obstacles(document: &Document) -> Vec<Obstacle> {
     let mut obstacles = Vec::new();
     let elements = document.get_elements_by_class_name("monolith");
-    
     for i in 0..elements.length() {
         if let Some(element) = elements.item(i) {
             let rect = element.get_bounding_client_rect();
             let center_x = rect.left() as f32 + rect.width() as f32 / 2.0;
             let center_y = rect.top() as f32 + rect.height() as f32 / 2.0;
             let radius = (rect.width().max(rect.height()) as f32) / 2.0;
-            
-            obstacles.push(Obstacle {
-                center: Vec2::new(center_x, center_y),
-                radius,
-            });
+            obstacles.push(Obstacle { center: Vec2::new(center_x, center_y), radius });
         }
     }
     obstacles
@@ -247,8 +192,7 @@ fn scan_dom_obstacles(document: &Document) -> Vec<Obstacle> {
 
 fn is_paused() -> bool {
     let window = window().unwrap();
-    let location = window.location();
-    if let Ok(search) = location.search() {
+    if let Ok(search) = window.location().search() {
         search.contains("paused=true")
     } else {
         false
@@ -259,28 +203,19 @@ fn draw_robot_boid(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, c
     ctx.save();
     ctx.translate(x, y).unwrap();
     ctx.rotate(angle).unwrap();
-    
     ctx.set_stroke_style(&JsValue::from_str(color));
     ctx.set_line_width(1.5);
-    
-    // Chevron / Drone Shape
-    //   \
-    //   /
     ctx.begin_path();
     ctx.move_to(-size, -size * 0.8);
     ctx.line_to(size, 0.0);
     ctx.line_to(-size, size * 0.8);
-    ctx.line_to(-size * 0.5, 0.0); // Indent at back
+    ctx.line_to(-size * 0.5, 0.0);
     ctx.close_path();
-    
     ctx.stroke();
-    
-    // Engine glow
     ctx.set_fill_style(&JsValue::from_str("rgba(255, 255, 255, 0.8)"));
     ctx.begin_path();
     ctx.arc(-size * 0.5, 0.0, size * 0.3, 0.0, std::f64::consts::TAU).unwrap();
     ctx.fill();
-
     ctx.restore();
 }
 
@@ -289,12 +224,7 @@ fn main() {
 
     let window = window().unwrap();
     let document = window.document().unwrap();
-    let canvas = document
-        .get_element_by_id("simulation")
-        .unwrap()
-        .dyn_into::<HtmlCanvasElement>()
-        .unwrap();
-
+    let canvas = document.get_element_by_id("simulation").unwrap().dyn_into::<HtmlCanvasElement>().unwrap();
     let paused = is_paused();
 
     let w = window.inner_width().unwrap().as_f64().unwrap();
@@ -302,7 +232,6 @@ fn main() {
     canvas.set_width(w as u32);
     canvas.set_height(h as u32);
 
-    // Create offscreen canvas for texture generation
     let offscreen_canvas = document.create_element("canvas").unwrap().dyn_into::<HtmlCanvasElement>().unwrap();
     offscreen_canvas.set_width(SIM_WIDTH as u32);
     offscreen_canvas.set_height(SIM_HEIGHT as u32);
@@ -322,33 +251,19 @@ fn main() {
         closure.forget();
     }
 
-    let ctx = canvas
-        .get_context("2d")
-        .unwrap()
-        .unwrap()
-        .dyn_into::<CanvasRenderingContext2d>()
-        .unwrap();
-    
-    // Enable smooth scaling for organic look
+    let ctx = canvas.get_context("2d").unwrap().unwrap().dyn_into::<CanvasRenderingContext2d>().unwrap();
     ctx.set_image_smoothing_enabled(true);
 
     let width = w as f32;
     let height = h as f32;
 
-    // Initialize arena with starting population
     let mut arena: BoidArena<ARENA_CAPACITY> = BoidArena::new();
     let mut rng = rand::thread_rng();
     use rand::Rng;
     
     for _ in 0..150 {
-        let pos = Vec2::new(
-            rng.gen_range(0.0..width),
-            rng.gen_range(0.0..height),
-        );
-        let vel = Vec2::new(
-            rng.gen_range(-1.0..1.0),
-            rng.gen_range(-1.0..1.0),
-        );
+        let pos = Vec2::new(rng.gen_range(0.0..width), rng.gen_range(0.0..height));
+        let vel = Vec2::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0));
         arena.spawn(pos, vel, Genome::random());
     }
 
@@ -363,11 +278,8 @@ fn main() {
         FoodSource::new(width * 0.5, height * 0.5),
     ];
 
-    // Initialize Fungal Grid (Reaction-Diffusion)
     let mut fungal_grid = FungalGrid::new(SIM_WIDTH, SIM_HEIGHT);
-    
-    // Seed randomly for the "Void" effect
-    fungal_grid.seed(0.5, 0.5, 100.0); // Center seed
+    fungal_grid.seed(0.5, 0.5, 100.0);
     fungal_grid.seed(0.2, 0.2, 80.0);
     fungal_grid.seed(0.8, 0.8, 80.0);
 
@@ -410,8 +322,6 @@ fn main() {
     let mut stats = SimulationStats {
         max_speed_record: 0.0,
         max_generation: 0,
-        total_births: 0,
-        total_deaths: 0,
     };
     
     *g.borrow_mut() = Some(Closure::new(move || {
@@ -430,9 +340,7 @@ fn main() {
         
         if frame_count % 30 == 0 {
             let alive_count = s.arena.alive_count;
-            if let Some(ref el) = stat_pop {
-                el.set_text_content(Some(&format!("POP: {}", alive_count)));
-            }
+            if let Some(ref el) = stat_pop { el.set_text_content(Some(&format!("POP: {}", alive_count))); }
             
             let mut max_gen: u16 = 0;
             let mut max_speed: f32 = 0.0;
@@ -441,15 +349,11 @@ fn main() {
                 max_speed = max_speed.max(s.arena.genes[idx].max_speed);
             }
             
-            if let Some(ref el) = stat_gen {
-                el.set_text_content(Some(&format!("GEN: {}", max_gen)));
-            }
+            if let Some(ref el) = stat_gen { el.set_text_content(Some(&format!("GEN: {}", max_gen))); }
             
             if fps_frame_count > 0 && fps_accumulator > 0.0 {
                 let avg_fps = (fps_frame_count as f64 / fps_accumulator) * 1000.0;
-                if let Some(ref el) = stat_fps {
-                    el.set_text_content(Some(&format!("FPS: {:.0}", avg_fps)));
-                }
+                if let Some(ref el) = stat_fps { el.set_text_content(Some(&format!("FPS: {:.0}", avg_fps))); }
                 fps_accumulator = 0.0;
                 fps_frame_count = 0;
             }
@@ -478,63 +382,103 @@ fn main() {
 
         // === SIMULATION STEP ===
         
-        // Borrow checker dance...
-        // We can't destructure `s` because we need to call methods on `s.fungal_grid` that might need other parts if we weren't careful.
-        // But here, FungalGrid is self contained.
-        
         s.season.update(1.0);
+        let width = s.width;
+        let height = s.height;
         
-        // Continuous seeding from food sources
-        // Map screen space to 0.0-1.0 space for fungal grid
-        if frame_count % 2 == 0 {
-            for src in s.food_sources.iter() {
-                if src.energy > 0.0 {
-                    let x_pct = src.position.x / s.width;
-                    let y_pct = src.position.y / s.height;
-                    s.fungal_grid.seed(x_pct, y_pct, 5.0);
+            // Continuous seeding from food sources
+            if frame_count % 2 == 0 {
+                // Collect data first to avoid borrow conflicts
+                let seeds: Vec<(f32, f32, f32)> = s.food_sources.iter()
+                    .filter(|src| src.energy > 0.0)
+                    .map(|src| (src.position.x, src.position.y, 5.0))
+                    .collect();
+                    
+                for (x, y, amt) in seeds {
+                    let x_pct = x / width;
+                    let y_pct = y / height;
+                    s.fungal_grid.seed(x_pct, y_pct, amt);
                 }
             }
-        }
-        
-        s.fungal_grid.update();
-
-        // Events and Seasons logic...
-        // (Simplified/Preserved from previous but compacted for brevity)
-        
-        // Predators...
-        for pred in s.predators.iter_mut() {
-            pred.update(1.0);
-        }
-        s.predators.retain(|p| p.active);
-        
-        s.grid.build(&s.arena);
-        compute_flocking_forces(&mut s.arena, &s.grid, VISION_RADIUS, &s.obstacles);
-        feed_from_sources(&mut s.arena, &mut s.food_sources, &s.season);
-        
-        // Robot Cutting: Map robot pos to fungal grid space and cut
-        for idx in s.arena.iter_alive() {
-            let pos = s.arena.positions[idx];
-            // Convert to percentage
-            let x_pct = pos.x / s.width;
-            let y_pct = pos.y / s.height;
-            // Cut radius relative to screen size (small)
-            let radius_pct = (BOID_SIZE * 2.5) / s.width;
             
-            s.fungal_grid.cut(x_pct, y_pct, radius_pct);
-        }
-        
-        // Obstacle feeding...
-        // Predator damage...
-        apply_predator_zones(&mut s.arena, &s.predators);
-        
-        simulation_step(
-            &mut s.arena,
-            &s.grid,
-            &s.config,
-            s.width,
-            s.height,
-            1.0,
-        );
+            s.fungal_grid.update();
+
+            for pred in s.predators.iter_mut() {
+                pred.update(1.0);
+            }
+            s.predators.retain(|p| p.active);
+            
+            // Collect necessary data for robot cutting
+            let cuts: Vec<(f32, f32)> = s.arena.iter_alive()
+                .map(|idx| (s.arena.positions[idx].x, s.arena.positions[idx].y))
+                .collect();
+                
+            let boid_radius_pct = (BOID_SIZE * 2.5) / width;
+            for (x, y) in cuts {
+                let x_pct = x / width;
+                let y_pct = y / height;
+                s.fungal_grid.cut(x_pct, y_pct, boid_radius_pct);
+            }
+
+            // Scope for simulation logic to satisfy borrow checker
+            // We can't borrow individual fields mutably from `s` because it's a `RefMut<World>`.
+            // We must destructure `s` to get mutable references to its fields.
+            // Since `s` is a `RefMut`, we can destructure `*s`.
+            {
+                let World {
+                    arena,
+                    grid,
+                    obstacles,
+                    food_sources,
+                    predators,
+                    season,
+                    config,
+                    event_cooldown,
+                    last_season,
+                    ..
+                } = &mut *s;
+
+                grid.build(arena);
+                compute_flocking_forces(arena, grid, VISION_RADIUS, obstacles);
+                feed_from_sources(arena, food_sources, season);
+                
+                // Random events
+                *event_cooldown -= 1.0;
+                if *event_cooldown <= 0.0 {
+                    use rand::Rng;
+                    let mut rng = rand::thread_rng();
+                    
+                    let event_chance = 0.002;
+                    
+                    if rng.gen::<f32>() < event_chance {
+                        *event_cooldown = 200.0;
+                    }
+                }
+                
+                // Check for season change
+                let current_season = season.season_name();
+                if current_season != *last_season {
+                    *last_season = current_season;
+                    log_event(&document_clone, &format!("🌍 {} has arrived!", current_season), "event-record");
+                    
+                    if current_season == "WINTER" {
+                        log_event(&document_clone, "❄ Resources are scarce...", "event-death");
+                    } else if current_season == "SUMMER" {
+                        log_event(&document_clone, "☀ Abundance! Food plentiful!", "event-birth");
+                    }
+                }
+                
+                apply_predator_zones(arena, predators);
+                
+                simulation_step(
+                    arena,
+                    grid,
+                    config,
+                    width,
+                    height,
+                    1.0,
+                );
+            }
 
         // === RENDERING ===
         
@@ -542,18 +486,9 @@ fn main() {
         ctx.set_fill_style(&JsValue::from_str("#050508"));
         ctx.fill_rect(0.0, 0.0, canvas_w as f64, canvas_h as f64);
         
-        // 1. Draw Fungal Layer (Reaction-Diffusion)
-        // Render to offscreen canvas first
-        s.fungal_grid.render_to_buffer();
-        let img_data = ImageData::new_with_u8_clamped_array_and_sh(
-            Clamped(&s.fungal_grid.image_data),
-            SIM_WIDTH as u32,
-            SIM_HEIGHT as u32
-        ).unwrap();
+        // 1. Draw Fungal Layer
+        let img_data = s.fungal_grid.draw(&ctx, canvas_w, canvas_h);
         s.offscreen_ctx.put_image_data(&img_data, 0.0, 0.0).unwrap();
-        
-        // Draw offscreen canvas scaled up to main canvas
-        // The browser's smoothing will blur the low-res pixels into organic smoke
         ctx.draw_image_with_html_canvas_element_and_dw_and_dh(
             &s.offscreen_canvas, 
             0.0, 0.0, canvas_w as f64, canvas_h as f64
