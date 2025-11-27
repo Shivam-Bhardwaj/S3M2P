@@ -85,6 +85,51 @@
             animation: subtle-pulse 6s ease-in-out infinite;
         }
         
+        @media (min-width: 768px) {
+            /* ... existing desktop styles ... */
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            #constellation {
+                width: 220px; /* Smaller on mobile */
+                height: 220px;
+            }
+            .monolith {
+                width: 48px;
+                height: 48px;
+                margin: -24px 0 0 -24px;
+            }
+            .monolith img {
+                width: 50%;
+                height: 50%;
+            }
+            /* Adjust positions for smaller circle */
+            .pos-1 { transform: rotate(270deg) translate(90px) rotate(-270deg); }
+            .monolith.pos-1:hover { transform: rotate(270deg) translate(90px) rotate(-270deg) scale(1.15); }
+
+            .pos-2 { transform: rotate(315deg) translate(90px) rotate(-315deg); }
+            .monolith.pos-2:hover { transform: rotate(315deg) translate(90px) rotate(-315deg) scale(1.15); }
+
+            .pos-3 { transform: rotate(0deg) translate(90px) rotate(0deg); }
+            .monolith.pos-3:hover { transform: rotate(0deg) translate(90px) rotate(0deg) scale(1.15); }
+
+            .pos-4 { transform: rotate(45deg) translate(90px) rotate(-45deg); }
+            .monolith.pos-4:hover { transform: rotate(45deg) translate(90px) rotate(-45deg) scale(1.15); }
+
+            .pos-5 { transform: rotate(90deg) translate(90px) rotate(-90deg); }
+            .monolith.pos-5:hover { transform: rotate(90deg) translate(90px) rotate(-90deg) scale(1.15); }
+
+            .pos-6 { transform: rotate(135deg) translate(90px) rotate(-135deg); }
+            .monolith.pos-6:hover { transform: rotate(135deg) translate(90px) rotate(-135deg) scale(1.15); }
+
+            .pos-7 { transform: rotate(180deg) translate(90px) rotate(-180deg); }
+            .monolith.pos-7:hover { transform: rotate(180deg) translate(90px) rotate(-180deg) scale(1.15); }
+
+            .pos-8 { transform: rotate(225deg) translate(90px) rotate(-225deg); }
+            .monolith.pos-8:hover { transform: rotate(225deg) translate(90px) rotate(-225deg) scale(1.15); }
+        }
+        
         @keyframes subtle-pulse {
             0%, 100% { opacity: 0.85; filter: blur(0px); }
             50% { opacity: 0.95; filter: blur(0px); }

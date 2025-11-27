@@ -563,68 +563,44 @@ fn main() {
                 }
             }
             
-        // CHAKRAVYU MECHANICS
-        // Boids can enter. Predators are trapped and killed. Herbivores/Scavengers are protected/calmed.
-        // The zone center is no longer a simple exclusion, it's a trap.
+        // CHAKRAVYU MECHANICS - Simplified and Intense
+        // 1. When dying/low energy, rush to center.
+        // 2. Center heals/refills energy but traps them until they die naturally?
+        // User request: "One an organism starts dying, it rushing towards the center. If it survives it's good else it just dies outside. The moment it is inside it just gets stuck full health and dies a natural death again."
         
-        // All boids get a strong "Curiosity" lure towards the center
         if let Some(chakravyu) = chakravyu_zone {
             let dist_to_center = pos.distance(chakravyu.center);
             
-            // Lure range (much larger)
-            if dist_to_center < chakravyu.radius * 4.0 && dist_to_center > chakravyu.radius {
-                // Stronger pull for everyone, especially carnivores
-                // Increased strength further as requested
-                let lure_strength = if role == BoidRole::Carnivore { 1.2 } else { 0.6 };
-                let lure = (chakravyu.center - pos).normalize() * lure_strength;
-                push_forces.push((idx, lure));
-            }
-
-            // Inside the Chakravyu
-            if dist_to_center < chakravyu.radius && dist_to_center > 0.001 {
-                if role == BoidRole::Carnivore {
-                    // Predators: TRAP - Strong inward pull + Energy Drain + Spin
-                    let inward = (chakravyu.center - pos).normalize() * chakravyu.inward_force * 2.5; // Stronger trap
-                    
-                    // Add a tangential spin force for the "Chakra" (Wheel) effect
-                    let tangent = Vec2::new(-(chakravyu.center.y - pos.y), chakravyu.center.x - pos.x).normalize();
-                    let spin = tangent * 3.0;
-                    
-                    push_forces.push((idx, inward + spin));
-                    
-                    // Mark for heavy energy drain
-                    chakravyu_victims.push(idx);
-                    
-                    // Check if dying this frame inside chakravyu
-                    if arena.energy[idx] <= chakravyu.energy_drain * 2.0 {
-                        popups.push(PopUp {
-                            text: "स्वाहा!".to_string(),
-                            pos: pos + Vec2::new(0.0, -10.0),
-                            life: 1.0,
-                            color: "rgba(255, 50, 50, {})".to_string(),
-                        });
-                    }
-                } else {
-                    // Herbivores/Scavengers: SHIELD - Protected/Calmed -> Moksh
-                    
-                    // ESCAPE BEHAVIOR RESTORED:
-                    // They are pushed gently OUTWARD (so they try to leave but are calm)
-                    let outward = (pos - chakravyu.center).normalize() * 1.0;
-                    push_forces.push((idx, outward));
-                    
-                    // Fade out effect (Moksh) still applies
-                    energy_adjustments.push((idx, -0.2)); // Slow fade
-                    
-                    if arena.energy[idx] <= 1.0 {
-                         popups.push(PopUp {
-                            text: "मोक्ष प्राप्त".to_string(),
-                            pos: pos + Vec2::new(0.0, -10.0),
-                            life: 1.5, // Longer life for moksh
-                            color: "rgba(100, 255, 200, {})".to_string(),
-                        });
-                        // Ensure they die peacefully
-                        moksh_candidates.push(idx);
-                    }
+            // Inside the Chakravyu: TRAP + FULL HEALTH + NATURAL DEATH
+            if dist_to_center < chakravyu.radius {
+                // Trap forces: Strong inward pull + Tangential spin
+                let inward = (chakravyu.center - pos).normalize() * chakravyu.inward_force * 3.0;
+                let tangent = Vec2::new(-(chakravyu.center.y - pos.y), chakravyu.center.x - pos.x).normalize();
+                let spin = tangent * 2.0;
+                push_forces.push((idx, inward + spin));
+                
+                // Heal to full health constantly
+                if arena.energy[idx] < 200.0 {
+                    // Side effect: heal
+                    energy_adjustments.push((idx, 5.0));
+                }
+                
+                // They will die naturally from age or population pressure (base sim logic), 
+                // but energy won't run out here.
+                
+                // Visual: if they just entered, pop a message? Or maybe when they die?
+                // Let's keep the Swaaha/Moksh on death.
+                
+                // Special logic: If they die INSIDE from age, give them a special popup
+                // But we can't detect "about to die from age" easily here without checking age vs max_age
+                // Let's just let them spin.
+                
+            } else {
+                // Outside: If dying (low energy), RUSH to center
+                if arena.energy[idx] < 50.0 {
+                    // Desperate rush to the sanctuary
+                    let rush = (chakravyu.center - pos).normalize() * 2.0; // Strong pull
+                    push_forces.push((idx, rush));
                 }
             }
         }
