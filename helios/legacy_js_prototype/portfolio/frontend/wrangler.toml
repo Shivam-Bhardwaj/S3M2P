@@ -1,7 +1,0 @@
-name = "research-lab"
-compatibility_date = "2024-01-01"
-pages_build_output_dir = ".next"
-
-[env.production]
-name = "research-lab"
-account_id = "5fbcfb6b54deee2cfd21599cdb26b00f"
