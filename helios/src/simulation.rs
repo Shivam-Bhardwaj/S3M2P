@@ -40,6 +40,13 @@ pub struct ViewState {
     pub last_center_x: f64,
     pub last_center_y: f64,
 
+    // Pinch-to-zoom state
+    pub pinching: bool,
+    pub pinch_start_dist: f64,
+    pub pinch_start_zoom: f64,
+    pub pinch_center_x: f64,
+    pub pinch_center_y: f64,
+
     // Animation
     pub auto_rotate: bool,
     pub rotation_speed: f64,
@@ -58,6 +65,11 @@ impl Default for ViewState {
             drag_start_y: 0.0,
             last_center_x: 0.0,
             last_center_y: 0.0,
+            pinching: false,
+            pinch_start_dist: 0.0,
+            pinch_start_zoom: 0.0,
+            pinch_center_x: 0.0,
+            pinch_center_y: 0.0,
             auto_rotate: false,
             rotation_speed: 0.0,
         }

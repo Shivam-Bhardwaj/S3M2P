@@ -164,18 +164,37 @@ fn run() {
         closure.forget();
     }
 
-    // Touch start
+    // Touch start (handles both single-finger drag and two-finger pinch)
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |event: TouchEvent| {
             event.prevent_default();
-            if let Some(touch) = event.touches().get(0) {
-                let mut s = state.borrow_mut();
-                s.view.dragging = true;
-                s.view.drag_start_x = touch.client_x() as f64;
-                s.view.drag_start_y = touch.client_y() as f64;
-                s.view.last_center_x = s.view.center_x;
-                s.view.last_center_y = s.view.center_y;
+            let touches = event.touches();
+            let mut s = state.borrow_mut();
+
+            if touches.length() == 2 {
+                // Two fingers: start pinch-to-zoom
+                if let (Some(t0), Some(t1)) = (touches.get(0), touches.get(1)) {
+                    let dx = t1.client_x() as f64 - t0.client_x() as f64;
+                    let dy = t1.client_y() as f64 - t0.client_y() as f64;
+                    s.view.pinching = true;
+                    s.view.dragging = false;
+                    s.view.pinch_start_dist = (dx * dx + dy * dy).sqrt();
+                    s.view.pinch_start_zoom = s.view.zoom;
+                    // Center of pinch
+                    s.view.pinch_center_x = (t0.client_x() + t1.client_x()) as f64 / 2.0;
+                    s.view.pinch_center_y = (t0.client_y() + t1.client_y()) as f64 / 2.0;
+                }
+            } else if touches.length() == 1 {
+                // One finger: drag
+                if let Some(touch) = touches.get(0) {
+                    s.view.dragging = true;
+                    s.view.pinching = false;
+                    s.view.drag_start_x = touch.client_x() as f64;
+                    s.view.drag_start_y = touch.client_y() as f64;
+                    s.view.last_center_x = s.view.center_x;
+                    s.view.last_center_y = s.view.center_y;
+                }
             }
         }) as Box<dyn FnMut(_)>);
         canvas.add_event_listener_with_callback("touchstart", closure.as_ref().unchecked_ref()).unwrap();
@@ -186,20 +205,47 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: TouchEvent| {
-            state.borrow_mut().view.dragging = false;
+            let mut s = state.borrow_mut();
+            s.view.dragging = false;
+            s.view.pinching = false;
         }) as Box<dyn FnMut(_)>);
         canvas.add_event_listener_with_callback("touchend", closure.as_ref().unchecked_ref()).unwrap();
         closure.forget();
     }
 
-    // Touch move
+    // Touch move (handles both drag and pinch-to-zoom)
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |event: TouchEvent| {
             event.prevent_default();
-            if let Some(touch) = event.touches().get(0) {
-                let mut s = state.borrow_mut();
-                if s.view.dragging {
+            let touches = event.touches();
+            let mut s = state.borrow_mut();
+
+            if s.view.pinching && touches.length() == 2 {
+                // Two-finger pinch zoom
+                if let (Some(t0), Some(t1)) = (touches.get(0), touches.get(1)) {
+                    let dx = t1.client_x() as f64 - t0.client_x() as f64;
+                    let dy = t1.client_y() as f64 - t0.client_y() as f64;
+                    let dist = (dx * dx + dy * dy).sqrt();
+
+                    if s.view.pinch_start_dist > 10.0 {
+                        // Scale zoom based on pinch distance change
+                        let scale = s.view.pinch_start_dist / dist;
+                        let new_zoom = (s.view.pinch_start_zoom * scale)
+                            .max(0.0001)  // Max zoom in
+                            .min(10.0);    // Max zoom out
+
+                        // Zoom towards pinch center
+                        let (au_x, au_y) = s.view.screen_to_au(s.view.pinch_center_x, s.view.pinch_center_y);
+                        s.view.zoom = new_zoom;
+                        let (new_au_x, new_au_y) = s.view.screen_to_au(s.view.pinch_center_x, s.view.pinch_center_y);
+                        s.view.center_x += au_x - new_au_x;
+                        s.view.center_y += au_y - new_au_y;
+                    }
+                }
+            } else if s.view.dragging && touches.length() == 1 {
+                // Single finger drag
+                if let Some(touch) = touches.get(0) {
                     let dx = touch.client_x() as f64 - s.view.drag_start_x;
                     let dy = touch.client_y() as f64 - s.view.drag_start_y;
                     s.view.center_x = s.view.last_center_x - dx * s.view.zoom;
