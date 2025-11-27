@@ -28,6 +28,7 @@
   <!-- Outer ring guides -->
   <circle cx="100" cy="100" r="85" fill="none" stroke="#ffffff" stroke-width="0.5" stroke-opacity="0.15" />
   
+  <g transform="translate(100, 100) scale(1.8) translate(-100, -100)">
   <!-- Central Chip - Soft Cyan/Silver -->
   <rect x="75" y="75" width="50" height="50" rx="4" fill="none" stroke="#E0FFFF" stroke-width="2" filter="url(#glow-soft)" />
   <rect x="85" y="85" width="30" height="30" fill="#E0FFFF" fill-opacity="0.1" class="chip-core" />
@@ -62,4 +63,5 @@
   <!-- Radiating Waves - Soft Cyan -->
   <circle cx="100" cy="100" r="20" stroke="#E0FFFF" stroke-width="1" fill="none" class="wave" />
   <circle cx="100" cy="100" r="20" stroke="#E0FFFF" stroke-width="1" fill="none" class="wave" style="animation-delay: 1.5s" />
+  </g>
 </svg>

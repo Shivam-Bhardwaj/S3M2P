@@ -18,6 +18,7 @@
   <circle cx="100" cy="100" r="85" fill="none" stroke="#ffffff" stroke-width="0.5" stroke-opacity="0.15" />
   <circle cx="100" cy="100" r="75" fill="none" stroke="#ffffff" stroke-width="0.5" stroke-opacity="0.1" stroke-dasharray="4,8" />
   
+  <g transform="translate(100, 100) scale(1.3) translate(-100, -100)">
   <!-- Camera body outline -->
   <rect x="50" y="70" width="100" height="65" rx="8" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.7" filter="url(#glow-cam)" />
   
@@ -44,4 +45,5 @@
   
   <!-- Shutter button -->
   <circle cx="125" cy="65" r="5" fill="none" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" />
+  </g>
 </svg>

@@ -75,19 +75,20 @@ fn scan_exclusion_zones(document: &Document) -> (Vec<ExclusionZone>, Option<Chak
         // Radius covers the whole ring + padding (for fungus exclusion)
         let outer_radius = (rect.width().max(rect.height()) as f32) / 2.0 + 20.0;
         
+        // NOTE: We add the center to 'zones' vector to prevent FUNGAL GROWTH.
+        // The boid repulsion logic handles the conflict (Rush force > Repulsion force).
         zones.push(ExclusionZone {
             center: Vec2::new(center_x, center_y),
             radius: outer_radius,
         });
         
-        // Chakravyu zone - smaller inner circle where boids get trapped and die
-        // Boids CAN enter but will be pulled inward and drained
-        let chakravyu_radius = outer_radius * 0.7; // Inner deadly zone
+        // Chakravyu zone - Deadly center
+        // Use outer_radius for the trap threshold to match the visual ring
         chakravyu = Some(ChakravyuZone {
             center: Vec2::new(center_x, center_y),
-            radius: chakravyu_radius,
-            _energy_drain: 0.5, // Energy loss per frame inside
-            inward_force: 2.0, // Pull toward center
+            radius: outer_radius, 
+            _energy_drain: 0.5,
+            inward_force: 2.0,
         });
     } else {
         // Fallback to scanning individual monoliths if constellation not found
@@ -127,6 +128,14 @@ struct PopUp {
     color: String,
 }
 
+struct Miasma {
+    pos: Vec2,
+    vel: Vec2,
+    life: f32, // 0.0 to 1.0
+    radius: f32,
+    color: String,
+}
+
 struct World {
     arena: BoidArena<ARENA_CAPACITY>,
     grid: SpatialGrid<CELL_CAPACITY>,
@@ -143,6 +152,7 @@ struct World {
     height: f32,
     last_season: &'static str,
     popups: Vec<PopUp>,
+    miasma: Vec<Miasma>,
 }
 
 fn scan_dom_obstacles(document: &Document) -> Vec<Obstacle> {
@@ -357,7 +367,7 @@ fn main() {
     let mut rng = rand::thread_rng();
     use rand::Rng;
     
-    for _ in 0..150 {
+        for _ in 0..150 {
         // Try to spawn outside exclusion zones
         let mut attempts = 0;
         loop {
@@ -365,7 +375,7 @@ fn main() {
                 rng.gen_range(0.0..width),
                 rng.gen_range(0.0..height),
             );
-            if !is_in_exclusion_zone(pos, &exclusion_zones) || attempts > 10 {
+            if !is_in_exclusion_zone(pos, &exclusion_zones) || attempts > 100 {
                 let vel = Vec2::new(
                     rng.gen_range(-1.0..1.0),
                     rng.gen_range(-1.0..1.0),
@@ -414,6 +424,7 @@ fn main() {
         height,
         last_season: "SPRING",
         popups: Vec::new(),
+        miasma: Vec::new(),
     }));
 
     // Cache DOM element references
@@ -537,6 +548,7 @@ fn main() {
             height: world_h,
             last_season,
             popups,
+            miasma,
             ..
         } = &mut *s;
         
@@ -576,6 +588,19 @@ fn main() {
         let mut energy_adjustments: Vec<(usize, f32)> = Vec::new();
         let moksh_candidates: Vec<usize> = Vec::new();
 
+        // CHAKRAVYU MECHANICS - Deadly Trap
+        // Boids are pulled inward and drained.
+        
+        if let Some(chakravyu) = chakravyu_zone {
+            // ... (Keep existing loop iteration logic, but collect side effects instead)
+        }
+        
+        // Collect forces and side effects first
+        let mut kill_list: Vec<usize> = Vec::new();
+        let mut new_miasma: Vec<Miasma> = Vec::new();
+        let mut infertility_list: Vec<usize> = Vec::new();
+        let mut life_support: Vec<(usize, f32, f32)> = Vec::new(); // (idx, new_energy, new_age)
+
         for idx in arena.iter_alive() {
             let pos = arena.positions[idx];
             let role = arena.roles[idx];
@@ -589,71 +614,83 @@ fn main() {
                 }
             }
             
-        // CHAKRAVYU MECHANICS - Simplified and Intense
-        // 1. When dying/low energy, rush to center.
-        // 2. Center heals/refills energy but traps them until they die naturally?
-        // User request: "One an organism starts dying, it rushing towards the center. If it survives it's good else it just dies outside. The moment it is inside it just gets stuck full health and dies a natural death again."
-        
-        if let Some(chakravyu) = chakravyu_zone {
-            let dist_to_center = pos.distance(chakravyu.center);
-            
-            // Inside the Chakravyu: TRAP + FULL HEALTH + NATURAL DEATH
-            if dist_to_center < chakravyu.radius {
-                // Trap forces: Strong inward pull + Tangential spin
-                let inward = (chakravyu.center - pos).normalize() * chakravyu.inward_force * 3.0;
-                let tangent = Vec2::new(-(chakravyu.center.y - pos.y), chakravyu.center.x - pos.x).normalize();
-                let spin = tangent * 2.0;
-                push_forces.push((idx, inward + spin));
+            // CHAKRAVYU LOGIC
+            if let Some(chakravyu) = chakravyu_zone {
+                let dist_to_center = pos.distance(chakravyu.center);
                 
-                // INERTIA DAMPING
-                // Reduce velocity slightly to prevent them from shooting straight to the absolute center
-                // and to stabilize their orbit within the trap.
-                let damping = -arena.velocities[idx] * 0.05; // 5% drag
-                push_forces.push((idx, damping));
-                
-                // Heal to full health constantly, but still allow death logic from base simulation
-                if arena.energy[idx] < 200.0 {
-                    // Side effect: heal
-                    energy_adjustments.push((idx, 5.0));
+                // Inside deadly radius? (Touch the line = Death)
+                if dist_to_center < chakravyu.radius * 0.98 { // 2% margin inside the line
+                    kill_list.push(idx);
+                    use rand::Rng;
+                    let mut rng = rand::thread_rng();
+                    
+                    let miasma_color = match role {
+                        BoidRole::Herbivore => "rgba(100, 255, 218, {})", // Cyan/Green
+                        BoidRole::Carnivore => "rgba(255, 50, 50, {})",   // Red
+                        BoidRole::Scavenger => "rgba(255, 200, 0, {})",   // Orange
+                    };
+                    
+                    new_miasma.push(Miasma {
+                        pos: pos,
+                        vel: Vec2::new(0.0, -0.5 + rng.gen::<f32>()),
+                        life: 1.0,
+                        radius: 2.0 + rng.gen::<f32>() * 3.0,
+                        color: miasma_color.to_string(),
+                    });
+                    continue;
                 }
                 
-                // Natural death logic enhancement for inside Chakravyu
-                // If they are very old, they should die here peacefully or dramatically
-                // We check age vs max_age logic that happens in base simulation_step
-                // But here we can add a visual or force it if they've lingered too long
-                if arena.age[idx] > config.max_age * 0.9 {
-                     // Show they are about to die naturally in the trap
-                     if rng.gen::<f32>() < 0.01 {
-                        popups.push(PopUp {
-                            text: "मोक्ष".to_string(), // Moksh on natural death inside
-                            pos: pos + Vec2::new(0.0, -10.0),
-                            life: 1.0,
-                            color: "rgba(100, 255, 200, {})".to_string(),
-                        });
+                // HIJACK DEATH:
+                // Only 5% of boids are chosen to rush to the center.
+                // Deterministic choice based on ID to avoid flickering decision.
+                let is_chosen_one = (idx % 20) == 0; 
+                
+                let threshold_age = config.max_age * 0.8;
+                let mut current_age = arena.age[idx];
+                let mut current_energy = arena.energy[idx];
+                
+                // Convert starving to doomed ONLY if they are chosen
+                if is_chosen_one && current_energy < 40.0 && current_age < threshold_age {
+                    current_age = threshold_age + 1.0; // Make it old
+                    life_support.push((idx, 50.0, current_age)); // Boost energy, set age
+                }
+                
+                let is_dying = current_age > threshold_age;
+                
+                if is_dying && is_chosen_one {
+                    // RUSH IN
+                    let dir_to_center = (chakravyu.center - pos).normalize();
+                    let strength = 8.0;
+                    push_forces.push((idx, dir_to_center * strength));
+                    push_forces.push((idx, -arena.velocities[idx] * 0.1));
+                    
+                    infertility_list.push(idx);
+                    
+                    // IMMORTALITY (until trap):
+                    let safe_age = config.max_age - 50.0; 
+                    let safe_energy = 50.0;
+                    life_support.push((idx, safe_energy, safe_age));
+                    
+                } else if dist_to_center < chakravyu.radius * 1.2 {
+                     // Healthy or Unchosen boids get pushed away
+                     if dist_to_center < chakravyu.radius {
+                         let dir_to_center = (chakravyu.center - pos).normalize();
+                         let strength = 3.0;
+                         push_forces.push((idx, -dir_to_center * strength));
                      }
                 }
-            } else {
-                // Outside: If dying (low energy), RUSH to center
-                if arena.energy[idx] < 50.0 {
-                    // Desperate rush to the sanctuary
-                    let rush = (chakravyu.center - pos).normalize() * 2.0; // Strong pull
-                    push_forces.push((idx, rush));
-                }
             }
-        }
             
-            // Only push from exclusion zones for FUNGUS protection (icons)
-            // But NOT for the central area - that's the Chakravyu trap
+            // Exclusion zone repulsion (for icons) - kept from original
             for zone in exclusion_zones.iter() {
                 let dist = pos.distance(zone.center);
-                // Only push near the outer edge (icon protection), not deep inside
                 if dist < zone.radius && dist > zone.radius * 0.8 && dist > 0.001 {
                     let push = (pos - zone.center).normalize() * 1.5;
                     push_forces.push((idx, push));
                 }
             }
             
-            // Check for interaction - only Herbivores and Scavengers eat fungus
+            // Fungal interaction
             if (role == BoidRole::Herbivore || role == BoidRole::Scavenger) && frame_count % 2 == 0 {
                 let result = fungal_network.interact(pos, BOID_SIZE * 3.0);
                 if result != InteractionResult::None {
@@ -662,37 +699,48 @@ fn main() {
             }
         }
         
-        // Apply position updates with wrap-around and teleport chance
-        let mut teleport_adjustments: Vec<(usize, Vec2, f32)> = Vec::new();
+        // Apply Kills
+        for idx in kill_list {
+            arena.energy[idx] = -100.0; // Kill instantly
+        }
         
-        for idx in arena.iter_alive() {
-            // Border Teleport Mechanics (Uncertainty Principle)
-            // Low chance to teleport to center if near edge, simulating quantum tunneling/uncertainty
-            // Reduced probability to prevent mass extinction (0.5% per frame)
-            if rng.gen::<f32>() < 0.005 {
-                let pos = arena.positions[idx];
-                // Margin is proportional to world size (10%) to work on mobile
-                let margin_x = *world_w * 0.1;
-                let margin_y = *world_h * 0.1;
-                
-                // Dereference world_w and world_h since they are mutable references in this context
-                if pos.x < margin_x || pos.x > *world_w - margin_x || pos.y < margin_y || pos.y > *world_h - margin_y {
-                    // Teleport to center, velocity/direction preserved
-                    // Energy drained significantly (dying process initiated)
-                    if let Some(chakravyu) = chakravyu_zone {
-                        let new_pos = chakravyu.center + Vec2::new(rng.gen_range(-10.0..10.0), rng.gen_range(-10.0..10.0));
-                        // Set new energy cap
-                        let new_energy = arena.energy[idx].min(30.0);
-                        teleport_adjustments.push((idx, new_pos, new_energy));
-                    }
-                }
+        // Apply Life Support (Immortality for rushing)
+        for (idx, energy, age) in life_support {
+            arena.energy[idx] = energy;
+            arena.age[idx] = age;
+        }
+        
+        // Apply Infertility (Prevent reproduction for rushing boids)
+        for idx in infertility_list {
+            if arena.energy[idx] > config.reproduction_threshold - 1.0 {
+                arena.energy[idx] = config.reproduction_threshold - 1.0;
             }
         }
         
-        // Apply teleport adjustments
-        for (idx, pos, energy) in teleport_adjustments {
+        // Add Miasma
+        miasma.extend(new_miasma);
+        
+        // Apply position updates with wrap-around
+        let mut wrap_updates: Vec<(usize, Vec2)> = Vec::new();
+        
+        for idx in arena.iter_alive() {
+            // Wrap around screen edges
+            let mut pos = arena.positions[idx];
+            let mut changed = false;
+            
+            if pos.x < 0.0 { pos.x = *world_w; changed = true; }
+            else if pos.x > *world_w { pos.x = 0.0; changed = true; }
+            
+            if pos.y < 0.0 { pos.y = *world_h; changed = true; }
+            else if pos.y > *world_h { pos.y = 0.0; changed = true; }
+            
+            if changed {
+                wrap_updates.push((idx, pos));
+            }
+        }
+        
+        for (idx, pos) in wrap_updates {
             arena.positions[idx] = pos;
-            arena.energy[idx] = energy;
         }
 
         // Apply push forces
@@ -775,6 +823,15 @@ fn main() {
                 obstacles.iter().any(|obs| {
                     arena.positions[idx].distance(obs.center) < 150.0
                 })
+            })
+            // FIX: Prevent feeding if near the deadly center!
+            // This stops rushing boids from healing and cancelling their 'dying' status.
+            .filter(|&idx| {
+                if let Some(chakravyu) = chakravyu_zone {
+                    arena.positions[idx].distance(chakravyu.center) > chakravyu.radius * 1.5
+                } else {
+                    true
+                }
             })
             .collect();
         
@@ -917,6 +974,23 @@ fn main() {
             let color = p.color.replace("{}", &alpha.to_string());
             ctx.set_fill_style(&JsValue::from_str(&color));
             ctx.fill_text(&p.text, p.pos.x as f64, p.pos.y as f64).unwrap();
+        }
+
+        // Update and draw Miasma (Smoke/Soul)
+        s.miasma.retain_mut(|m| {
+            m.life -= 0.015;
+            m.pos += m.vel;
+            m.radius += 0.2; // Expand
+            m.life > 0.0
+        });
+
+        for m in &s.miasma {
+            ctx.begin_path();
+            ctx.arc(m.pos.x as f64, m.pos.y as f64, m.radius as f64, 0.0, std::f64::consts::TAU).unwrap();
+            let alpha = m.life * 0.4;
+            let color = m.color.replace("{}", &alpha.to_string());
+            ctx.set_fill_style(&JsValue::from_str(&color));
+            ctx.fill();
         }
 
         // Draw Organisms (Boids)

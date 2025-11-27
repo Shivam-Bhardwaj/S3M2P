@@ -13,6 +13,7 @@
   <circle cx="100" cy="100" r="85" fill="none" stroke="#66ccff" stroke-width="0.5" stroke-opacity="0.15" />
   <circle cx="100" cy="100" r="75" fill="none" stroke="#66ccff" stroke-width="0.5" stroke-opacity="0.1" stroke-dasharray="8,4" />
   
+  <g transform="translate(100, 100) scale(1.25) translate(-100, -100)">
   <!-- Document/page shape -->
   <g filter="url(#glow-blog)">
     <path d="M 60 45 L 60 155 L 140 155 L 140 65 L 120 45 Z" 
@@ -50,5 +51,6 @@
     <line x1="140" y1="55" x2="150" y2="50" />
     <line x1="150" y1="50" x2="165" y2="70" />
     <line x1="165" y1="70" x2="155" y2="90" />
+  </g>
   </g>
 </svg>

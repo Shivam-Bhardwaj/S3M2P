@@ -95,24 +95,24 @@
                 height: 220px;
             }
             .monolith {
-                width: 36px;
-                height: 36px;
-                margin: -18px 0 0 -18px;
+                width: 48px; /* Increased from 36px */
+                height: 48px;
+                margin: -24px 0 0 -24px;
             }
             .monolith img {
                 width: 50%;
                 height: 50%;
             }
             
-            /* Adjust positions for smaller circle */
+            /* Adjust positions for smaller circle - 7 items spacing (approx 51.4 deg) */
             .pos-1 { transform: rotate(270deg) translate(90px) rotate(-270deg); }
-            .pos-2 { transform: rotate(315deg) translate(90px) rotate(-315deg); }
-            .pos-3 { transform: rotate(0deg) translate(90px) rotate(0deg); }
-            .pos-4 { transform: rotate(45deg) translate(90px) rotate(-45deg); }
-            .pos-5 { transform: rotate(90deg) translate(90px) rotate(-90deg); }
-            .pos-6 { transform: rotate(135deg) translate(90px) rotate(-135deg); }
-            .pos-7 { transform: rotate(180deg) translate(90px) rotate(-180deg); }
-            .pos-8 { transform: rotate(225deg) translate(90px) rotate(-225deg); }
+            .pos-2 { transform: rotate(321.4deg) translate(90px) rotate(-321.4deg); }
+            .pos-3 { transform: rotate(12.8deg) translate(90px) rotate(-12.8deg); }
+            .pos-4 { transform: rotate(64.2deg) translate(90px) rotate(-64.2deg); }
+            .pos-5 { transform: rotate(115.6deg) translate(90px) rotate(-115.6deg); }
+            .pos-6 { transform: rotate(167deg) translate(90px) rotate(-167deg); }
+            .pos-7 { transform: rotate(218.4deg) translate(90px) rotate(-218.4deg); }
+            /* Removed pos-8 */
             
             #center-text {
                 font-size: 1rem;
@@ -180,15 +180,15 @@
         }
         
         .monolith:hover {
-            transform: scale(1.15);
             border-color: rgba(0, 255, 255, 0.6);
             background: rgba(0, 20, 30, 0.9);
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.4), inset 0 0 15px rgba(0, 255, 255, 0.1);
             z-index: 200;
         }
         
         .monolith:hover img {
-            transform: scale(1.1);
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.8));
         }
         
         .monolith:hover span {
@@ -205,19 +205,19 @@
                 height: 500px;
             }
             .monolith {
-                width: 64px;
-                height: 64px;
-                margin: -32px 0 0 -32px;
+                width: 80px; /* Increased from 64px */
+                height: 80px;
+                margin: -40px 0 0 -40px;
             }
             /* Position calculations for larger circle (radius 200px approx) */
             .pos-1 { transform: rotate(270deg) translate(220px) rotate(-270deg); }
-            .pos-2 { transform: rotate(315deg) translate(220px) rotate(-315deg); }
-            .pos-3 { transform: rotate(0deg) translate(220px) rotate(0deg); }
-            .pos-4 { transform: rotate(45deg) translate(220px) rotate(-45deg); }
-            .pos-5 { transform: rotate(90deg) translate(220px) rotate(-90deg); }
-            .pos-6 { transform: rotate(135deg) translate(220px) rotate(-135deg); }
-            .pos-7 { transform: rotate(180deg) translate(220px) rotate(-180deg); }
-            .pos-8 { transform: rotate(225deg) translate(220px) rotate(-225deg); }
+            .pos-2 { transform: rotate(321.4deg) translate(220px) rotate(-321.4deg); }
+            .pos-3 { transform: rotate(12.8deg) translate(220px) rotate(-12.8deg); }
+            .pos-4 { transform: rotate(64.2deg) translate(220px) rotate(-64.2deg); }
+            .pos-5 { transform: rotate(115.6deg) translate(220px) rotate(-115.6deg); }
+            .pos-6 { transform: rotate(167deg) translate(220px) rotate(-167deg); }
+            .pos-7 { transform: rotate(218.4deg) translate(220px) rotate(-218.4deg); }
+            /* Removed pos-8 (Contact) */
             
             #center-text {
                 font-size: 2rem;
@@ -365,50 +365,44 @@
                     <!-- 8 Icons Circle -->
                     <!-- 1. Helios (Top) -->
                     <a href="https://helios.too.foo" class="monolith pos-1">
-                        <img src="assets/islands/helios.svg?v=2" alt="Helios" />
+                        <img src="assets/islands/helios.svg?v=7" alt="Helios" />
                         <span>Helios</span>
                     </a>
                     
                     <!-- 2. X (Top Right) -->
                     <a href="https://x.com/LazyShivam" target="_blank" class="monolith pos-2">
-                        <img src="assets/islands/x.svg?v=2" alt="X" />
+                        <img src="assets/islands/x.svg?v=7" alt="X" />
                         <span>X</span>
                     </a>
                     
-                    <!-- 3. Sensors (Right) -->
+                    <!-- 3. Hardware (Right) - Was Sensors -->
                     <a href="#" class="monolith pos-3">
-                        <img src="assets/islands/sensors.svg?v=2" alt="Sensors" />
-                        <span>Sensors</span>
+                        <img src="assets/islands/sensors.svg?v=7" alt="Hardware" />
+                        <span>Hardware</span>
                     </a>
                     
                     <!-- 4. Learn (Bottom Right) -->
                     <a href="#" class="monolith pos-4">
-                        <img src="assets/islands/learn.svg?v=2" alt="Learn" />
+                        <img src="assets/islands/learn.svg?v=7" alt="Learn" />
                         <span>Learn</span>
                     </a>
                     
                     <!-- 5. Simulations (Bottom) -->
                     <a href="#" class="monolith pos-5">
-                        <img src="assets/islands/sims.svg?v=2" alt="Sims" />
+                        <img src="assets/islands/sims.svg?v=7" alt="Sims" />
                         <span>Simulations</span>
                     </a>
                     
-                    <!-- 6. Automation (Bottom Left) -->
+                    <!-- 6. Software (Bottom Left) - Was Automation -->
                     <a href="#" class="monolith pos-6">
-                        <img src="assets/islands/automation.svg?v=2" alt="Automation" />
-                        <span>Automation</span>
+                        <img src="assets/islands/automation.svg?v=7" alt="Software" />
+                        <span>Software</span>
                     </a>
                     
-                    <!-- 7. About (Left) -->
+                    <!-- 7. About Me (Left) -->
                     <a href="#" class="monolith pos-7">
-                        <img src="assets/islands/about.svg?v=2" alt="About" />
-                        <span>About</span>
-                    </a>
-                    
-                    <!-- 8. Contact (Top Left) -->
-                    <a href="#" class="monolith pos-8">
-                        <img src="assets/islands/contact.svg?v=2" alt="Contact" />
-                        <span>Contact</span>
+                        <img src="assets/islands/about.svg?v=7" alt="About Me" />
+                        <span>About Me</span>
                     </a>
                 </div>
             </div>

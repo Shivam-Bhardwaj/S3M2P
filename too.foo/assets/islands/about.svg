@@ -23,6 +23,7 @@
     }
   </style>
   
+  <g transform="translate(100, 100) scale(1.3) translate(-100, -100)">
   <g filter="url(#glow-soft)">
       <!-- Head - White -->
       <circle cx="100" cy="80" r="25" stroke="#ffffff" stroke-width="2" fill="none" />
@@ -37,4 +38,5 @@
   
   <!-- Scanning effect -->
   <rect x="60" y="60" width="80" height="80" class="scanner" opacity="0.4" />
+  </g>
 </svg>

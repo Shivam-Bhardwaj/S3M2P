@@ -27,6 +27,7 @@
   <!-- Outer Gear Outline - Bronze/Gold -->
   <circle cx="100" cy="100" r="80" fill="none" stroke="#CD7F32" stroke-width="0.5" stroke-opacity="0.2" stroke-dasharray="5,5"/>
   
+  <g transform="translate(100, 100) scale(1.4) translate(-100, -100)">
   <g filter="url(#glow-soft)">
       <!-- Main Gear - Bronze/Copper -->
       <g class="gear-spin">
@@ -61,5 +62,6 @@
         <path d="M150 120 L155 115" stroke="#ffffff" stroke-width="1.5" />
         <path d="M150 120 L155 125" stroke="#ffffff" stroke-width="1.5" />
       </g>
+  </g>
   </g>
 </svg>

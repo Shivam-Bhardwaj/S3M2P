@@ -13,6 +13,7 @@
   <circle cx="100" cy="100" r="85" fill="none" stroke="#ff8844" stroke-width="0.5" stroke-opacity="0.15" />
   <circle cx="100" cy="100" r="75" fill="none" stroke="#ff8844" stroke-width="0.5" stroke-opacity="0.1" stroke-dasharray="4,8" />
   
+  <g transform="translate(100, 100) scale(1.25) translate(-100, -100)">
   <!-- Crate box - 3D isometric style -->
   <g filter="url(#glow-crates)">
     <!-- Top face -->
@@ -51,4 +52,5 @@
   
   <!-- Version tag -->
   <rect x="115" y="125" width="25" height="12" rx="2" fill="none" stroke="#ff8844" stroke-width="0.75" stroke-opacity="0.5" />
+  </g>
 </svg>
