@@ -34,16 +34,25 @@
             position: absolute;
             color: white;
             font-family: 'Courier New', monospace;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             border: 1px solid rgba(255,255,255,0.3);
-            padding: 1rem 2rem;
+            padding: 0.8rem 1.5rem;
             background: rgba(0,0,0,0.8);
             text-decoration: none;
-            transition: border-color 0.3s;
+            transition: border-color 0.3s, transform 0.3s, top 0.3s, left 0.3s, right 0.3s, bottom 0.3s;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            z-index: 10;
         }
         .monolith:hover {
             border-color: rgba(255,255,255,0.8);
+            z-index: 20;
         }
+
+        /* Mobile Layout (Default) */
+        .pos-helios { top: 30%; left: 50%; }
+        .pos-cam { top: 50%; left: 50%; }
+        .pos-ml { top: 70%; left: 50%; }
         
         /* Telemetry Dashboard - Retro Terminal Style */
         #telemetry {
@@ -53,16 +62,20 @@
             font-family: 'Courier New', Courier, monospace;
             color: #00ff00;
             background: rgba(0, 0, 0, 0.85);
-            padding: 10px 15px;
+            padding: 5px 10px;
             border-top-right-radius: 5px;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             letter-spacing: 1px;
             text-shadow: 0 0 5px #00ff00;
             z-index: 1000;
             pointer-events: auto;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            box-sizing: border-box;
         }
         #telemetry span {
-            margin-right: 20px;
+            margin-right: 0;
         }
         #telemetry span::before {
             content: '>';
@@ -72,22 +85,57 @@
         
         #console-log {
             position: fixed;
-            bottom: 0;
+            top: 0;
             right: 0;
-            width: 320px;
-            height: 110px;
+            width: 100%;
+            max-width: 250px;
+            height: 100px;
             overflow-y: hidden;
             font-family: 'Courier New', Courier, monospace;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #00ff00;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.6);
             opacity: 0.8;
             padding: 8px 10px;
-            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
             z-index: 1000;
             pointer-events: auto;
             text-shadow: 0 0 3px #00ff00;
         }
+
+        /* Desktop Layout */
+        @media (min-width: 768px) {
+            .monolith {
+                font-size: 1.5rem;
+                padding: 1rem 2rem;
+            }
+
+            .pos-helios { top: 30%; left: 30%; }
+            .pos-cam { top: 50%; left: 50%; }
+            .pos-ml { top: 70%; left: 70%; }
+
+            #telemetry {
+                width: auto;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+                display: block;
+            }
+            #telemetry span {
+                margin-right: 20px;
+            }
+
+            #console-log {
+                top: auto;
+                bottom: 0;
+                width: 320px;
+                height: 110px;
+                font-size: 0.75rem;
+                background: rgba(0, 0, 0, 0.85);
+                border-top-left-radius: 5px;
+                border-bottom-left-radius: 0;
+            }
+        }
+
         #console-log p {
             margin: 0 0 3px 0;
             padding: 0;

@@ -19,6 +19,7 @@ dependencies = [
  "glam",
  "rand",
  "serde",
+ "wasm-bindgen",
 ]
 
 [[package]]
