@@ -431,13 +431,23 @@ impl FungalNetwork {
                     let alpha = 0.2 + health * 0.6;
                     let width = (0.5 + health * 2.5) as f64;
                     
+                    // Visual variety for branches (thorns, berries) based on type
+                    let mut has_thorns = false;
+                    let mut has_berries = false;
+                    
                     // Color based on type
                     let color = match self.nodes[i].branch_type {
-                        BranchType::EnergyHigh => format!("hsla(50, 90%, 60%, {})", alpha), // Gold
+                        BranchType::EnergyHigh => {
+                            has_berries = true;
+                            format!("hsla(50, 90%, 60%, {})", alpha) // Gold
+                        },
                         BranchType::EnergyMed => format!("hsla(120, 70%, 50%, {})", alpha), // Green
                         BranchType::EnergyLow => format!("hsla(200, 70%, 50%, {})", alpha), // Blue
                         BranchType::Poison => format!("hsla(280, 80%, 40%, {})", alpha),    // Purple
-                        BranchType::Death => format!("hsla(0, 90%, 40%, {})", alpha),       // Red
+                        BranchType::Death => {
+                            has_thorns = true;
+                            format!("hsla(0, 90%, 40%, {})", alpha)       // Red
+                        },
                     };
 
                     ctx.set_stroke_style(&JsValue::from_str(&color));
@@ -447,6 +457,32 @@ impl FungalNetwork {
                     ctx.move_to(parent.pos.x as f64, parent.pos.y as f64);
                     ctx.line_to(self.nodes[i].pos.x as f64, self.nodes[i].pos.y as f64);
                     ctx.stroke();
+                    
+                    // Draw Thorns for Death branches
+                    if has_thorns && health > 0.5 {
+                        let mid_x = (parent.pos.x + self.nodes[i].pos.x) * 0.5;
+                        let mid_y = (parent.pos.y + self.nodes[i].pos.y) * 0.5;
+                        
+                        // Draw a small cross/spike
+                        ctx.set_line_width(1.0);
+                        ctx.begin_path();
+                        ctx.move_to((mid_x - 2.0) as f64, (mid_y - 2.0) as f64);
+                        ctx.line_to((mid_x + 2.0) as f64, (mid_y + 2.0) as f64);
+                        ctx.move_to((mid_x + 2.0) as f64, (mid_y - 2.0) as f64);
+                        ctx.line_to((mid_x - 2.0) as f64, (mid_y + 2.0) as f64);
+                        ctx.stroke();
+                    }
+                    
+                    // Draw Berries for EnergyHigh branches
+                    if has_berries && health > 0.6 {
+                        let mid_x = (parent.pos.x + self.nodes[i].pos.x) * 0.5;
+                        let mid_y = (parent.pos.y + self.nodes[i].pos.y) * 0.5;
+                        
+                        ctx.set_fill_style(&JsValue::from_str(&color));
+                        ctx.begin_path();
+                        ctx.arc(mid_x as f64, mid_y as f64, 2.0, 0.0, std::f64::consts::TAU).unwrap();
+                        ctx.fill();
+                    }
                 }
             } else {
                 // Root

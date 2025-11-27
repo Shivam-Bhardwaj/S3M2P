@@ -579,6 +579,12 @@ fn main() {
                 let spin = tangent * 2.0;
                 push_forces.push((idx, inward + spin));
                 
+                // INERTIA DAMPING
+                // Reduce velocity slightly to prevent them from shooting straight to the absolute center
+                // and to stabilize their orbit within the trap.
+                let damping = -arena.velocities[idx] * 0.05; // 5% drag
+                push_forces.push((idx, damping));
+                
                 // Heal to full health constantly
                 if arena.energy[idx] < 200.0 {
                     // Side effect: heal
@@ -847,7 +853,17 @@ fn main() {
             let state = s.arena.states[idx];
             let size_mult = s.arena.genes[idx].size;
             
-            let color = format!("hsl({}, {}%, {}%)", hue, sat, light);
+            // Individual variation - subtle wobble in size and color
+            let time = performance.now() * 0.001;
+            let wobble = (idx as f64 * 0.1 + time * 2.0).sin() * 0.1;
+            let individual_size = size_mult as f64 * (1.0 + wobble);
+            
+            // Individual color variation
+            let (hue, sat, light) = get_boid_color(&s.arena, idx);
+            let hue_var = ((idx % 20) as i16 - 10) as i16;
+            let final_hue = (hue as i16 + hue_var).rem_euclid(360);
+            
+            let color = format!("hsl({}, {}%, {}%)", final_hue, sat, light);
             draw_organism(
                 &ctx, 
                 pos.x as f64, 
@@ -857,7 +873,7 @@ fn main() {
                 BOID_SIZE as f64,
                 role,
                 state,
-                size_mult,
+                individual_size as f32,
             );
         }
         
