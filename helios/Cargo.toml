@@ -4,54 +4,30 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# Shared core library
-core = { path = "../core" }
-
-# Math library (matches too.foo)
-glam = { version = "0.29", features = ["rand"] }
-
-# WASM bindings (matches too.foo exactly)
+# WASM bindings
 wasm-bindgen = "=0.2.93"
 wasm-bindgen-futures = "0.4"
 console_error_panic_hook = "0.1"
 
-# Networking
-reqwest = { version = "0.11", features = ["json"] }
-
-# WebGPU graphics for 3D sun simulation
-wgpu = { version = "22.1", features = ["webgpu", "webgl"] }
-
-# Async runtime for wgpu
-pollster = "0.3"
-
 [dependencies.web-sys]
 version = "0.3"
 features = [
-    # Canvas features
-    "CanvasRenderingContext2d",
+    # Canvas
     "HtmlCanvasElement",
-    # Window/Document features
+    "CanvasRenderingContext2d",
+    "CanvasGradient",
+    # Window/Document
     "Document",
     "Element",
-    "HtmlElement",
     "Window",
-    "Location",
-    "Headers",
-    "Request",
-    "RequestInit",
-    "RequestMode",
-    "Response",
-    # GPU/WebGPU features
-    "Gpu",
-    "GpuAdapter",
-    "GpuDevice",
-    "GpuCanvasContext",
-    "GpuTextureFormat",
-    # Animation & timing
-    "AnimationEvent",
     "Performance",
-    # Utility features
+    # Events
+    "MouseEvent",
+    "KeyboardEvent",
+    "WheelEvent",
+    "TouchEvent",
+    "TouchList",
+    "Touch",
+    # Utility
     "console",
-    "HtmlCollection",
-    "DomRect",
 ]

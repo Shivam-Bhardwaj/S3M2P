@@ -1,23 +1,22 @@
-// Helios is a WASM-only crate for WebGPU 3D visualization
+// Helios - Heliosphere Visualization
+// GPU-free Canvas 2D rendering following too.foo patterns
+
 #![allow(unexpected_cfgs)]
 
-mod streaming;
+mod simulation;
+mod render;
 
 #[cfg(target_arch = "wasm32")]
-use streaming::StreamController;
-#[cfg(target_arch = "wasm32")]
-use glam::Vec3;
+use simulation::SimulationState;
+
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsCast;
 #[cfg(target_arch = "wasm32")]
-use web_sys::{window, HtmlCanvasElement};
-#[cfg(target_arch = "wasm32")]
-use wgpu::{
-    Backends, Color, CommandEncoderDescriptor, DeviceDescriptor, Features, Instance, InstanceDescriptor,
-    Limits, LoadOp, Operations, PowerPreference, RenderPassColorAttachment, RenderPassDescriptor,
-    RequestAdapterOptions, StoreOp, TextureViewDescriptor,
+use web_sys::{
+    window, HtmlCanvasElement, CanvasRenderingContext2d,
+    KeyboardEvent, MouseEvent, WheelEvent, TouchEvent,
 };
 #[cfg(target_arch = "wasm32")]
 use std::rc::Rc;
@@ -29,21 +28,13 @@ use std::cell::RefCell;
 extern "C" {
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
-    #[wasm_bindgen(js_namespace = console)]
-    fn error(s: &str);
 }
 
 fn main() {
     #[cfg(target_arch = "wasm32")]
     {
         console_error_panic_hook::set_once();
-
-        // Spawn async block
-        wasm_bindgen_futures::spawn_local(async {
-            if let Err(e) = run().await {
-                error(&format!("Application error: {:?}", e));
-            }
-        });
+        wasm_bindgen_futures::spawn_local(async { run(); });
     }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -53,147 +44,271 @@ fn main() {
 }
 
 #[cfg(target_arch = "wasm32")]
-async fn run() -> Result<(), String> {
-    let window = window().ok_or("No window found")?;
-    let document = window.document().ok_or("No document found")?;
+fn run() {
+    let window = match window() {
+        Some(w) => w,
+        None => { log("No window found"); return; }
+    };
 
-    log("Helios initialized");
+    let document = match window.document() {
+        Some(d) => d,
+        None => { log("No document found"); return; }
+    };
 
-    // Configuration
-    // In production (Cloudflare Pages), this should be set to "https://data.too.foo" or similar
-    // to avoid Mixed Content errors (HTTPS frontend -> HTTP backend).
-    const BACKEND_URL: Option<&str> = option_env!("BACKEND_URL");
-    let server_url = BACKEND_URL.unwrap_or("http://144.126.145.3:3000").to_string();
+    log("Helios - Heliosphere Visualization (Canvas 2D)");
+    log("Controls: Scroll=zoom, Drag=pan, 1-8=planets, Space=pause, +/-=time");
 
-    log(&format!("Connecting to storage backend: {}", server_url));
+    // Get canvas
+    let canvas = match document.get_element_by_id("helios-canvas") {
+        Some(el) => match el.dyn_into::<HtmlCanvasElement>() {
+            Ok(c) => c,
+            Err(_) => { log("Element is not a canvas"); return; }
+        },
+        None => { log("Canvas not found"); return; }
+    };
 
-    // Initialize Streaming Controller
-    let streamer = Rc::new(RefCell::new(StreamController::new(server_url)));
+    // Set canvas size
+    let window_width = window.inner_width().unwrap().as_f64().unwrap() as u32;
+    let window_height = window.inner_height().unwrap().as_f64().unwrap() as u32;
+    canvas.set_width(window_width);
+    canvas.set_height(window_height);
 
-    let canvas = document
-        .get_element_by_id("helios-canvas")
-        .ok_or("Canvas not found")?
-        .dyn_into::<HtmlCanvasElement>()
-        .map_err(|_| "Element is not a canvas")?;
+    log(&format!("Canvas: {}x{}", window_width, window_height));
 
-    log("Canvas found - Initializing WebGPU...");
+    // Get 2D context
+    let ctx = match canvas.get_context("2d") {
+        Ok(Some(ctx)) => match ctx.dyn_into::<CanvasRenderingContext2d>() {
+            Ok(c) => c,
+            Err(_) => { log("Failed to get 2D context"); return; }
+        },
+        _ => { log("Failed to get 2D context"); return; }
+    };
 
-    let instance = Instance::new(InstanceDescriptor {
-        backends: Backends::all(),
-        ..Default::default()
-    });
+    // Initialize simulation state
+    let state = Rc::new(RefCell::new(SimulationState::new()));
+    state.borrow_mut().set_viewport(window_width as f64, window_height as f64);
+    state.borrow_mut().view_inner_system(); // Start with inner solar system view
 
-    // WGPU 22+ with WASM requires SurfaceTarget::Canvas
-    let surface = instance
-        .create_surface(wgpu::SurfaceTarget::Canvas(canvas.clone()))
-        .map_err(|e| format!("Failed to create surface: {:?}", e))?;
+    // Time tracking
+    let start_time = Rc::new(RefCell::new(
+        window.performance().map(|p| p.now()).unwrap_or(0.0) / 1000.0
+    ));
+    let last_frame_time = Rc::new(RefCell::new(*start_time.borrow()));
+    let frame_times = Rc::new(RefCell::new([0.0f64; 60]));
+    let frame_idx = Rc::new(RefCell::new(0usize));
 
-    let adapter = instance
-        .request_adapter(&RequestAdapterOptions {
-            power_preference: PowerPreference::HighPerformance,
-            compatible_surface: Some(&surface),
-            force_fallback_adapter: false,
-        })
-        .await
-        .ok_or("No suitable GPU adapter found")?;
+    // === INPUT HANDLERS ===
 
-    log(&format!("Adapter found: {:?}", adapter.get_info()));
+    // Mouse down
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |event: MouseEvent| {
+            let mut s = state.borrow_mut();
+            s.view.dragging = true;
+            s.view.drag_start_x = event.client_x() as f64;
+            s.view.drag_start_y = event.client_y() as f64;
+            s.view.last_center_x = s.view.center_x;
+            s.view.last_center_y = s.view.center_y;
+        }) as Box<dyn FnMut(_)>);
+        canvas.add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref()).unwrap();
+        closure.forget();
+    }
 
-    let (device, queue) = adapter
-        .request_device(
-            &DeviceDescriptor {
-                required_features: Features::empty(),
-                required_limits: Limits::downlevel_webgl2_defaults(),
-                label: None,
-                memory_hints: Default::default(),
-            },
-            None,
-        )
-        .await
-        .map_err(|e| format!("Failed to create device: {:?}", e))?;
+    // Mouse up
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            state.borrow_mut().view.dragging = false;
+        }) as Box<dyn FnMut(_)>);
+        canvas.add_event_listener_with_callback("mouseup", closure.as_ref().unchecked_ref()).unwrap();
+        closure.forget();
+    }
 
-    let surface_config = surface
-        .get_default_config(&adapter, canvas.width(), canvas.height())
-        .ok_or("Failed to get surface config")?;
+    // Mouse move
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |event: MouseEvent| {
+            let mut s = state.borrow_mut();
+            if s.view.dragging {
+                let dx = event.client_x() as f64 - s.view.drag_start_x;
+                let dy = event.client_y() as f64 - s.view.drag_start_y;
+                s.view.center_x = s.view.last_center_x - dx * s.view.zoom;
+                s.view.center_y = s.view.last_center_y - dy * s.view.zoom;
+            }
+        }) as Box<dyn FnMut(_)>);
+        canvas.add_event_listener_with_callback("mousemove", closure.as_ref().unchecked_ref()).unwrap();
+        closure.forget();
+    }
 
-    surface.configure(&device, &surface_config);
+    // Mouse wheel (zoom)
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |event: WheelEvent| {
+            event.prevent_default();
+            let mut s = state.borrow_mut();
 
-    log("WebGPU initialized successfully. Starting render loop.");
+            // Zoom towards mouse position
+            let mouse_x = event.client_x() as f64;
+            let mouse_y = event.client_y() as f64;
+            let (au_x, au_y) = s.view.screen_to_au(mouse_x, mouse_y);
 
-    // Animation Loop
+            let factor = if event.delta_y() > 0.0 { 1.15 } else { 0.87 };
+            s.zoom_by(factor);
+
+            // Adjust center to zoom towards mouse
+            let (new_au_x, new_au_y) = s.view.screen_to_au(mouse_x, mouse_y);
+            s.view.center_x += au_x - new_au_x;
+            s.view.center_y += au_y - new_au_y;
+        }) as Box<dyn FnMut(_)>);
+        canvas.add_event_listener_with_callback("wheel", closure.as_ref().unchecked_ref()).unwrap();
+        closure.forget();
+    }
+
+    // Touch start
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |event: TouchEvent| {
+            event.prevent_default();
+            if let Some(touch) = event.touches().get(0) {
+                let mut s = state.borrow_mut();
+                s.view.dragging = true;
+                s.view.drag_start_x = touch.client_x() as f64;
+                s.view.drag_start_y = touch.client_y() as f64;
+                s.view.last_center_x = s.view.center_x;
+                s.view.last_center_y = s.view.center_y;
+            }
+        }) as Box<dyn FnMut(_)>);
+        canvas.add_event_listener_with_callback("touchstart", closure.as_ref().unchecked_ref()).unwrap();
+        closure.forget();
+    }
+
+    // Touch end
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: TouchEvent| {
+            state.borrow_mut().view.dragging = false;
+        }) as Box<dyn FnMut(_)>);
+        canvas.add_event_listener_with_callback("touchend", closure.as_ref().unchecked_ref()).unwrap();
+        closure.forget();
+    }
+
+    // Touch move
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |event: TouchEvent| {
+            event.prevent_default();
+            if let Some(touch) = event.touches().get(0) {
+                let mut s = state.borrow_mut();
+                if s.view.dragging {
+                    let dx = touch.client_x() as f64 - s.view.drag_start_x;
+                    let dy = touch.client_y() as f64 - s.view.drag_start_y;
+                    s.view.center_x = s.view.last_center_x - dx * s.view.zoom;
+                    s.view.center_y = s.view.last_center_y - dy * s.view.zoom;
+                }
+            }
+        }) as Box<dyn FnMut(_)>);
+        canvas.add_event_listener_with_callback("touchmove", closure.as_ref().unchecked_ref()).unwrap();
+        closure.forget();
+    }
+
+    // Keyboard
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |event: KeyboardEvent| {
+            let mut s = state.borrow_mut();
+            match event.key().as_str() {
+                " " => s.toggle_pause(),
+                "1" => s.focus_on_planet(0), // Mercury
+                "2" => s.focus_on_planet(1), // Venus
+                "3" => s.focus_on_planet(2), // Earth
+                "4" => s.focus_on_planet(3), // Mars
+                "5" => s.focus_on_planet(4), // Jupiter
+                "6" => s.focus_on_planet(5), // Saturn
+                "7" => s.focus_on_planet(6), // Uranus
+                "8" => s.focus_on_planet(7), // Neptune
+                "0" | "s" | "S" => s.focus_on_sun(),
+                "i" | "I" => s.view_inner_system(),
+                "o" | "O" => s.view_outer_system(),
+                "h" | "H" => s.view_heliosphere(),
+                "+" | "=" => { let ts = s.time_scale * 2.0; s.set_time_scale(ts); }
+                "-" | "_" => { let ts = s.time_scale / 2.0; s.set_time_scale(ts); }
+                "ArrowLeft" => s.julian_date -= 30.0, // Month back
+                "ArrowRight" => s.julian_date += 30.0, // Month forward
+                "ArrowUp" => s.julian_date += 365.25, // Year forward
+                "ArrowDown" => s.julian_date -= 365.25, // Year back
+                "Home" => {
+                    s.view_inner_system();
+                    s.julian_date = simulation::J2000_EPOCH + 8766.0; // 2024
+                    s.time_scale = 1.0;
+                }
+                _ => {}
+            }
+        }) as Box<dyn FnMut(_)>);
+        document.add_event_listener_with_callback("keydown", closure.as_ref().unchecked_ref()).unwrap();
+        closure.forget();
+    }
+
+    // === ANIMATION LOOP ===
+
     let f: Rc<RefCell<Option<Closure<dyn FnMut()>>>> = Rc::new(RefCell::new(None));
     let g = f.clone();
 
-    let device = Rc::new(device);
-    let queue = Rc::new(queue);
-    let surface = Rc::new(surface);
-
-    // Simple camera state
-    let mut camera_angle: f32 = 0.0;
+    let ctx = Rc::new(ctx);
+    let canvas = Rc::new(canvas);
 
     let window_clone = window.clone();
     *g.borrow_mut() = Some(Closure::new(move || {
-        // Update Camera
-        camera_angle += 0.005;
-        let view_pos = Vec3::new(camera_angle.sin() * 10.0, 0.0, camera_angle.cos() * 10.0);
-        let view_dir = -view_pos.normalize();
+        // Time
+        let now = window_clone.performance().map(|p| p.now()).unwrap_or(0.0) / 1000.0;
+        let time = now - *start_time.borrow();
+        let dt = (now - *last_frame_time.borrow()).min(0.1); // Cap dt to avoid spiral
+        *last_frame_time.borrow_mut() = now;
 
-        // Update Streamer
-        streamer.borrow().update(
-            view_pos,
-            view_dir,
-            std::f32::consts::PI / 3.0
-        );
-
-        // Render
-        let frame = match surface.get_current_texture() {
-            Ok(frame) => frame,
-            Err(_) => return, // Skip frame on error
-        };
-
-        let view = frame.texture.create_view(&TextureViewDescriptor::default());
-
-        let mut encoder = device.create_command_encoder(&CommandEncoderDescriptor {
-            label: Some("Render Encoder"),
-        });
-
+        // FPS calculation (rolling average)
         {
-            let _render_pass = encoder.begin_render_pass(&RenderPassDescriptor {
-                label: Some("Render Pass"),
-                color_attachments: &[Some(RenderPassColorAttachment {
-                    view: &view,
-                    resolve_target: None,
-                    ops: Operations {
-                        load: LoadOp::Clear(Color {
-                            r: 0.05,
-                            g: 0.05,
-                            b: 0.1, // Dark blue background
-                            a: 1.0,
-                        }),
-                        store: StoreOp::Store,
-                    },
-                })],
-                depth_stencil_attachment: None,
-                timestamp_writes: None,
-                occlusion_query_set: None,
-            });
-
-            // In a real implementation, we would draw the boid/star buffers here
-            // using data from streamer.borrow().store
+            let mut times = frame_times.borrow_mut();
+            let mut idx = frame_idx.borrow_mut();
+            times[*idx] = dt;
+            *idx = (*idx + 1) % 60;
         }
 
-        queue.submit(std::iter::once(encoder.finish()));
-        frame.present();
+        // Update FPS every 30 frames
+        let mut s = state.borrow_mut();
+        if s.frame_count % 30 == 0 {
+            let times = frame_times.borrow();
+            let avg_dt: f64 = times.iter().sum::<f64>() / 60.0;
+            s.fps = if avg_dt > 0.0 { 1.0 / avg_dt } else { 60.0 };
+        }
+
+        // Handle resize
+        let current_width = canvas.client_width() as u32;
+        let current_height = canvas.client_height() as u32;
+        if current_width != canvas.width() || current_height != canvas.height() {
+            if current_width > 0 && current_height > 0 {
+                canvas.set_width(current_width);
+                canvas.set_height(current_height);
+                s.set_viewport(current_width as f64, current_height as f64);
+            }
+        }
+
+        // Update simulation
+        s.update(dt);
+
+        // Render
+        render::render(&ctx, &s, time);
+
+        drop(s); // Release borrow before next frame
 
         // Request next frame
         window_clone
             .request_animation_frame(f.borrow().as_ref().unwrap().as_ref().unchecked_ref())
-            .expect("should register `requestAnimationFrame` OK");
+            .expect("requestAnimationFrame failed");
     }));
 
+    // Start animation
     window
         .request_animation_frame(g.borrow().as_ref().unwrap().as_ref().unchecked_ref())
-        .expect("should register `requestAnimationFrame` OK");
+        .expect("requestAnimationFrame failed");
 
-    Ok(())
+    log("Animation loop started");
 }

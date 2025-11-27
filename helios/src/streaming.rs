@@ -4,7 +4,7 @@
 #[cfg(target_arch = "wasm32")]
 use std::sync::{Arc, Mutex};
 #[cfg(target_arch = "wasm32")]
-use core::{SpatialStore, DataLayer};
+use antimony_core::{SpatialStore, DataLayer};
 #[cfg(target_arch = "wasm32")]
 use glam::Vec3;
 
