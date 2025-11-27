@@ -120,6 +120,13 @@ fn is_in_exclusion_zone(pos: Vec2, zones: &[ExclusionZone]) -> bool {
     false
 }
 
+struct PopUp {
+    text: String,
+    pos: Vec2,
+    life: f32, // 0.0 to 1.0
+    color: String,
+}
+
 struct World {
     arena: BoidArena<ARENA_CAPACITY>,
     grid: SpatialGrid<CELL_CAPACITY>,
@@ -135,6 +142,7 @@ struct World {
     width: f32,
     height: f32,
     last_season: &'static str,
+    popups: Vec<PopUp>,
 }
 
 fn scan_dom_obstacles(document: &Document) -> Vec<Obstacle> {
@@ -379,6 +387,7 @@ fn main() {
         width,
         height,
         last_season: "SPRING",
+        popups: Vec::new(),
     }));
 
     // Cache DOM element references
@@ -501,6 +510,7 @@ fn main() {
             width: world_w, 
             height: world_h,
             last_season,
+            popups,
             ..
         } = &mut *s;
         
@@ -553,14 +563,15 @@ fn main() {
         // Boids can enter. Predators are trapped and killed. Herbivores/Scavengers are protected/calmed.
         // The zone center is no longer a simple exclusion, it's a trap.
         
-        // All boids get a slight "Curiosity" lure towards the center if they are relatively close
+        // All boids get a strong "Curiosity" lure towards the center
         if let Some(chakravyu) = chakravyu_zone {
             let dist_to_center = pos.distance(chakravyu.center);
             
-            // Lure range (larger than the trap itself)
-            if dist_to_center < chakravyu.radius * 2.5 && dist_to_center > chakravyu.radius {
-                // Gentle pull inward
-                let lure = (chakravyu.center - pos).normalize() * 0.2;
+            // Lure range (much larger)
+            if dist_to_center < chakravyu.radius * 4.0 && dist_to_center > chakravyu.radius {
+                // Stronger pull for everyone, especially carnivores
+                let lure_strength = if role == BoidRole::Carnivore { 0.8 } else { 0.4 };
+                let lure = (chakravyu.center - pos).normalize() * lure_strength;
                 push_forces.push((idx, lure));
             }
 
@@ -568,30 +579,50 @@ fn main() {
             if dist_to_center < chakravyu.radius && dist_to_center > 0.001 {
                 if role == BoidRole::Carnivore {
                     // Predators: TRAP - Strong inward pull + Energy Drain + Spin
-                    let inward = (chakravyu.center - pos).normalize() * chakravyu.inward_force * 1.5;
+                    let inward = (chakravyu.center - pos).normalize() * chakravyu.inward_force * 2.5; // Stronger trap
                     
                     // Add a tangential spin force for the "Chakra" (Wheel) effect
                     let tangent = Vec2::new(-(chakravyu.center.y - pos.y), chakravyu.center.x - pos.x).normalize();
-                    let spin = tangent * 2.0;
+                    let spin = tangent * 3.0;
                     
                     push_forces.push((idx, inward + spin));
                     
                     // Mark for heavy energy drain
                     chakravyu_victims.push(idx);
-                } else {
-                    // Herbivores/Scavengers: SHIELD - Protected/Calmed
-                    // They are safe here. Maybe even slight outward push to keep them near the edge (safe zone)
-                    // or just let them wander. Let's reduce their velocity to "calm" them (Gita 2:64 reference).
                     
-                    // Apply damping directly here (hacky but effective for "calming")
-                    // We can't modify velocity directly in this loop due to borrow rules, so we use push_forces
-                    // to counteract current velocity.
-                    let damping = -arena.velocities[idx] * 0.1; // 10% damping per frame
+                    // Check if dying this frame inside chakravyu
+                    if arena.energy[idx] <= chakravyu.energy_drain * 2.0 {
+                        popups.push(PopUp {
+                            text: "स्वाहा!".to_string(),
+                            pos: pos + Vec2::new(0.0, -10.0),
+                            life: 1.0,
+                            color: "rgba(255, 50, 50, {})".to_string(),
+                        });
+                    }
+                } else {
+                    // Herbivores/Scavengers: SHIELD - Protected/Calmed -> Moksh
+                    // Reduce velocity to "calm" them (Gita 2:64 reference).
+                    
+                    // Strong damping
+                    let damping = -arena.velocities[idx] * 0.15; 
                     push_forces.push((idx, damping));
                     
-                    // Also give them a tiny energy boost for "Peace" (Prasadam)
-                    if frame_count % 10 == 0 {
-                        interactions.push((idx, InteractionResult::Nutrient(1.0)));
+                    // Fade out effect (Moksh)
+                    // We can't change transparency of individual boid easily without modifying BoidArena
+                    // But we can simulate "fading" by reducing size or energy (which affects color lightness)
+                    // Let's reduce energy slowly but add a "Moksh" popup when they disappear
+                    
+                    arena.energy[idx] -= 0.2; // Slow fade
+                    
+                    if arena.energy[idx] <= 1.0 {
+                         popups.push(PopUp {
+                            text: "मोक्ष प्राप्त".to_string(),
+                            pos: pos + Vec2::new(0.0, -10.0),
+                            life: 1.5, // Longer life for moksh
+                            color: "rgba(100, 255, 200, {})".to_string(),
+                        });
+                        // Ensure they die peacefully
+                        arena.energy[idx] = -100.0; 
                     }
                 }
             }
@@ -800,6 +831,23 @@ fn main() {
             ctx.stroke();
             
             ctx.restore();
+        }
+
+        // Update and draw popups
+        s.popups.retain_mut(|p| {
+            p.life -= 0.02;
+            p.pos.y -= 0.5; // Float up
+            p.life > 0.0
+        });
+        
+        ctx.set_font("bold 12px 'IBM Plex Mono', monospace");
+        ctx.set_text_align("center");
+        for p in &s.popups {
+            let alpha = p.life;
+            // Replace the placeholder {} with alpha
+            let color = p.color.replace("{}", &alpha.to_string());
+            ctx.set_fill_style(&JsValue::from_str(&color));
+            ctx.fill_text(&p.text, p.pos.x as f64, p.pos.y as f64).unwrap();
         }
 
         // Draw Organisms (Boids)
