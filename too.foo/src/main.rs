@@ -12,7 +12,7 @@ use antimony_core::{
 use glam::Vec2;
 
 mod fungal;
-use fungal::FungalNetwork;
+use fungal::{FungalNetwork, InteractionResult, BranchType};
 
 #[wasm_bindgen]
 extern "C" {
@@ -343,30 +343,49 @@ fn main() {
         // Update Fungal Network
         fungal_network.update();
         
-        // Boids interactions with network
-        // 1. Spore Trail: Chance to seed new root at boid pos
-        // 2. Infection: Kill nodes within radius
-        
-        for idx in arena.iter_alive() {
-            let pos = arena.positions[idx];
+            // Boids interactions with network
+            // 1. Spore Trail: Chance to seed new root at boid pos
+            // 2. Infect / Interact: Boids contacting nodes
             
-            // Seed (Spore)
-            // Small chance
-            use rand::Rng;
-            let mut rng = rand::thread_rng();
-            if rng.gen::<f32>() < 0.005 {
-                fungal_network.seed_at(pos);
+            // Collect interaction results first to avoid borrow conflicts
+            // Map (index, InteractionResult, position)
+            let mut interactions = Vec::new();
+            
+            for idx in arena.iter_alive() {
+                let pos = arena.positions[idx];
+                
+                // Seed (Spore)
+                use rand::Rng;
+                let mut rng = rand::thread_rng();
+                if rng.gen::<f32>() < 0.005 {
+                    fungal_network.seed_at(pos);
+                }
+                
+                // Check for interaction
+                if frame_count % 2 == 0 {
+                    let result = fungal_network.interact(pos, BOID_SIZE * 3.0);
+                    if result != InteractionResult::None {
+                        interactions.push((idx, result));
+                    }
+                }
             }
             
-            // Infect (Shrink/Kill)
-            // Only check if we are actually near nodes (Spatial hash would be better, but brute force for now with MAX_NODES=2000 is okayish)
-            // For perf, maybe only check subset of boids?
-            // Or limit check frequency?
-            if frame_count % 2 == 0 {
-                fungal_network.infect(pos, BOID_SIZE * 3.0);
+            // Apply interactions
+            for (idx, result) in interactions {
+                match result {
+                    InteractionResult::Nutrient(amt) => {
+                        arena.energy[idx] = (arena.energy[idx] + amt).min(200.0);
+                    },
+                    InteractionResult::Damage(amt) => {
+                        arena.energy[idx] -= amt;
+                    },
+                    InteractionResult::Death => {
+                        arena.energy[idx] = -100.0; // Ensure death in next sim step
+                    },
+                    InteractionResult::None => {}
+                }
             }
-        }
-        
+
         // Update predators
         for pred in predators.iter_mut() {
             pred.update(1.0);
@@ -427,44 +446,7 @@ fn main() {
         ctx.fill_rect(0.0, 0.0, canvas_w as f64, canvas_h as f64);
         
         // Draw Fungal Network
-        // Draw logic moved here since it interacts with Canvas context
-        let ctx_ref = &ctx;
-        ctx_ref.set_line_cap("round");
-        
-        // Draw branches
-        for i in 0..fungal_network.count {
-            if !fungal_network.nodes[i].active { continue; }
-            
-            if let Some(parent_idx) = fungal_network.nodes[i].parent_idx {
-                let parent = fungal_network.nodes[parent_idx as usize];
-                if parent.active {
-                    let health = fungal_network.nodes[i].health;
-                    let alpha = 0.2 + health * 0.6;
-                    let width = 0.5 + health * 2.5;
-                    
-                    // Color shift based on health: Green -> Brown/Grey
-                    let hue = 120.0 * health; 
-                    
-                    ctx_ref.set_stroke_style(&JsValue::from_str(&format!("hsla({}, 60%, 50%, {})", hue, alpha)));
-                    ctx_ref.set_line_width(width as f64);
-                    
-                    ctx_ref.begin_path();
-                    ctx_ref.move_to(parent.pos.x as f64, parent.pos.y as f64);
-                    ctx_ref.line_to(fungal_network.nodes[i].pos.x as f64, fungal_network.nodes[i].pos.y as f64);
-                    ctx_ref.stroke();
-                }
-            } else {
-                let health = fungal_network.nodes[i].health;
-                ctx_ref.set_fill_style(&JsValue::from_str(&format!("hsla(120, 60%, 50%, {})", 0.3 * health)));
-                ctx_ref.begin_path();
-                
-                // FIX: Clamp radius to be non-negative to avoid IndexSizeError
-                let radius = (2.0 * health).max(0.0);
-                
-                ctx_ref.arc(fungal_network.nodes[i].pos.x as f64, fungal_network.nodes[i].pos.y as f64, radius as f64, 0.0, std::f64::consts::TAU).unwrap();
-                ctx_ref.fill();
-            }
-        }
+        fungal_network.draw(&ctx);
         
         // Draw predators
         for pred in &s.predators {
