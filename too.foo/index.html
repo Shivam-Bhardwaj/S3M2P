@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>too.foo</title>
     <link data-trunk rel="rust" href="Cargo.toml" data-wasm-opt="z" />
+    <link data-trunk rel="copy-dir" href="assets" />
     <style>
         * {
             margin: 0;
@@ -32,21 +33,42 @@
         .monolith {
             pointer-events: auto;
             position: absolute;
-            color: white;
-            font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
-            border: 1px solid rgba(255,255,255,0.3);
-            padding: 0.8rem 1.5rem;
-            background: rgba(0,0,0,0.8);
-            text-decoration: none;
-            transition: border-color 0.3s, transform 0.3s, top 0.3s, left 0.3s, right 0.3s, bottom 0.3s;
+            width: 120px;
+            height: 120px;
+            transition: transform 0.3s, filter 0.3s;
             transform: translate(-50%, -50%);
-            white-space: nowrap;
             z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        .monolith img {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+            transition: filter 0.3s;
+        }
+        .monolith span {
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            color: white;
+            font-size: 1rem;
+            text-shadow: 0 0 5px rgba(0,0,0,0.8);
+            opacity: 0.7;
+            transition: opacity 0.3s;
         }
         .monolith:hover {
-            border-color: rgba(255,255,255,0.8);
+            transform: translate(-50%, -50%) scale(1.1);
             z-index: 20;
+        }
+        .monolith:hover img {
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.4));
+        }
+        .monolith:hover span {
+            opacity: 1;
+            color: #00ff00;
         }
 
         /* Mobile Layout (Default) */
@@ -189,9 +211,18 @@
             <div>ARCH: DATA-ORIENTED (SOA) + GLAM</div>
         </div>
 
-        <a href="https://helios.too.foo" class="monolith pos-helios">HELIOS</a>
-        <a href="#" class="monolith pos-cam">CAM</a>
-        <a href="#" class="monolith pos-ml">ML</a>
+        <a href="https://helios.too.foo" class="monolith pos-helios">
+            <img src="assets/islands/helios.svg" alt="Helios" />
+            <span>HELIOS</span>
+        </a>
+        <a href="#" class="monolith pos-cam">
+            <img src="assets/islands/cam.svg" alt="Cam" />
+            <span>CAM</span>
+        </a>
+        <a href="#" class="monolith pos-ml">
+            <img src="assets/islands/ml.svg" alt="ML" />
+            <span>ML</span>
+        </a>
         
         <!-- Telemetry Dashboard -->
         <div id="telemetry">
