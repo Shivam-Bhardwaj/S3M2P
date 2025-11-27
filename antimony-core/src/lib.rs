@@ -613,23 +613,25 @@ pub fn compute_flocking_forces<const CAP: usize, const CELL_CAP: usize>(
                         let other_idx = neighbors[i] as usize;
                         if arena.roles[other_idx] == role && arena.alive[other_idx] {
                             let diff = arena.positions[other_idx] - pos;
-            let dist = diff.length();
+                            let dist = diff.length();
             
                             cohesion += arena.positions[other_idx];
                             alignment += arena.velocities[other_idx];
-            if dist > 0.001 {
-                separation -= diff / dist;
+                            if dist > 0.001 {
+                                // Inverse square law for strong close-range repulsion
+                                let repulsion_strength = (20.0 / dist).powi(2).min(50.0);
+                                separation -= diff.normalize() * repulsion_strength;
                             }
                             same_species_count += 1;
-            }
-        }
-        
+                        }
+                    }
+                    
                     if same_species_count > 0 {
                         let n = same_species_count as f32;
-        cohesion = cohesion / n - pos;
-        alignment /= n;
-        separation /= n;
-                        force += cohesion * 1.0 + alignment * 1.0 + separation * 1.5;
+                        cohesion = (cohesion / n - pos) * 0.8; // Reduced cohesion
+                        alignment /= n;
+                        separation /= n;
+                        force += cohesion + alignment * 1.0 + separation * 2.5; // Increased separation weight
                     }
                 }
             }

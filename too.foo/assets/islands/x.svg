@@ -1,37 +1,85 @@
 <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <mask id="x-mask-final">
-       <rect x="0" y="0" width="200" height="200" fill="white" />
-       <!-- The "black body" of the \ beam that cuts the / beam -->
-       <!-- Top-Left to Bottom-Right diagonal -->
-       <path d="M30 40 L60 40 L170 160 L140 160 Z" fill="black" />
-    </mask>
-    <filter id="glow-soft">
-        <feGaussianBlur stdDeviation="1" result="blur" />
-        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    <filter id="chromatic-aberration">
+      <feOffset in="SourceGraphic" dx="2" dy="0" result="red"/>
+      <feOffset in="SourceGraphic" dx="-2" dy="0" result="blue"/>
+      <feMerge>
+        <feMergeNode in="red"/>
+        <feMergeNode in="blue"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
   </defs>
 
   <style>
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-3px); }
+    @keyframes glitch-anim {
+      0% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(-2px, -2px); }
+      60% { transform: translate(2px, 2px); }
+      80% { transform: translate(2px, -2px); }
+      100% { transform: translate(0); }
     }
-    .logo-group {
-        animation: float 4s ease-in-out infinite;
+    @keyframes flash {
+      0%, 95% { opacity: 1; }
+      96% { opacity: 0.3; }
+      97% { opacity: 1; }
+      98% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+    
+    .x-container {
+      animation: flash 5s infinite;
+    }
+    
+    .x-layer {
+      transform-origin: center;
+    }
+    
+    .glitch-1 {
+      animation: glitch-anim 2.5s infinite linear alternate-reverse;
+      fill: #ff00ea; /* Cyan/Magenta hint */
+      opacity: 0.5;
+      mix-blend-mode: screen;
+    }
+    .glitch-2 {
+      animation: glitch-anim 3s infinite linear alternate;
+      fill: #00ffff;
+      opacity: 0.5;
+      mix-blend-mode: screen;
     }
   </style>
 
-  <g class="logo-group" filter="url(#glow-soft)">
-      <!-- Solid Beam / (Bottom-Left to Top-Right) -->
-      <!-- Masked to be cut by the other beam -->
-      <path d="M40 160 L60 160 L160 40 L140 40 Z" fill="white" mask="url(#x-mask-final)" />
+  <!-- Background guides (optional, keeping consistent with others) -->
+  <circle cx="100" cy="100" r="85" fill="none" stroke="#ffffff" stroke-width="0.5" stroke-opacity="0.15" />
+
+  <g class="x-container" transform="translate(0, 0)">
+      <!-- Glitch Layers (Behind) -->
+      <g class="x-layer glitch-1" transform="translate(2, 0)">
+         <!-- Solid Beam / -->
+         <path d="M145 45 L165 45 L55 155 L35 155 Z" />
+         <!-- Hollow Beam \ (Stroke converted to fill for glitch) -->
+         <path d="M35 45 L55 45 L165 155 L145 155 Z M 45 50 L 155 150 L 150 155 L 40 55 Z" fill-rule="evenodd"/>
+      </g>
+      <g class="x-layer glitch-2" transform="translate(-2, 0)">
+         <path d="M145 45 L165 45 L55 155 L35 155 Z" />
+         <path d="M35 45 L55 45 L165 155 L145 155 Z M 45 50 L 155 150 L 150 155 L 40 55 Z" fill-rule="evenodd"/>
+      </g>
+
+      <!-- Main Logo -->
+      <!-- Solid Beam (Top-Right to Bottom-Left) / -->
+      <path d="M145 45 L165 45 L55 155 L35 155 Z" fill="white" />
       
-      <!-- Hollow Beam \ (Top-Left to Bottom-Right) -->
-      <!-- Represented by two thinner parallel beams -->
-      <!-- Upper/Right Rail -->
-      <path d="M55 40 L65 40 L175 160 L165 160 Z" fill="white" />
-      <!-- Lower/Left Rail -->
-      <path d="M25 40 L35 40 L145 160 L135 160 Z" fill="white" />
+      <!-- Hollow Beam (Top-Left to Bottom-Right) \ -->
+      <!-- Using a path with fill-rule evenodd or just a stroke -->
+      <!-- Let's use a stroke to ensure the transparency is real -->
+      <path d="M45 45 L155 155" stroke="white" stroke-width="14" fill="none" />
+      <path d="M45 45 L155 155" stroke="black" stroke-width="8" fill="none" />
+      
+      <!-- Re-doing Hollow Beam \ as two separate white parallel lines -->
+      <!-- Top edge of \ -->
+      <path d="M35 45 L42 45 L165 155 L158 155 Z" fill="white" />
+      <!-- Bottom edge of \ -->
+      <path d="M58 45 L65 45 L142 155 L135 155 Z" fill="white" />
   </g>
 </svg>
