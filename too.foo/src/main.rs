@@ -632,6 +632,8 @@ fn main() {
         }
         
         // Apply position updates with wrap-around and teleport chance
+        let mut teleport_adjustments: Vec<(usize, Vec2, f32)> = Vec::new();
+        
         for idx in arena.iter_alive() {
             // Border Teleport Mechanics (5% chance if near edge)
             if rng.gen::<f32>() < 0.05 {
@@ -642,12 +644,19 @@ fn main() {
                     // Teleport to center, velocity/direction preserved
                     // Energy drained significantly (dying process initiated)
                     if let Some(chakravyu) = chakravyu_zone {
-                        arena.positions[idx] = chakravyu.center + Vec2::new(rng.gen_range(-10.0..10.0), rng.gen_range(-10.0..10.0));
-                        // Reduce energy so they die soon
-                        arena.energy[idx] = arena.energy[idx].min(30.0); 
+                        let new_pos = chakravyu.center + Vec2::new(rng.gen_range(-10.0..10.0), rng.gen_range(-10.0..10.0));
+                        // Set new energy cap
+                        let new_energy = arena.energy[idx].min(30.0);
+                        teleport_adjustments.push((idx, new_pos, new_energy));
                     }
                 }
             }
+        }
+        
+        // Apply teleport adjustments
+        for (idx, pos, energy) in teleport_adjustments {
+            arena.positions[idx] = pos;
+            arena.energy[idx] = energy;
         }
 
         // Apply push forces

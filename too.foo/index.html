@@ -392,8 +392,10 @@
             border-bottom: 1px dotted rgba(0, 255, 170, 0.3);
             cursor: pointer;
         }
-        #tech-info a:hover {
-            border-bottom-color: rgba(0, 255, 170, 0.6);
+        #whitepaper-link {
+            cursor: pointer; /* Ensure it looks clickable */
+            z-index: 2000; /* Ensure it's above other elements */
+            position: relative;
         }
 
         @media (min-width: 600px) {
@@ -412,7 +414,17 @@
         }
         
         @media (max-width: 480px) {
-            #tech-info { display: none; }
+            /* On mobile, ensure tech-info and link are visible and clickable */
+            #tech-info { 
+                display: block; 
+                top: auto; 
+                bottom: 60px; /* Move above telemetry bar or adjust as needed */
+                right: 10px;
+                transform: none;
+                font-size: 0.6rem;
+                text-align: right;
+                z-index: 2000;
+            }
         }
 
         /* ============================================
@@ -670,6 +682,83 @@
                     <li><strong>Compute</strong>: CUDA / WGPU Compute Shaders</li>
                 </ul>
                 
+                <h2>Implementation Details (Rust/Pseudo-code)</h2>
+                
+                <h3>Boid Flocking Logic</h3>
+                <p>The core behavior is driven by a data-oriented Entity Component System (ECS) approach, utilizing a Structure of Arrays (SoA) layout for maximum cache coherence.</p>
+                <pre><code>
+// Core Entity Data Structure (SoA)
+struct BoidArena&lt;const N: usize&gt; {
+    positions: [Vec2; N],
+    velocities: [Vec2; N],
+    states: [State; N],  // e.g., Wander, Flee, Hunt
+    ...
+}
+
+// Flocking Calculation (Simplified)
+fn compute_forces(arena: &amp;BoidArena, grid: &amp;SpatialGrid) {
+    for i in 0..N {
+        let mut force = Vec2::ZERO;
+        let neighbors = grid.query(arena.positions[i]);
+        
+        // 1. Separation: Steer to avoid crowding
+        force += separation(i, neighbors) * 1.5;
+        
+        // 2. Alignment: Steer towards average heading
+        force += alignment(i, neighbors) * 1.0;
+        
+        // 3. Cohesion: Steer towards center of mass
+        force += cohesion(i, neighbors) * 1.0;
+        
+        // 4. Goal/Fear: Bias towards food or away from predators
+        force += calculate_bias(i);
+        
+        arena.accelerations[i] = force;
+    }
+}
+                </code></pre>
+
+                <h3>Spatial Partitioning</h3>
+                <p>To optimize neighbor queries from O(N²) to O(N), we use a uniform grid spatial partition.</p>
+                <pre><code>
+struct SpatialGrid {
+    cells: Vec&lt;Vec&lt;u16&gt;&gt;,
+    cell_size: f32,
+}
+
+impl SpatialGrid {
+    fn query(&self, pos: Vec2, radius: f32) -> Vec&lt;u16&gt; {
+        // Map position to grid coordinates
+        let col = (pos.x / self.cell_size) as usize;
+        let row = (pos.y / self.cell_size) as usize;
+        
+        // Query current and adjacent 8 cells
+        // ... (optimized traversal)
+    }
+}
+                </code></pre>
+
+                <h3>Chakravyu Mechanics</h3>
+                <p>The central trap simulates a gravitational singularity with a twist.</p>
+                <pre><code>
+// Inside the update loop
+if distance_to_center < radius {
+    // Strong inward pull (Gravity)
+    let gravity = (center - pos).normalize() * G_FORCE;
+    
+    // Tangential force (Spin)
+    let spin = tangent(pos, center) * SPIN_FORCE;
+    
+    // Damping (Inertia reduction to stabilize orbit)
+    let drag = -velocity * DRAG_COEFF;
+    
+    apply_force(gravity + spin + drag);
+    
+    // Sanctuary effect: Restore energy
+    organism.energy = min(organism.energy + HEAL_RATE, MAX_ENERGY);
+}
+                </code></pre>
+
                 <hr>
                 <p><em>Built by Curious. Powered by Rust.</em></p>
             </div>
