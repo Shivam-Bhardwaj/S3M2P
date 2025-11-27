@@ -191,7 +191,7 @@ impl FungalNetwork {
             idx = self.count;
             self.count += 1;
         } else {
-            // Recycle logic: reuse first inactive node
+            // Recycle logic: Find a dead node to reuse
             match self.nodes.iter().position(|n| !n.active) {
                 Some(i) => idx = i,
                 None => return, // No space, stop growth
@@ -449,5 +449,7 @@ mod tests {
         
         assert!(net.nodes[0].active);
         assert_eq!(net.nodes[0].pos, Vec2::new(60.0, 60.0));
+        // When recycling, count stays at MAX_NODES
+        assert_eq!(net.count, MAX_NODES);
     }
 }

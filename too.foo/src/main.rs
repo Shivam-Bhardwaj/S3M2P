@@ -5,14 +5,14 @@ use wasm_bindgen::JsValue;
 use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement, Document, HtmlElement, Performance};
 use antimony_core::{
     BoidArena, SpatialGrid, Obstacle, FoodSource, Genome, SimConfig,
-    SeasonCycle, PredatorZone,
+    SeasonCycle, PredatorZone, BoidRole, BoidState,
     compute_flocking_forces, simulation_step, feed_from_sources, get_boid_color,
-    apply_predator_zones, trigger_migration, trigger_earthquake,
+    apply_predator_zones,
 };
 use glam::Vec2;
 
 mod fungal;
-use fungal::{FungalNetwork, InteractionResult, BranchType};
+use fungal::{FungalNetwork, InteractionResult};
 
 #[wasm_bindgen]
 extern "C" {
@@ -20,9 +20,9 @@ extern "C" {
     fn log(s: &str);
 }
 
-// Fixed capacity - no runtime allocations
-const ARENA_CAPACITY: usize = 1024;
-const CELL_CAPACITY: usize = 32;
+// Fixed capacity - no runtime allocations (increased for evolution)
+const ARENA_CAPACITY: usize = 4096;
+const CELL_CAPACITY: usize = 64;
 const BOID_SIZE: f32 = 6.0;
 const VISION_RADIUS: f32 = 60.0;
 
@@ -92,30 +92,93 @@ fn is_paused() -> bool {
     }
 }
 
-fn draw_robot_boid(ctx: &CanvasRenderingContext2d, x: f64, y: f64, angle: f64, color: &str, size: f64) {
+fn draw_organism(
+    ctx: &CanvasRenderingContext2d, 
+    x: f64, 
+    y: f64, 
+    angle: f64, 
+    color: &str, 
+    base_size: f64,
+    role: BoidRole,
+    state: BoidState,
+    size_mult: f32,
+) {
     ctx.save();
     ctx.translate(x, y).unwrap();
     ctx.rotate(angle).unwrap();
     
+    let size = base_size * size_mult as f64;
+    
     ctx.set_stroke_style(&JsValue::from_str(color));
     ctx.set_line_width(1.5);
     
-    // Chevron / Drone Shape
-    //   \
-    //   /
-    ctx.begin_path();
-    ctx.move_to(-size, -size * 0.8);
-    ctx.line_to(size, 0.0);
-    ctx.line_to(-size, size * 0.8);
-    ctx.line_to(-size * 0.5, 0.0); // Indent at back
-    ctx.close_path();
+    match role {
+        BoidRole::Herbivore => {
+            // Round/Smooth shape (Circle/Oval)
+            ctx.begin_path();
+            ctx.ellipse(0.0, 0.0, size, size * 0.8, 0.0, 0.0, std::f64::consts::TAU).unwrap();
+            ctx.stroke();
+            
+            // Fill for herbivores
+            ctx.set_fill_style(&JsValue::from_str(&format!("{}80", color)));
+            ctx.begin_path();
+            ctx.ellipse(0.0, 0.0, size, size * 0.8, 0.0, 0.0, std::f64::consts::TAU).unwrap();
+            ctx.fill();
+        }
+        BoidRole::Carnivore => {
+            // Spiky/Angular shape (Triangle/Chevron)
+            ctx.begin_path();
+            ctx.move_to(-size, -size * 0.8);
+            ctx.line_to(size, 0.0);
+            ctx.line_to(-size, size * 0.8);
+            ctx.line_to(-size * 0.5, 0.0);
+            ctx.close_path();
+            ctx.stroke();
+            
+            // Add spikes if hunting
+            if state == BoidState::Hunt {
+                ctx.begin_path();
+                ctx.move_to(size * 0.3, -size * 0.4);
+                ctx.line_to(size * 0.6, -size * 0.6);
+                ctx.line_to(size * 0.3, -size * 0.2);
+                ctx.close_path();
+                ctx.stroke();
+                
+                ctx.begin_path();
+                ctx.move_to(size * 0.3, size * 0.4);
+                ctx.line_to(size * 0.6, size * 0.6);
+                ctx.line_to(size * 0.3, size * 0.2);
+                ctx.close_path();
+                ctx.stroke();
+            }
+        }
+        BoidRole::Scavenger => {
+            // Smaller irregular shape
+            ctx.begin_path();
+            ctx.move_to(-size * 0.6, -size * 0.5);
+            ctx.line_to(size * 0.4, -size * 0.3);
+            ctx.line_to(size * 0.6, size * 0.3);
+            ctx.line_to(-size * 0.4, size * 0.5);
+            ctx.line_to(-size * 0.6, 0.0);
+            ctx.close_path();
+            ctx.stroke();
+        }
+    }
     
-    ctx.stroke();
+    // State indicators
+    if state == BoidState::Flee {
+        // White ring for fleeing
+        ctx.set_stroke_style(&JsValue::from_str("rgba(255, 255, 255, 0.8)"));
+        ctx.set_line_width(2.0);
+        ctx.begin_path();
+        ctx.arc(0.0, 0.0, size * 1.5, 0.0, std::f64::consts::TAU).unwrap();
+        ctx.stroke();
+    }
     
-    // Engine glow
-    ctx.set_fill_style(&JsValue::from_str("rgba(255, 255, 255, 0.8)"));
+    // Energy glow
+    ctx.set_fill_style(&JsValue::from_str("rgba(255, 255, 255, 0.6)"));
     ctx.begin_path();
-    ctx.arc(-size * 0.5, 0.0, size * 0.3, 0.0, std::f64::consts::TAU).unwrap();
+    ctx.arc(-size * 0.3, 0.0, size * 0.2, 0.0, std::f64::consts::TAU).unwrap();
     ctx.fill();
 
     ctx.restore();
@@ -318,7 +381,6 @@ fn main() {
             config, 
             width: world_w, 
             height: world_h,
-            event_cooldown,
             last_season,
             ..
         } = &mut *s;
@@ -353,16 +415,19 @@ fn main() {
             
             for idx in arena.iter_alive() {
                 let pos = arena.positions[idx];
+                let role = arena.roles[idx];
                 
-                // Seed (Spore)
-                use rand::Rng;
-                let mut rng = rand::thread_rng();
-                if rng.gen::<f32>() < 0.005 {
-                    fungal_network.seed_at(pos);
+                // Seed (Spore) - only herbivores spread spores
+                if role == BoidRole::Herbivore {
+                    use rand::Rng;
+                    let mut rng = rand::thread_rng();
+                    if rng.gen::<f32>() < 0.005 {
+                        fungal_network.seed_at(pos);
+                    }
                 }
                 
-                // Check for interaction
-                if frame_count % 2 == 0 {
+                // Check for interaction - only Herbivores and Scavengers eat fungus
+                if (role == BoidRole::Herbivore || role == BoidRole::Scavenger) && frame_count % 2 == 0 {
                     let result = fungal_network.interact(pos, BOID_SIZE * 3.0);
                     if result != InteractionResult::None {
                         interactions.push((idx, result));
@@ -463,15 +528,28 @@ fn main() {
             ctx.stroke();
         }
 
-        // Draw Robots (Boids)
+        // Draw Organisms (Boids)
         for idx in s.arena.iter_alive() {
             let pos = s.arena.positions[idx];
             let vel = s.arena.velocities[idx];
             let angle = vel.y.atan2(vel.x);
             let (hue, sat, light) = get_boid_color(&s.arena, idx);
+            let role = s.arena.roles[idx];
+            let state = s.arena.states[idx];
+            let size_mult = s.arena.genes[idx].size;
             
             let color = format!("hsl({}, {}%, {}%)", hue, sat, light);
-            draw_robot_boid(&ctx, pos.x as f64, pos.y as f64, angle as f64, &color, BOID_SIZE as f64);
+            draw_organism(
+                &ctx, 
+                pos.x as f64, 
+                pos.y as f64, 
+                angle as f64, 
+                &color, 
+                BOID_SIZE as f64,
+                role,
+                state,
+                size_mult,
+            );
         }
         
         // Trails
