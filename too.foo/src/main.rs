@@ -637,7 +637,8 @@ fn main() {
             if rng.gen::<f32>() < 0.05 {
                 let pos = arena.positions[idx];
                 let margin = 50.0;
-                if pos.x < margin || pos.x > world_w - margin || pos.y < margin || pos.y > world_h - margin {
+                // Dereference world_w and world_h since they are mutable references in this context
+                if pos.x < margin || pos.x > *world_w - margin || pos.y < margin || pos.y > *world_h - margin {
                     // Teleport to center, velocity/direction preserved
                     // Energy drained significantly (dying process initiated)
                     if let Some(chakravyu) = chakravyu_zone {
