@@ -93,46 +93,66 @@ fn is_paused() -> bool {
 
 // --- New Rendering Functions ---
 
-fn draw_fractal_food(ctx: &CanvasRenderingContext2d, x: f64, y: f64, radius: f64, hue: u16, fullness: f32, time: f64) {
+fn draw_fungal_colony(ctx: &CanvasRenderingContext2d, x: f64, y: f64, radius: f64, hue: u16, fullness: f32, time: f64) {
     ctx.save();
     ctx.translate(x, y).unwrap();
     
-    // Pulse scale
-    let scale = 1.0 + 0.1 * (time * 2.0).sin();
-    ctx.scale(scale, scale).unwrap();
-    
-    let branches = 6;
-    let color = format!("hsla({}, 80%, 60%, {})", hue, 0.3 + fullness * 0.7);
-    ctx.set_stroke_style(&JsValue::from_str(&color));
-    ctx.set_line_width(1.5);
+    // Breathing effect
+    let breath = 1.0 + 0.05 * (time * 1.5).sin();
+    ctx.scale(breath, breath).unwrap();
 
-    for i in 0..branches {
-        ctx.rotate(std::f64::consts::TAU / branches as f64).unwrap();
+    // Pseudo-random seed based on position for stability
+    let seed = (x * y).abs() as u32; 
+    
+    // Draw Hyphae (threads)
+    // More strands when full
+    let strands = 12 + (fullness * 10.0) as i32;
+    ctx.set_stroke_style(&JsValue::from_str(&format!("hsla({}, 70%, 60%, 0.4)", hue)));
+    ctx.set_line_width(1.0);
+    
+    for i in 0..strands {
+        // Use sin/cos with different frequencies to create organic curves
+        // Fixed offsets based on 'i' and 'seed' make it look random but stable
+        let angle = (i as f64 / strands as f64) * std::f64::consts::TAU + (seed as f64 % 10.0);
+        // Variation in length
+        let len = radius * (fullness as f64) * (0.8 + 0.4 * ((i as f64 * 1.32).sin())); 
         
-        // Draw main branch
         ctx.begin_path();
         ctx.move_to(0.0, 0.0);
-        let len = radius * fullness;
         
-        // Koch-like curve simplified
-        ctx.line_to(len * 0.3, 0.0);
-        ctx.line_to(len * 0.5, len * 0.2); // Jag
-        ctx.line_to(len * 0.7, -len * 0.2); // Jag
-        ctx.line_to(len, 0.0);
+        // Control point for quadratic curve to make it bendy
+        let cp_len = len * 0.5;
+        let cp_angle = angle + 0.5 * ((time * 0.2 + i as f64).sin());
+        
+        let end_x = angle.cos() * len;
+        let end_y = angle.sin() * len;
+        
+        let cp_x = cp_angle.cos() * cp_len;
+        let cp_y = cp_angle.sin() * cp_len;
+        
+        ctx.quadratic_curve_to(cp_x, cp_y, end_x, end_y);
         ctx.stroke();
         
-        // Glow dot at tip
+        // Spore at the tip
         ctx.begin_path();
-        ctx.arc(len, 0.0, 2.0, 0.0, std::f64::consts::TAU).unwrap();
-        ctx.set_fill_style(&JsValue::from_str("white"));
+        ctx.arc(end_x, end_y, (2.0 + 2.0 * fullness).into(), 0.0, std::f64::consts::TAU).unwrap();
+        ctx.set_fill_style(&JsValue::from_str(&format!("hsla({}, 90%, 80%, 0.8)", hue)));
         ctx.fill();
     }
     
-    // Core
-    ctx.begin_path();
-    ctx.arc(0.0, 0.0, radius * 0.2, 0.0, std::f64::consts::TAU).unwrap();
-    ctx.set_fill_style(&JsValue::from_str(&format!("hsla({}, 90%, 80%, 0.8)", hue)));
-    ctx.fill();
+    // Central mass
+    let core_radius = radius * 0.3 * (fullness as f64);
+    if core_radius > 0.0 {
+        // Glow gradient
+        let gradient = ctx.create_radial_gradient(0.0, 0.0, 0.0, 0.0, 0.0, core_radius * 2.0).unwrap();
+        gradient.add_color_stop(0.0, &format!("hsla({}, 90%, 60%, 0.8)", hue)).unwrap();
+        gradient.add_color_stop(1.0, &format!("hsla({}, 90%, 60%, 0.0)", hue)).unwrap();
+        
+        ctx.set_fill_style(&gradient);
+        ctx.begin_path();
+        ctx.arc(0.0, 0.0, core_radius * 2.0, 0.0, std::f64::consts::TAU).unwrap();
+        ctx.fill();
+    }
 
     ctx.restore();
 }
@@ -505,7 +525,7 @@ fn main() {
         ctx.set_fill_style(&JsValue::from_str("#0a0a12"));
         ctx.fill_rect(0.0, 0.0, canvas_w as f64, canvas_h as f64);
         
-        // Draw food sources (Fractals)
+        // Draw food sources (Fungal Colonies)
         let season_hue = match s.season.season_name() {
             "SPRING" => 140,  // Fresh Green
             "SUMMER" => 60,   // Yellow
@@ -516,7 +536,7 @@ fn main() {
         
         for food in &s.food_sources {
             if food.energy > 0.0 {
-                draw_fractal_food(&ctx, food.position.x as f64, food.position.y as f64, 
+                draw_fungal_colony(&ctx, food.position.x as f64, food.position.y as f64, 
                     food.radius as f64, season_hue, food.fullness(), time_sec);
             }
         }
