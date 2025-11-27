@@ -345,22 +345,26 @@ impl FungalNetwork {
         for i in 0..limit {
             if !self.nodes[i].active { continue; }
             
-            let health = self.nodes[i].health;
-            let alpha = 0.2 + health * 0.6;
-            let width = (0.5 + health * 2.5) as f64;
-            
-            // Color based on type
-            let color = match self.nodes[i].branch_type {
-                BranchType::EnergyHigh => format!("hsla(50, 90%, 60%, {})", alpha), // Gold
-                BranchType::EnergyMed => format!("hsla(120, 70%, 50%, {})", alpha), // Green
-                BranchType::EnergyLow => format!("hsla(200, 70%, 50%, {})", alpha), // Blue
-                BranchType::Poison => format!("hsla(280, 80%, 40%, {})", alpha),    // Purple
-                BranchType::Death => format!("hsla(0, 90%, 40%, {})", alpha),       // Red
-            };
-
+            // Skip drawing line if parent is invalid (recycled/dead)
             if let Some(parent_idx) = self.nodes[i].parent_idx {
-                let parent = self.nodes[parent_idx as usize];
-                if parent.active {
+                let parent = &self.nodes[parent_idx as usize];
+                
+                // FIX: Only draw connection if parent is active AND actually older (prevent linking to recycled slot that is now a new unrelated node)
+                // Simple heuristic: check distance. If "parent" jumped across screen, don't draw line.
+                if parent.active && parent.pos.distance_squared(self.nodes[i].pos) < (GROWTH_DISTANCE * 2.0).powi(2) {
+                    let health = self.nodes[i].health;
+                    let alpha = 0.2 + health * 0.6;
+                    let width = (0.5 + health * 2.5) as f64;
+                    
+                    // Color based on type
+                    let color = match self.nodes[i].branch_type {
+                        BranchType::EnergyHigh => format!("hsla(50, 90%, 60%, {})", alpha), // Gold
+                        BranchType::EnergyMed => format!("hsla(120, 70%, 50%, {})", alpha), // Green
+                        BranchType::EnergyLow => format!("hsla(200, 70%, 50%, {})", alpha), // Blue
+                        BranchType::Poison => format!("hsla(280, 80%, 40%, {})", alpha),    // Purple
+                        BranchType::Death => format!("hsla(0, 90%, 40%, {})", alpha),       // Red
+                    };
+
                     ctx.set_stroke_style(&JsValue::from_str(&color));
                     ctx.set_line_width(width);
                     
@@ -371,6 +375,15 @@ impl FungalNetwork {
                 }
             } else {
                 // Root
+                let health = self.nodes[i].health;
+                let color = match self.nodes[i].branch_type {
+                    BranchType::EnergyHigh => format!("hsla(50, 90%, 60%, {})", 0.3 * health),
+                    BranchType::EnergyMed => format!("hsla(120, 70%, 50%, {})", 0.3 * health),
+                    BranchType::EnergyLow => format!("hsla(200, 70%, 50%, {})", 0.3 * health),
+                    BranchType::Poison => format!("hsla(280, 80%, 40%, {})", 0.3 * health),
+                    BranchType::Death => format!("hsla(0, 90%, 40%, {})", 0.3 * health),
+                };
+                
                 ctx.set_fill_style(&JsValue::from_str(&color));
                 ctx.begin_path();
                 // Clamp radius to non-negative
