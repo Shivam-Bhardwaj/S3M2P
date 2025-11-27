@@ -546,6 +546,10 @@ fn main() {
         // Get chakravyu zone info
         let chakravyu_zone = *chakravyu;
         
+        // Collect side effects to apply later
+        let mut energy_adjustments: Vec<(usize, f32)> = Vec::new();
+        let mut moksh_candidates: Vec<usize> = Vec::new();
+
         for idx in arena.iter_alive() {
             let pos = arena.positions[idx];
             let role = arena.roles[idx];
@@ -612,7 +616,7 @@ fn main() {
                     // But we can simulate "fading" by reducing size or energy (which affects color lightness)
                     // Let's reduce energy slowly but add a "Moksh" popup when they disappear
                     
-                    arena.energy[idx] -= 0.2; // Slow fade
+                    energy_adjustments.push((idx, -0.2)); // Slow fade
                     
                     if arena.energy[idx] <= 1.0 {
                          popups.push(PopUp {
@@ -622,7 +626,7 @@ fn main() {
                             color: "rgba(100, 255, 200, {})".to_string(),
                         });
                         // Ensure they die peacefully
-                        arena.energy[idx] = -100.0; 
+                        moksh_candidates.push(idx);
                     }
                 }
             }
@@ -651,6 +655,16 @@ fn main() {
         // Apply push forces
         for (idx, push) in push_forces {
             arena.velocities[idx] += push;
+        }
+        
+        // Apply energy adjustments from side effects (e.g. Moksh fade)
+        for (idx, amount) in energy_adjustments {
+            arena.energy[idx] += amount;
+        }
+        
+        // Apply Moksh deaths
+        for idx in moksh_candidates {
+            arena.energy[idx] = -100.0;
         }
         
         // Apply Chakravyu energy drain - rapid death inside the circle
