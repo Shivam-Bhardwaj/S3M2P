@@ -38,13 +38,13 @@
     
     .glitch-1 {
       animation: glitch-anim 2.5s infinite linear alternate-reverse;
-      fill: #ff00ea; /* Cyan/Magenta hint */
+      fill: #FF4500; /* Orange Red - Warm glitch */
       opacity: 0.5;
       mix-blend-mode: screen;
     }
     .glitch-2 {
       animation: glitch-anim 3s infinite linear alternate;
-      fill: #00ffff;
+      fill: #FFD700; /* Gold - Warm glitch */
       opacity: 0.5;
       mix-blend-mode: screen;
     }

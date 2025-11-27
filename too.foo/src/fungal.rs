@@ -8,10 +8,10 @@ const GROWTH_DISTANCE: f32 = 20.0;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum BranchType {
     EnergyHigh, // Gold - High power
-    EnergyMed,  // Cyan - Standard circuit
-    EnergyLow,  // Blue - Low power
-    Poison,     // Purple - Corrupted sector
-    Death,      // Red - Firewall/Trap
+    EnergyMed,  // Green - Standard organic
+    EnergyLow,  // Brown - Decay/Root
+    Poison,     // Purple - Corrupted
+    Death,      // Dark Red - Thorns
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -31,6 +31,8 @@ pub struct FungalNode {
     pub active: bool,
     pub angle: f32, // Direction of growth
     pub branch_type: BranchType,
+    pub curvature: f32, // New: Organic curve offset
+    pub variant: u8,    // New: Shape variant (0: Smooth, 1: Jagged, 2: Leafy)
 }
 
 impl Default for FungalNode {
@@ -43,6 +45,8 @@ impl Default for FungalNode {
             active: false,
             angle: 0.0,
             branch_type: BranchType::EnergyMed,
+            curvature: 0.0,
+            variant: 0,
         }
     }
 }
@@ -139,12 +143,11 @@ impl FungalNetwork {
         let mut rng = rand::thread_rng();
         let x = rng.gen_range(0.0..self.width);
         let y = rng.gen_range(0.0..self.height);
-        // Cardinal directions for circuit look
-        let angle = (rng.gen_range(0..4) as f32 * 90.0).to_radians();
+        // Organic: Any angle, not just cardinal
+        let angle = rng.gen_range(0.0..std::f32::consts::TAU);
         
         let pos = Vec2::new(x, y);
         if !self.is_space_occupied(pos, GROWTH_DISTANCE * 0.8) {
-            // Roots are usually healthy
             self.add_node(pos, None, angle, BranchType::EnergyMed);
         }
     }
@@ -152,7 +155,7 @@ impl FungalNetwork {
     pub fn seed_at(&mut self, pos: Vec2) {
         use rand::Rng;
         let mut rng = rand::thread_rng();
-        let angle = (rng.gen_range(0..4) as f32 * 90.0).to_radians();
+        let angle = rng.gen_range(0.0..std::f32::consts::TAU);
         
         if !self.is_space_occupied(pos, GROWTH_DISTANCE * 0.5) {
             self.add_node(pos, None, angle, BranchType::EnergyMed);
@@ -228,6 +231,12 @@ impl FungalNetwork {
             }
         }
 
+        // Random properties for organic diversity
+        use rand::Rng;
+        let mut rng = rand::thread_rng();
+        let curvature = (rng.gen::<f32>() - 0.5) * 20.0; // Bezier control point offset
+        let variant = rng.gen_range(0..3);
+
         self.nodes[idx] = FungalNode {
             pos,
             parent_idx,
@@ -236,6 +245,8 @@ impl FungalNetwork {
             active: true,
             angle,
             branch_type,
+            curvature,
+            variant,
         };
         self.add_to_grid(idx as u16, pos);
     }
@@ -281,24 +292,19 @@ impl FungalNetwork {
                     let parent_type = self.nodes[i].branch_type;
                     
                     for _ in 0..branches {
-                        // Circuit logic: 90 degree turns only
-                        let turn = rng.gen_range(-1..=1) as f32; // -1, 0, 1
-                        let new_angle = current_angle + (turn * 90.0).to_radians();
+                        // Organic logic: Slight deviations + occasional splits, no grid lock
+                        // Deviation -45 to +45 degrees
+                        let deviation = (rng.gen::<f32>() - 0.5) * 1.5; 
+                        let new_angle = current_angle + deviation;
                         
                         let dir = Vec2::new(new_angle.cos(), new_angle.sin());
                         
-                        // Quantize direction to align to grid perfectly (avoid floating point drift)
-                        let q_dir = if dir.x.abs() > dir.y.abs() {
-                            Vec2::new(dir.x.signum(), 0.0)
-                        } else {
-                            Vec2::new(0.0, dir.y.signum())
-                        };
-                        
-                        let new_pos = self.nodes[i].pos + q_dir * GROWTH_DISTANCE;
+                        // No quantization for organic look
+                        let new_pos = self.nodes[i].pos + dir * GROWTH_DISTANCE;
                         
                         // Check bounds and exclusion zones
                         if new_pos.x >= 0.0 && new_pos.x <= self.width && new_pos.y >= 0.0 && new_pos.y <= self.height {
-                            if !self.is_space_occupied(new_pos, GROWTH_DISTANCE * 0.8) 
+                            if !self.is_space_occupied(new_pos, GROWTH_DISTANCE * 0.6) 
                                && !self.is_in_exclusion(new_pos, exclusion_zones) {
                                 let new_type = self.determine_branch_type(parent_type);
                                 new_nodes.push((new_pos, i as u16, new_angle, new_type));
@@ -423,8 +429,9 @@ impl FungalNetwork {
     }
 
     pub fn draw(&self, ctx: &CanvasRenderingContext2d) {
-        // Draw circuits
-        ctx.set_line_cap("square");
+        // Draw organic branches
+        ctx.set_line_cap("round"); // Round caps for organic look
+        ctx.set_line_join("round");
         
         let limit = if self.count < MAX_NODES { self.count } else { MAX_NODES };
 
@@ -434,51 +441,78 @@ impl FungalNetwork {
             if let Some(parent_idx) = self.nodes[i].parent_idx {
                 let parent = &self.nodes[parent_idx as usize];
                 
-                if parent.active && parent.pos.distance_squared(self.nodes[i].pos) < (GROWTH_DISTANCE * 2.0).powi(2) {
+                if parent.active && parent.pos.distance_squared(self.nodes[i].pos) < (GROWTH_DISTANCE * 2.5).powi(2) {
                     let health = self.nodes[i].health;
-                    let alpha = 0.2 + health * 0.6;
-                    let width = (0.5 + health * 1.5) as f64;
+                    let alpha = 0.3 + health * 0.7;
+                    // Vary width based on variant and health (tapering)
+                    let width = (1.0 + health * 2.0) * if self.nodes[i].variant == 2 { 1.5 } else { 1.0 };
                     
+                    // Organic Colors (Earth tones)
                     let color = match self.nodes[i].branch_type {
-                        BranchType::EnergyHigh => format!("rgba(255, 215, 0, {})", alpha), // Gold
-                        BranchType::EnergyMed => format!("rgba(0, 255, 255, {})", alpha), // Cyan
-                        BranchType::EnergyLow => format!("rgba(0, 100, 255, {})", alpha), // Blue
-                        BranchType::Poison => format!("rgba(255, 0, 255, {})", alpha),    // Magenta
-                        BranchType::Death => format!("rgba(255, 50, 50, {})", alpha),     // Red
+                        BranchType::EnergyHigh => format!("rgba(218, 165, 32, {})", alpha), // Goldenrod
+                        BranchType::EnergyMed => format!("rgba(85, 107, 47, {})", alpha),   // Dark Olive Green
+                        BranchType::EnergyLow => format!("rgba(139, 69, 19, {})", alpha),   // Saddle Brown
+                        BranchType::Poison => format!("rgba(75, 0, 130, {})", alpha),       // Indigo
+                        BranchType::Death => format!("rgba(128, 0, 0, {})", alpha),         // Maroon
                     };
 
                     ctx.set_stroke_style(&JsValue::from_str(&color));
-                    ctx.set_line_width(width);
+                    ctx.set_line_width(width as f64);
                     
                     ctx.begin_path();
                     ctx.move_to(parent.pos.x as f64, parent.pos.y as f64);
-                    ctx.line_to(self.nodes[i].pos.x as f64, self.nodes[i].pos.y as f64);
+                    
+                    // Quadratic curve for organic feel
+                    // Control point offset by curvature perpendicular to direction
+                    let mid = (parent.pos + self.nodes[i].pos) * 0.5;
+                    let dir = self.nodes[i].pos - parent.pos;
+                    let perp = Vec2::new(-dir.y, dir.x).normalize_or_zero();
+                    let control = mid + perp * self.nodes[i].curvature;
+                    
+                    ctx.quadratic_curve_to(
+                        control.x as f64, control.y as f64,
+                        self.nodes[i].pos.x as f64, self.nodes[i].pos.y as f64
+                    );
                     ctx.stroke();
                     
-                    // Circuit Nodes (Junctions)
-                    if health > 0.6 {
-                        ctx.set_fill_style(&JsValue::from_str(&color));
-                        ctx.begin_path();
-                        ctx.rect(
-                            self.nodes[i].pos.x as f64 - 1.5, 
-                            self.nodes[i].pos.y as f64 - 1.5, 
-                            3.0, 3.0
-                        );
-                        ctx.fill();
+                    // Thorns / Leaves based on variant
+                    if health > 0.5 {
+                        if self.nodes[i].branch_type == BranchType::Death {
+                            // Thorns
+                            ctx.set_fill_style(&JsValue::from_str(&color));
+                            ctx.begin_path();
+                            ctx.move_to(mid.x as f64, mid.y as f64);
+                            let thorn_tip = mid + perp * 5.0;
+                            ctx.line_to(thorn_tip.x as f64, thorn_tip.y as f64);
+                            ctx.line_to((mid.x + dir.x * 0.1) as f64, (mid.y + dir.y * 0.1) as f64);
+                            ctx.fill();
+                        } else if self.nodes[i].variant == 2 {
+                            // Leaves (Simple oval)
+                            ctx.set_fill_style(&JsValue::from_str(&format!("rgba(34, 139, 34, {})", alpha * 0.8)));
+                            ctx.begin_path();
+                            ctx.ellipse(
+                                self.nodes[i].pos.x as f64, 
+                                self.nodes[i].pos.y as f64, 
+                                3.0, 6.0, 
+                                self.nodes[i].angle as f64, 
+                                0.0, 
+                                std::f64::consts::TAU
+                            ).unwrap_or(());
+                            ctx.fill();
+                        }
                     }
                 }
             } else {
-                // Root Node (CPU/Power Source)
-                let health = self.nodes[i].health;
-                let color = format!("rgba(0, 255, 255, {})", 0.5 * health);
+                // Root Node (Seed)
+                let color = "rgba(107, 142, 35, 0.8)"; // Olive Drab
                 
-                ctx.set_fill_style(&JsValue::from_str(&color));
+                ctx.set_fill_style(&JsValue::from_str(color));
                 ctx.begin_path();
-                ctx.rect(
-                    self.nodes[i].pos.x as f64 - 3.0, 
-                    self.nodes[i].pos.y as f64 - 3.0, 
-                    6.0, 6.0
-                );
+                ctx.arc(
+                    self.nodes[i].pos.x as f64, 
+                    self.nodes[i].pos.y as f64, 
+                    4.0, 0.0, std::f64::consts::TAU
+                ).unwrap();
                 ctx.fill();
             }
         }

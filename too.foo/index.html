@@ -359,8 +359,11 @@
             <div id="ui-layer">
                 <!-- Constellation Layout -->
                 <div id="constellation">
-                    <!-- Central Fluctuating Text - Reverted default -->
-                    <div id="center-text">Sb</div>
+                    <!-- Central Glitch Core -->
+                    <div id="center-core">
+                        <img id="center-logo" src="assets/islands/x.svg?v=7" alt="X" style="opacity: 1;">
+                        <div id="center-text-container" style="opacity: 0;">Antimony</div>
+                    </div>
 
                     <!-- 8 Icons Circle -->
                     <!-- 1. Helios (Top) -->
@@ -456,24 +459,32 @@
         </div>
     </div>
 
+    <!-- JS Helper for Rust -->
     <script>
-        // Text Fluctuation - Reverted to original behavior
-        const textElement = document.getElementById('center-text');
-        const words = ['Sb', 'Antimony', 'शिवम् भारद्वाज'];
-        let index = 0;
+        const textEl = document.getElementById('center-text-container');
+        const logoEl = document.getElementById('center-logo');
         
-        setInterval(() => {
-            index = (index + 1) % words.length;
-            textElement.style.opacity = 0.2;
-            textElement.style.filter = 'blur(4px)';
-            
-            setTimeout(() => {
-                textElement.innerText = words[index];
-                textElement.style.opacity = 0.9;
-                textElement.style.filter = 'blur(0px)';
-            }, 200);
-        }, 3000);
+        window.updateCenterText = function(text, opacity, logoOpacity, useGlitch) {
+            if (textEl) {
+                textEl.innerText = text;
+                textEl.style.opacity = opacity;
+                if (useGlitch) {
+                    // Apply random transform jitter
+                    const jitter = 2.0;
+                    textEl.style.transform = `translate(-50%, -50%) translate(${(Math.random()-0.5)*jitter}px, ${(Math.random()-0.5)*jitter}px)`;
+                    textEl.style.filter = 'blur(0.5px)';
+                } else {
+                    textEl.style.transform = 'translate(-50%, -50%)';
+                    textEl.style.filter = 'none';
+                }
+            }
+            if (logoEl) {
+                logoEl.style.opacity = logoOpacity;
+            }
+        };
+    </script>
 
+    <script>
         // Overlay Logic
         const overlay = document.getElementById('whitepaper-overlay');
         const link = document.getElementById('whitepaper-link');

@@ -23,6 +23,13 @@ extern "C" {
     fn log(s: &str);
 }
 
+// Add binding to update DOM from Rust for Center Animation
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_name = updateCenterText)]
+    fn update_center_text(text: &str, opacity: f32, logo_opacity: f32, use_glitch: bool);
+}
+
 // Fixed capacity - no runtime allocations (increased for evolution)
 const ARENA_CAPACITY: usize = 4096;
 const CELL_CAPACITY: usize = 64;
@@ -367,25 +374,8 @@ fn main() {
     let mut rng = rand::thread_rng();
     use rand::Rng;
     
-        for _ in 0..150 {
-        // Try to spawn outside exclusion zones
-        let mut attempts = 0;
-        loop {
-            let pos = Vec2::new(
-                rng.gen_range(0.0..width),
-                rng.gen_range(0.0..height),
-            );
-            if !is_in_exclusion_zone(pos, &exclusion_zones) || attempts > 100 {
-                let vel = Vec2::new(
-                    rng.gen_range(-1.0..1.0),
-                    rng.gen_range(-1.0..1.0),
-                );
-                arena.spawn(pos, vel, Genome::random());
-                break;
-            }
-            attempts += 1;
-        }
-    }
+    // Removed initial population loop - The Circle is the Source
+    // Start empty and let the fountain fill the world.
 
     let grid = SpatialGrid::new(width, height, VISION_RADIUS);
     let obstacles = scan_dom_obstacles(&document);
@@ -406,7 +396,7 @@ fn main() {
 
     let mut config = SimConfig::default();
     config.reproduction_threshold = 140.0;
-    config.base_mortality = 0.00005;
+    config.base_mortality = 0.00001; // Reduced mortality to allow population growth
 
     let state = Rc::new(RefCell::new(World {
         arena,
@@ -444,6 +434,9 @@ fn main() {
     let mut last_time = performance.now();
     let mut fps_accumulator = 0.0;
     let mut fps_frame_count = 0;
+    let mut center_anim_timer = 0.0;
+    let mut center_state = 0; // 0: Logo, 1: Antimony, 2: Sb, 3: Hindi
+    
     let mut stats = SimulationStats {
         max_speed_record: 0.0,
         max_generation: 0,
@@ -461,12 +454,70 @@ fn main() {
         fps_accumulator += delta;
         fps_frame_count += 1;
         
+        // Update Center Animation (Rust Controlled)
+        center_anim_timer += 0.016; // Approx dt
+        
+        let (text, text_op, logo_op, glitch) = match center_state {
+            0 => { // LOGO (3s)
+                if center_anim_timer > 3.0 { center_state = 1; center_anim_timer = 0.0; }
+                ("", 0.0, 1.0, false)
+            },
+            1 => { // ANTIMONY (2s)
+                if center_anim_timer > 2.0 { center_state = 2; center_anim_timer = 0.0; }
+                // Basic corruption simulation
+                ("ANTIMONY", 0.8 + (center_anim_timer as f32 * 10.0).sin() * 0.2, 0.0, true)
+            },
+            2 => { // Sb (2s)
+                if center_anim_timer > 2.0 { center_state = 3; center_anim_timer = 0.0; }
+                ("Sb", 1.0, 0.0, false)
+            },
+            3 => { // Hindi (3s)
+                if center_anim_timer > 3.0 { center_state = 0; center_anim_timer = 0.0; }
+                ("शिवम् भारद्वाज", 1.0, 0.0, false)
+            },
+            _ => ("", 0.0, 1.0, false),
+        };
+        
+        // Call JS updater
+        // We need to define `update_center_text` in extern block.
+        // And we need to handle the `rng` for corruption if we want it in Rust.
+        // For now, let's stick to the simple state machine above.
+        // But wait, I can't use `rng` easily here without initializing one.
+        // Let's just pass the base text and let the JS helper do the jitter/blur.
+        // I added `useGlitch` param.
+        
+        // Safe to call JS? Yes.
+        // Note: update_center_text is unsafe.
+        unsafe {
+            update_center_text(text, text_op, logo_op, glitch);
+        }
+
         // Rescan DOM obstacles and exclusion zones occasionally
         if frame_count % 60 == 0 {
             s.obstacles = scan_dom_obstacles(&document_clone);
             let (zones, chakravyu) = scan_exclusion_zones(&document_clone);
             s.exclusion_zones = zones;
             s.chakravyu = chakravyu;
+        }
+        
+        // === FOUNTAIN OF LIFE ===
+        // Spawn new boids from the circle edge periodically (10 per sec approx)
+        if frame_count % 6 == 0 {
+            if let Some(chakravyu) = s.chakravyu {
+                use rand::Rng;
+                let mut rng = rand::thread_rng();
+                
+                // Spawn just outside the kill zone
+                let angle = rng.gen_range(0.0..std::f32::consts::TAU);
+                let spawn_radius = chakravyu.radius * 1.1;
+                let spawn_pos = chakravyu.center + Vec2::new(angle.cos(), angle.sin()) * spawn_radius;
+                
+                // Outward velocity
+                let spawn_vel = (spawn_pos - chakravyu.center).normalize() * 2.0;
+                
+                // Role is handled by the homogenization logic below
+                s.arena.spawn(spawn_pos, spawn_vel, Genome::random());
+            }
         }
         
         // Update dashboard every 30 frames
@@ -600,10 +651,30 @@ fn main() {
         let mut new_miasma: Vec<Miasma> = Vec::new();
         let mut infertility_list: Vec<usize> = Vec::new();
         let mut life_support: Vec<(usize, f32, f32)> = Vec::new(); // (idx, new_energy, new_age)
+        let mut role_enforcement: Vec<(usize, BoidRole)> = Vec::new();
 
         for idx in arena.iter_alive() {
             let pos = arena.positions[idx];
             let role = arena.roles[idx];
+            
+            // Homogenization: Enforce Herbivore dominance on newborns
+            if arena.age[idx] < 1.0 {
+                use rand::Rng;
+                let mut rng = rand::thread_rng();
+                // 95% Herbivore, 4% Scavenger, 1% Carnivore
+                let roll = rng.gen::<f32>();
+                let new_role = if roll < 0.95 {
+                    BoidRole::Herbivore
+                } else if roll < 0.99 {
+                    BoidRole::Scavenger
+                } else {
+                    BoidRole::Carnivore
+                };
+                
+                if role != new_role {
+                    role_enforcement.push((idx, new_role));
+                }
+            }
             
             // Seed (Spore) - only herbivores spread spores, not in exclusion zones
             if role == BoidRole::Herbivore && !is_in_exclusion_zone(pos, exclusion_zones) {
