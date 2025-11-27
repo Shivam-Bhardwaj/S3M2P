@@ -4,6 +4,18 @@ use rand::Rng;
 pub mod heliosphere;
 pub use heliosphere::*;
 
+pub mod coordinates;
+pub use coordinates::*;
+
+pub mod solar_wind;
+pub use solar_wind::*;
+
+pub mod heliosphere_model;
+pub use heliosphere_model::*;
+
+pub mod spatial;
+pub use spatial::*;
+
 // ============================================================================
 // CORE TYPES
 // ============================================================================
@@ -830,14 +842,14 @@ mod tests {
     #[test]
     fn test_spatial_grid() {
         let mut arena: BoidArena<100> = BoidArena::new();
-        arena.spawn(Vec2::new(10.0, 10.0), Vec2::ZERO, Genome::random());
-        arena.spawn(Vec2::new(15.0, 10.0), Vec2::ZERO, Genome::random());
-        arena.spawn(Vec2::new(100.0, 100.0), Vec2::ZERO, Genome::random());
+        let h1 = arena.spawn(Vec2::new(10.0, 10.0), Vec2::ZERO, Genome::random());
+        let _h2 = arena.spawn(Vec2::new(15.0, 10.0), Vec2::ZERO, Genome::random());
+        let _h3 = arena.spawn(Vec2::new(100.0, 100.0), Vec2::ZERO, Genome::random());
         
         let mut grid: SpatialGrid<16> = SpatialGrid::new(200.0, 200.0, 50.0);
         grid.build(&arena);
         
-        let count = grid.count_neighbors(Vec2::new(10.0, 10.0), 20.0, &arena, 0);
+        let count = grid.count_neighbors(Vec2::new(10.0, 10.0), 20.0, &arena, h1.index as usize);
         assert_eq!(count, 1); // Should find boid at (15, 10) but not self
     }
 }
