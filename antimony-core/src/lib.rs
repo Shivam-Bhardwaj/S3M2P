@@ -199,49 +199,49 @@ impl BoidHandle {
 /// All arrays are the same length (CAPACITY)
 pub struct BoidArena<const CAPACITY: usize> {
     // SoA layout - each field in its own array for cache locality
-    pub positions: [Vec2; CAPACITY],
-    pub velocities: [Vec2; CAPACITY],
-    pub genes: [Genome; CAPACITY],
-    pub roles: [BoidRole; CAPACITY],
-    pub states: [BoidState; CAPACITY],
-    pub energy: [f32; CAPACITY],
-    pub age: [f32; CAPACITY],
-    pub generation: [u16; CAPACITY],
+    pub positions: Vec<Vec2>,
+    pub velocities: Vec<Vec2>,
+    pub genes: Vec<Genome>,
+    pub roles: Vec<BoidRole>,
+    pub states: Vec<BoidState>,
+    pub energy: Vec<f32>,
+    pub age: Vec<f32>,
+    pub generation: Vec<u16>,
     
     // Metadata
-    pub alive: [bool; CAPACITY],
-    gen: [u16; CAPACITY],  // Generation counter for handles
+    pub alive: Vec<bool>,
+    gen: Vec<u16>,  // Generation counter for handles
     
     // Free list (indices of dead slots)
-    free_list: [u16; CAPACITY],
+    free_list: Vec<u16>,
     free_count: usize,
     
     // Active count for fast iteration
     pub alive_count: usize,
     
     // Pre-allocated scratch buffers (avoid per-frame allocations)
-    pub scratch_accel: [Vec2; CAPACITY],
-    pub scratch_density: [u8; CAPACITY],
+    pub scratch_accel: Vec<Vec2>,
+    pub scratch_density: Vec<u8>,
 }
 
 impl<const CAPACITY: usize> BoidArena<CAPACITY> {
     pub fn new() -> Self {
         let mut arena = Self {
-            positions: [Vec2::ZERO; CAPACITY],
-            velocities: [Vec2::ZERO; CAPACITY],
-            genes: [Genome::default(); CAPACITY],
-            roles: [BoidRole::Herbivore; CAPACITY],
-            states: [BoidState::Wander; CAPACITY],
-            energy: [0.0; CAPACITY],
-            age: [0.0; CAPACITY],
-            generation: [0; CAPACITY],
-            alive: [false; CAPACITY],
-            gen: [0; CAPACITY],
-            free_list: [0; CAPACITY],
+            positions: vec![Vec2::ZERO; CAPACITY],
+            velocities: vec![Vec2::ZERO; CAPACITY],
+            genes: vec![Genome::default(); CAPACITY],
+            roles: vec![BoidRole::Herbivore; CAPACITY],
+            states: vec![BoidState::Wander; CAPACITY],
+            energy: vec![0.0; CAPACITY],
+            age: vec![0.0; CAPACITY],
+            generation: vec![0; CAPACITY],
+            alive: vec![false; CAPACITY],
+            gen: vec![0; CAPACITY],
+            free_list: vec![0; CAPACITY],
             free_count: CAPACITY,
             alive_count: 0,
-            scratch_accel: [Vec2::ZERO; CAPACITY],
-            scratch_density: [0; CAPACITY],
+            scratch_accel: vec![Vec2::ZERO; CAPACITY],
+            scratch_density: vec![0; CAPACITY],
         };
         
         // Initialize free list (all slots available)
