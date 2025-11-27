@@ -635,12 +635,17 @@ fn main() {
         let mut teleport_adjustments: Vec<(usize, Vec2, f32)> = Vec::new();
         
         for idx in arena.iter_alive() {
-            // Border Teleport Mechanics (5% chance if near edge)
-            if rng.gen::<f32>() < 0.05 {
+            // Border Teleport Mechanics (Uncertainty Principle)
+            // Low chance to teleport to center if near edge, simulating quantum tunneling/uncertainty
+            // Reduced probability to prevent mass extinction (0.5% per frame)
+            if rng.gen::<f32>() < 0.005 {
                 let pos = arena.positions[idx];
-                let margin = 50.0;
+                // Margin is proportional to world size (10%) to work on mobile
+                let margin_x = *world_w * 0.1;
+                let margin_y = *world_h * 0.1;
+                
                 // Dereference world_w and world_h since they are mutable references in this context
-                if pos.x < margin || pos.x > *world_w - margin || pos.y < margin || pos.y > *world_h - margin {
+                if pos.x < margin_x || pos.x > *world_w - margin_x || pos.y < margin_y || pos.y > *world_h - margin_y {
                     // Teleport to center, velocity/direction preserved
                     // Energy drained significantly (dying process initiated)
                     if let Some(chakravyu) = chakravyu_zone {
