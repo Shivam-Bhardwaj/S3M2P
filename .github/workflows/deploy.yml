@@ -39,9 +39,9 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           # Create project if not exists, but don't fail if it does
-          wrangler pages project create too-foo --production-branch=main 2>/dev/null || true
+          npx wrangler pages project create too-foo --production-branch=main 2>/dev/null || true
           # Deploy to the 'main' branch alias (Production)
-          wrangler pages deploy too.foo/dist --project-name=too-foo --branch=main --commit-dirty=true
+          npx wrangler pages deploy too.foo/dist --project-name=too-foo --branch=main --commit-dirty=true
 
   deploy-helios:
     name: Deploy Helios
@@ -76,6 +76,6 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           # Create project if not exists, but don't fail if it does
-          wrangler pages project create helios-too-foo --production-branch=main 2>/dev/null || true
+          npx wrangler pages project create helios-too-foo --production-branch=main 2>/dev/null || true
           # Deploy to the 'main' branch alias (Production)
-          wrangler pages deploy helios/dist --project-name=helios-too-foo --branch=main --commit-dirty=true
+          npx wrangler pages deploy helios/dist --project-name=helios-too-foo --branch=main --commit-dirty=true
