@@ -574,7 +574,8 @@ fn main() {
             // Lure range (much larger)
             if dist_to_center < chakravyu.radius * 4.0 && dist_to_center > chakravyu.radius {
                 // Stronger pull for everyone, especially carnivores
-                let lure_strength = if role == BoidRole::Carnivore { 0.8 } else { 0.4 };
+                // Increased strength further as requested
+                let lure_strength = if role == BoidRole::Carnivore { 1.2 } else { 0.6 };
                 let lure = (chakravyu.center - pos).normalize() * lure_strength;
                 push_forces.push((idx, lure));
             }
@@ -605,17 +606,13 @@ fn main() {
                     }
                 } else {
                     // Herbivores/Scavengers: SHIELD - Protected/Calmed -> Moksh
-                    // Reduce velocity to "calm" them (Gita 2:64 reference).
                     
-                    // Strong damping
-                    let damping = -arena.velocities[idx] * 0.15; 
-                    push_forces.push((idx, damping));
+                    // ESCAPE BEHAVIOR RESTORED:
+                    // They are pushed gently OUTWARD (so they try to leave but are calm)
+                    let outward = (pos - chakravyu.center).normalize() * 1.0;
+                    push_forces.push((idx, outward));
                     
-                    // Fade out effect (Moksh)
-                    // We can't change transparency of individual boid easily without modifying BoidArena
-                    // But we can simulate "fading" by reducing size or energy (which affects color lightness)
-                    // Let's reduce energy slowly but add a "Moksh" popup when they disappear
-                    
+                    // Fade out effect (Moksh) still applies
                     energy_adjustments.push((idx, -0.2)); // Slow fade
                     
                     if arena.energy[idx] <= 1.0 {
