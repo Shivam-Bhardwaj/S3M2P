@@ -549,19 +549,53 @@ fn main() {
                 }
             }
             
-            // CHAKRAVYU MECHANICS - boids can enter but get pulled in and die
-            // This replaces the outward push for the inner zone
-            if let Some(chakravyu) = chakravyu_zone {
-                let dist = pos.distance(chakravyu.center);
-                if dist < chakravyu.radius && dist > 0.001 {
-                    // Inside the Chakravyu - pull INWARD (toward death)
-                    let inward = (chakravyu.center - pos).normalize() * chakravyu.inward_force;
-                    push_forces.push((idx, inward));
+        // CHAKRAVYU MECHANICS
+        // Boids can enter. Predators are trapped and killed. Herbivores/Scavengers are protected/calmed.
+        // The zone center is no longer a simple exclusion, it's a trap.
+        
+        // All boids get a slight "Curiosity" lure towards the center if they are relatively close
+        if let Some(chakravyu) = chakravyu_zone {
+            let dist_to_center = pos.distance(chakravyu.center);
+            
+            // Lure range (larger than the trap itself)
+            if dist_to_center < chakravyu.radius * 2.5 && dist_to_center > chakravyu.radius {
+                // Gentle pull inward
+                let lure = (chakravyu.center - pos).normalize() * 0.2;
+                push_forces.push((idx, lure));
+            }
+
+            // Inside the Chakravyu
+            if dist_to_center < chakravyu.radius && dist_to_center > 0.001 {
+                if role == BoidRole::Carnivore {
+                    // Predators: TRAP - Strong inward pull + Energy Drain + Spin
+                    let inward = (chakravyu.center - pos).normalize() * chakravyu.inward_force * 1.5;
                     
-                    // Mark for energy drain
+                    // Add a tangential spin force for the "Chakra" (Wheel) effect
+                    let tangent = Vec2::new(-(chakravyu.center.y - pos.y), chakravyu.center.x - pos.x).normalize();
+                    let spin = tangent * 2.0;
+                    
+                    push_forces.push((idx, inward + spin));
+                    
+                    // Mark for heavy energy drain
                     chakravyu_victims.push(idx);
+                } else {
+                    // Herbivores/Scavengers: SHIELD - Protected/Calmed
+                    // They are safe here. Maybe even slight outward push to keep them near the edge (safe zone)
+                    // or just let them wander. Let's reduce their velocity to "calm" them (Gita 2:64 reference).
+                    
+                    // Apply damping directly here (hacky but effective for "calming")
+                    // We can't modify velocity directly in this loop due to borrow rules, so we use push_forces
+                    // to counteract current velocity.
+                    let damping = -arena.velocities[idx] * 0.1; // 10% damping per frame
+                    push_forces.push((idx, damping));
+                    
+                    // Also give them a tiny energy boost for "Peace" (Prasadam)
+                    if frame_count % 10 == 0 {
+                        interactions.push((idx, InteractionResult::Nutrient(1.0)));
+                    }
                 }
             }
+        }
             
             // Only push from exclusion zones for FUNGUS protection (icons)
             // But NOT for the central area - that's the Chakravyu trap
@@ -725,6 +759,47 @@ fn main() {
             ctx.begin_path();
             ctx.arc(pred.position.x as f64, pred.position.y as f64, pred.radius as f64, 0.0, std::f64::consts::TAU).unwrap();
             ctx.stroke();
+        }
+
+        // Draw Chakravyu Sanskrit Shield
+        if let Some(chakravyu) = s.chakravyu {
+            ctx.save();
+            ctx.translate(chakravyu.center.x as f64, chakravyu.center.y as f64).unwrap();
+            
+            // Slow rotation for the text ring
+            let time = performance.now() * 0.0002;
+            ctx.rotate(time).unwrap();
+            
+            ctx.set_font("14px 'IBM Plex Mono', monospace");
+            ctx.set_fill_style(&JsValue::from_str("rgba(0, 255, 170, 0.3)"));
+            ctx.set_text_align("center");
+            
+            // "रागद्वेषवियुक्तैस्तु विषयानिन्द्रियैश्चरन्। आत्मवश्यैर्विधेयात्मा प्रसादमधिगच्छति॥"
+            // Split into code-like segments
+            let text = "::रागद्वेषवियुक्तैस्तु::void* // <आत्मवश्यैर्विधेयात्मा>; // fn(प्रसादमधिगच्छति) -> Peace";
+            
+            // Draw text in a circle
+            let radius = chakravyu.radius as f64 - 10.0;
+            let chars: Vec<char> = text.chars().collect();
+            let angle_step = std::f64::consts::TAU / (chars.len() as f64);
+            
+            for (i, char) in chars.iter().enumerate() {
+                ctx.save();
+                let angle = i as f64 * angle_step;
+                ctx.rotate(angle).unwrap();
+                ctx.translate(0.0, -radius).unwrap();
+                ctx.fill_text(&char.to_string(), 0.0, 0.0).unwrap();
+                ctx.restore();
+            }
+            
+            // Inner faint shield circle
+            ctx.begin_path();
+            ctx.arc(0.0, 0.0, radius - 15.0, 0.0, std::f64::consts::TAU).unwrap();
+            ctx.set_stroke_style(&JsValue::from_str("rgba(0, 255, 170, 0.1)"));
+            ctx.set_line_width(1.0);
+            ctx.stroke();
+            
+            ctx.restore();
         }
 
         // Draw Organisms (Boids)
