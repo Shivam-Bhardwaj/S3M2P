@@ -295,23 +295,24 @@ fn run() {
         closure.forget();
     }
 
-    // === SLIDER CONTROLS ===
+    // === UI CONTROLS ===
 
-    // Get slider elements
+    // Get UI elements
     let time_slider = document.get_element_by_id("time-slider")
         .and_then(|el| el.dyn_into::<HtmlInputElement>().ok());
     let date_display = document.get_element_by_id("date-display");
     let speed_display = document.get_element_by_id("speed-display");
     let cycle_display = document.get_element_by_id("cycle-display");
+    let play_pause_btn = document.get_element_by_id("play-pause");
+    let solar_icon = document.get_element_by_id("solar-icon");
 
     // Time slider handler
     if let Some(slider) = time_slider.clone() {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: InputEvent| {
             let mut s = state.borrow_mut();
-            // Slider value is days offset from year 2024
             let days_offset: f64 = slider.value().parse().unwrap_or(0.0);
-            s.julian_date = simulation::J2000_EPOCH + 8766.0 + days_offset; // 2024 + offset
+            s.julian_date = simulation::J2000_EPOCH + 8766.0 + days_offset;
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("time-slider") {
             el.add_event_listener_with_callback("input", closure.as_ref().unchecked_ref()).unwrap();
@@ -319,16 +320,13 @@ fn run() {
         closure.forget();
     }
 
-    // Playback buttons
-    // Reverse button
+    // Play/Pause button (large, central)
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            let mut s = state.borrow_mut();
-            s.time_scale = -s.time_scale.abs();
-            s.paused = false;
+            state.borrow_mut().toggle_pause();
         }) as Box<dyn FnMut(_)>);
-        if let Some(el) = document.get_element_by_id("btn-reverse") {
+        if let Some(el) = document.get_element_by_id("play-pause") {
             el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
         }
         closure.forget();
@@ -348,18 +346,6 @@ fn run() {
         closure.forget();
     }
 
-    // Pause button
-    {
-        let state = state.clone();
-        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            state.borrow_mut().toggle_pause();
-        }) as Box<dyn FnMut(_)>);
-        if let Some(el) = document.get_element_by_id("btn-pause") {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
-        }
-        closure.forget();
-    }
-
     // Faster button
     {
         let state = state.clone();
@@ -374,15 +360,93 @@ fn run() {
         closure.forget();
     }
 
-    // Forward button
+    // === PLANET NAVIGATION ===
+    // Clickable planet icons for quick navigation
+
+    // Sun
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            let mut s = state.borrow_mut();
-            s.time_scale = s.time_scale.abs();
-            s.paused = false;
+            state.borrow_mut().focus_on_sun();
         }) as Box<dyn FnMut(_)>);
-        if let Some(el) = document.get_element_by_id("btn-forward") {
+        if let Some(el) = document.get_element_by_id("nav-sun") {
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+        }
+        closure.forget();
+    }
+
+    // Planet navigation helper macro - planets 0-7
+    let planet_ids = ["nav-mercury", "nav-venus", "nav-earth", "nav-mars",
+                      "nav-jupiter", "nav-saturn", "nav-uranus", "nav-neptune"];
+
+    for (idx, id) in planet_ids.iter().enumerate() {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            state.borrow_mut().focus_on_planet(idx);
+        }) as Box<dyn FnMut(_)>);
+        if let Some(el) = document.get_element_by_id(id) {
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+        }
+        closure.forget();
+    }
+
+    // Heliosphere view
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            state.borrow_mut().view_heliosphere();
+        }) as Box<dyn FnMut(_)>);
+        if let Some(el) = document.get_element_by_id("nav-heliosphere") {
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+        }
+        closure.forget();
+    }
+
+    // === VIEW PRESETS ===
+
+    // Inner solar system view
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            state.borrow_mut().view_inner_system();
+        }) as Box<dyn FnMut(_)>);
+        if let Some(el) = document.get_element_by_id("view-inner") {
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+        }
+        closure.forget();
+    }
+
+    // Outer solar system view
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            state.borrow_mut().view_outer_system();
+        }) as Box<dyn FnMut(_)>);
+        if let Some(el) = document.get_element_by_id("view-outer") {
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+        }
+        closure.forget();
+    }
+
+    // Zoom in button
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            state.borrow_mut().zoom_by(0.7);
+        }) as Box<dyn FnMut(_)>);
+        if let Some(el) = document.get_element_by_id("view-zoom-in") {
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+        }
+        closure.forget();
+    }
+
+    // Zoom out button
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            state.borrow_mut().zoom_by(1.4);
+        }) as Box<dyn FnMut(_)>);
+        if let Some(el) = document.get_element_by_id("view-zoom-out") {
             el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
         }
         closure.forget();
@@ -393,6 +457,8 @@ fn run() {
     let date_display = Rc::new(date_display);
     let speed_display = Rc::new(speed_display);
     let cycle_display = Rc::new(cycle_display);
+    let play_pause_btn = Rc::new(play_pause_btn);
+    let solar_icon = Rc::new(solar_icon);
 
     // === ANIMATION LOOP ===
 
@@ -407,6 +473,8 @@ fn run() {
     let date_display_loop = date_display.clone();
     let speed_display_loop = speed_display.clone();
     let cycle_display_loop = cycle_display.clone();
+    let play_pause_loop = play_pause_btn.clone();
+    let solar_icon_loop = solar_icon.clone();
 
     let window_clone = window.clone();
     *g.borrow_mut() = Some(Closure::new(move || {
@@ -484,6 +552,27 @@ fn run() {
             // Update cycle display
             if let Some(ref el) = *cycle_display_loop {
                 el.set_text_content(Some(s.solar_cycle_name()));
+            }
+
+            // Update play/pause button appearance
+            if let Some(ref el) = *play_pause_loop {
+                if s.paused {
+                    el.set_inner_html("&#9654;"); // Play icon
+                    el.class_list().add_1("paused").ok();
+                } else {
+                    el.set_inner_html("&#9208;"); // Pause icon
+                    el.class_list().remove_1("paused").ok();
+                }
+            }
+
+            // Update solar icon based on activity
+            if let Some(ref el) = *solar_icon_loop {
+                let activity = (s.solar_cycle_phase * 2.0 * std::f64::consts::PI).sin() * 0.5 + 0.5;
+                if activity > 0.5 {
+                    el.class_list().add_1("active").ok();
+                } else {
+                    el.class_list().remove_1("active").ok();
+                }
             }
         }
 

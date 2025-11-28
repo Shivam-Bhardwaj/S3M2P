@@ -21,6 +21,8 @@ features = [
     "Element",
     "Window",
     "Performance",
+    # DOM manipulation
+    "DomTokenList",
     # Form elements
     "HtmlInputElement",
     "HtmlButtonElement",
