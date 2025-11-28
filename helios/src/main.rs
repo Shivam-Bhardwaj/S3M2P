@@ -16,6 +16,7 @@ use wasm_bindgen::JsCast;
 #[cfg(target_arch = "wasm32")]
 use web_sys::{
     window, HtmlCanvasElement, CanvasRenderingContext2d,
+    HtmlInputElement, HtmlButtonElement, InputEvent,
     KeyboardEvent, MouseEvent, WheelEvent, TouchEvent,
 };
 #[cfg(target_arch = "wasm32")]
@@ -294,6 +295,105 @@ fn run() {
         closure.forget();
     }
 
+    // === SLIDER CONTROLS ===
+
+    // Get slider elements
+    let time_slider = document.get_element_by_id("time-slider")
+        .and_then(|el| el.dyn_into::<HtmlInputElement>().ok());
+    let date_display = document.get_element_by_id("date-display");
+    let speed_display = document.get_element_by_id("speed-display");
+    let cycle_display = document.get_element_by_id("cycle-display");
+
+    // Time slider handler
+    if let Some(slider) = time_slider.clone() {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: InputEvent| {
+            let mut s = state.borrow_mut();
+            // Slider value is days offset from year 2024
+            let days_offset: f64 = slider.value().parse().unwrap_or(0.0);
+            s.julian_date = simulation::J2000_EPOCH + 8766.0 + days_offset; // 2024 + offset
+        }) as Box<dyn FnMut(_)>);
+        if let Some(el) = document.get_element_by_id("time-slider") {
+            el.add_event_listener_with_callback("input", closure.as_ref().unchecked_ref()).unwrap();
+        }
+        closure.forget();
+    }
+
+    // Playback buttons
+    // Reverse button
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            let mut s = state.borrow_mut();
+            s.time_scale = -s.time_scale.abs();
+            s.paused = false;
+        }) as Box<dyn FnMut(_)>);
+        if let Some(el) = document.get_element_by_id("btn-reverse") {
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+        }
+        closure.forget();
+    }
+
+    // Slower button
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            let mut s = state.borrow_mut();
+            let ts = s.time_scale / 2.0;
+            s.set_time_scale(ts);
+        }) as Box<dyn FnMut(_)>);
+        if let Some(el) = document.get_element_by_id("btn-slower") {
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+        }
+        closure.forget();
+    }
+
+    // Pause button
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            state.borrow_mut().toggle_pause();
+        }) as Box<dyn FnMut(_)>);
+        if let Some(el) = document.get_element_by_id("btn-pause") {
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+        }
+        closure.forget();
+    }
+
+    // Faster button
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            let mut s = state.borrow_mut();
+            let ts = s.time_scale * 2.0;
+            s.set_time_scale(ts);
+        }) as Box<dyn FnMut(_)>);
+        if let Some(el) = document.get_element_by_id("btn-faster") {
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+        }
+        closure.forget();
+    }
+
+    // Forward button
+    {
+        let state = state.clone();
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            let mut s = state.borrow_mut();
+            s.time_scale = s.time_scale.abs();
+            s.paused = false;
+        }) as Box<dyn FnMut(_)>);
+        if let Some(el) = document.get_element_by_id("btn-forward") {
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+        }
+        closure.forget();
+    }
+
+    // Wrap UI elements for animation loop
+    let time_slider = Rc::new(time_slider);
+    let date_display = Rc::new(date_display);
+    let speed_display = Rc::new(speed_display);
+    let cycle_display = Rc::new(cycle_display);
+
     // === ANIMATION LOOP ===
 
     let f: Rc<RefCell<Option<Closure<dyn FnMut()>>>> = Rc::new(RefCell::new(None));
@@ -301,6 +401,12 @@ fn run() {
 
     let ctx = Rc::new(ctx);
     let canvas = Rc::new(canvas);
+
+    // Clone UI elements for animation loop
+    let time_slider_loop = time_slider.clone();
+    let date_display_loop = date_display.clone();
+    let speed_display_loop = speed_display.clone();
+    let cycle_display_loop = cycle_display.clone();
 
     let window_clone = window.clone();
     *g.borrow_mut() = Some(Closure::new(move || {
@@ -342,6 +448,41 @@ fn run() {
 
         // Render
         render::render(&ctx, &s, time);
+
+        // Update UI elements (every 10 frames to reduce DOM updates)
+        if s.frame_count % 10 == 0 {
+            // Update time slider position
+            if let Some(ref slider) = *time_slider_loop {
+                let days_offset = s.julian_date - (simulation::J2000_EPOCH + 8766.0);
+                slider.set_value(&format!("{:.0}", days_offset.clamp(-36525.0, 36525.0)));
+            }
+
+            // Update date display
+            if let Some(ref el) = *date_display_loop {
+                let year = s.current_year();
+                el.set_text_content(Some(&format!("{:.1}", year)));
+            }
+
+            // Update speed display
+            if let Some(ref el) = *speed_display_loop {
+                let ts = s.time_scale;
+                let text = if s.paused {
+                    "Paused".to_string()
+                } else if ts.abs() >= 365.25 {
+                    format!("{:.0}y/s", ts / 365.25)
+                } else if ts.abs() >= 30.0 {
+                    format!("{:.0}d/s", ts)
+                } else {
+                    format!("{:.1}x", ts)
+                };
+                el.set_text_content(Some(&text));
+            }
+
+            // Update cycle display
+            if let Some(ref el) = *cycle_display_loop {
+                el.set_text_content(Some(s.solar_cycle_name()));
+            }
+        }
 
         drop(s); // Release borrow before next frame
 

@@ -21,6 +21,11 @@ features = [
     "Element",
     "Window",
     "Performance",
+    # Form elements
+    "HtmlInputElement",
+    "HtmlButtonElement",
+    "InputEvent",
+    "EventTarget",
     # Events
     "MouseEvent",
     "KeyboardEvent",

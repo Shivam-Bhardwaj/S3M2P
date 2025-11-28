@@ -226,6 +226,13 @@ pub struct SimulationState {
     pub heliopause_au: f64,
     pub bow_shock_au: f64,
 
+    // === SOLAR CYCLE ===
+    // Solar cycle is ~11 years (4018 days)
+    // Phase 0.0 = solar minimum, 0.5 = solar maximum
+    pub solar_cycle_phase: f64,
+    // Base reference date for solar cycle (Solar Cycle 25 minimum: Dec 2019)
+    pub solar_cycle_ref_jd: f64,
+
     // === SCRATCH BUFFERS (avoid allocation) ===
     scratch_visible: [bool; MAX_PLANETS],
 
@@ -267,6 +274,10 @@ impl SimulationState {
             termination_shock_au: 94.0,
             heliopause_au: 121.0,
             bow_shock_au: 230.0,
+
+            // Solar Cycle 25 minimum was around December 2019 (JD 2458849)
+            solar_cycle_phase: 0.0,
+            solar_cycle_ref_jd: 2458849.0,
 
             scratch_visible: [false; MAX_PLANETS],
 
@@ -394,6 +405,9 @@ impl SimulationState {
             self.julian_date += self.time_scale * dt / 86400.0; // dt in seconds
         }
 
+        // Update solar cycle phase (11 year cycle = ~4018 days)
+        self.update_solar_cycle();
+
         // Update planet positions
         for i in 0..self.planet_count {
             let (x, y) = self.planet_orbits[i].position_2d(self.julian_date);
@@ -416,6 +430,51 @@ impl SimulationState {
         }
 
         self.frame_count += 1;
+    }
+
+    /// Update solar cycle phase and heliosphere boundaries
+    fn update_solar_cycle(&mut self) {
+        const SOLAR_CYCLE_DAYS: f64 = 4018.0; // ~11 years
+
+        // Calculate phase (0.0 to 1.0, where 0.5 is solar maximum)
+        let days_since_min = self.julian_date - self.solar_cycle_ref_jd;
+        let cycle_position = (days_since_min / SOLAR_CYCLE_DAYS).rem_euclid(1.0);
+        self.solar_cycle_phase = cycle_position;
+
+        // Heliosphere expansion/contraction based on solar activity
+        // At solar maximum, solar wind pressure is higher, pushing boundaries out
+        // At solar minimum, boundaries contract
+        // Using a smooth sinusoidal variation
+        let activity = (cycle_position * 2.0 * std::f64::consts::PI).sin();
+        let activity_factor = 0.5 + 0.5 * activity; // 0.0 to 1.0
+
+        // Termination shock: 85 AU (min) to 100 AU (max)
+        self.termination_shock_au = 85.0 + 15.0 * activity_factor;
+
+        // Heliopause: 110 AU (min) to 130 AU (max)
+        self.heliopause_au = 110.0 + 20.0 * activity_factor;
+
+        // Bow shock: 200 AU (min) to 250 AU (max)
+        self.bow_shock_au = 200.0 + 50.0 * activity_factor;
+    }
+
+    /// Get solar cycle phase description
+    pub fn solar_cycle_name(&self) -> &'static str {
+        let phase = self.solar_cycle_phase;
+        if phase < 0.125 || phase >= 0.875 {
+            "Solar Min"
+        } else if phase < 0.375 {
+            "Rising"
+        } else if phase < 0.625 {
+            "Solar Max"
+        } else {
+            "Declining"
+        }
+    }
+
+    /// Get current date as a year with decimal
+    pub fn current_year(&self) -> f64 {
+        2000.0 + (self.julian_date - J2000_EPOCH) / 365.25
     }
 
     fn interpolate_mission(&self, idx: usize) -> (f64, f64) {
@@ -525,9 +584,24 @@ impl SimulationState {
     }
 
     pub fn view_heliosphere(&mut self) {
-        self.view.center_x = 0.0;
-        self.view.center_y = 0.0;
-        self.zoom_to(1.0); // Shows heliopause
+        // Position sun at 2/3 of screen to show heliosphere with direction of motion
+        // Sun moves through interstellar medium roughly in the +X direction (towards "nose")
+        // Desktop (landscape): sun at 2/3 from left, shows tail to right
+        // Mobile (portrait): sun at 2/3 from bottom, shows tail above
+        let is_portrait = self.view.height > self.view.width;
+
+        if is_portrait {
+            // Mobile: sun at 2/3 from bottom (1/3 from top)
+            // Offset in Y to show more of the tail above
+            self.view.center_x = 0.0;
+            self.view.center_y = -self.bow_shock_au * 0.3; // Shift view down, sun appears higher
+        } else {
+            // Desktop: sun at 2/3 from left (1/3 from right)
+            // Offset in X to show more of the tail to the right
+            self.view.center_x = self.bow_shock_au * 0.3; // Shift view right, sun appears left
+            self.view.center_y = 0.0;
+        }
+        self.zoom_to(1.2); // Shows full heliosphere including bow shock
     }
 
     // === TIME CONTROL ===
