@@ -1,0 +1,63 @@
+name: "[storage-server] Issue"
+description: Issues related to the storage server backend
+title: "[storage-server] "
+labels: ["project:storage-server"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Storage Server Issue
+        This issue affects the `storage-server` backend service.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue Type
+      options:
+        - Bug fix
+        - New feature
+        - API change
+        - Performance optimization
+        - Security
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Clear description of the issue or feature
+      placeholder: What needs to be done?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: What defines "done" for this issue?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] API documented
+        - [ ] Tests pass
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical
+    attributes:
+      label: Technical Notes
+      description: API endpoints, data models, or implementation details
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 - Critical
+        - P1 - High
+        - P2 - Medium
+        - P3 - Low
+    validations:
+      required: true

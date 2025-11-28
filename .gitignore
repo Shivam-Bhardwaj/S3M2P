@@ -26,3 +26,10 @@ playwright-report/
 # Logs
 *.log
 
+# Temp files
+temp/
+
+# Font archives (extracted fonts are tracked)
+*.zip
+__MACOSX/
+

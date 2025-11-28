@@ -1,0 +1,74 @@
+name: "[helios] Issue"
+description: Issues related to the Helios solar system visualization
+title: "[helios] "
+labels: ["project:helios"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Helios Visualization Issue
+        This issue affects the `helios` project - solar system visualization with WASM canvas.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue Type
+      options:
+        - Bug fix
+        - New feature
+        - UI/UX improvement
+        - Performance optimization
+        - Refactor
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Clear description of the issue or feature
+      placeholder: What needs to be done?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: What defines "done" for this issue?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Visual tests pass
+    validations:
+      required: true
+
+  - type: textarea
+    id: visual
+    attributes:
+      label: Visual Reference
+      description: Screenshots, mockups, or visual descriptions if applicable
+      placeholder: Describe expected visual output or attach images
+
+  - type: textarea
+    id: technical
+    attributes:
+      label: Technical Notes
+      description: Any relevant technical details or affected components
+      placeholder: |
+        Affected components:
+        - Canvas rendering
+        - Animation loop
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 - Critical
+        - P1 - High
+        - P2 - Medium
+        - P3 - Low
+    validations:
+      required: true

@@ -1,0 +1,66 @@
+name: "[core] Issue"
+description: Issues related to the core simulation engine (boid physics, genetics, spatial indexing)
+title: "[core] "
+labels: ["project:core"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Core Simulation Engine Issue
+        This issue affects the `core` crate - the foundation for all simulations.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue Type
+      options:
+        - Bug fix
+        - New feature
+        - Performance optimization
+        - Refactor
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Clear description of the issue or feature
+      placeholder: What needs to be done?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: What defines "done" for this issue?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Tests pass
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical
+    attributes:
+      label: Technical Notes
+      description: Any relevant technical details, affected files, or implementation hints
+      placeholder: |
+        Affected modules:
+        - src/boid.rs
+        - src/spatial.rs
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 - Critical
+        - P1 - High
+        - P2 - Medium
+        - P3 - Low
+    validations:
+      required: true

@@ -1,0 +1,68 @@
+name: "[infra] Issue"
+description: Infrastructure, CI/CD, tooling, and cross-project issues
+title: "[infra] "
+labels: ["project:infra"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Infrastructure Issue
+        This issue affects CI/CD, tooling, documentation, or spans multiple projects.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue Type
+      options:
+        - CI/CD
+        - Tooling
+        - Documentation
+        - Cross-project refactor
+        - Dependency update
+        - Developer experience
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Clear description of the issue
+      placeholder: What needs to be done?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: What defines "done" for this issue?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: affected
+    attributes:
+      label: Affected Projects
+      options:
+        - label: core
+        - label: helios
+        - label: too.foo
+        - label: storage-server
+        - label: simulation-cli
+        - label: PROJECT_N
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 - Critical
+        - P1 - High
+        - P2 - Medium
+        - P3 - Low
+    validations:
+      required: true
