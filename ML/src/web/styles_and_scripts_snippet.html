@@ -1,0 +1,89 @@
+    <!-- ... existing styles ... -->
+    <style>
+        /* ... existing styles ... */
+        .comment-section {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .comment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .comment-form input, .comment-form textarea {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        .comment-form button {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .comment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .comment {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .comment-header {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+            display: flex;
+            justify_content: space-between;
+        }
+    </style>
+    
+    <!-- ... in body ... -->
+    <script>
+        async function loadComments(lessonId, containerId) {
+            try {
+                const res = await fetch(`/api/comments/${lessonId}`);
+                const comments = await res.json();
+                const container = document.getElementById(containerId);
+                container.innerHTML = comments.map(c => `
+                    <div class="comment">
+                        <div class="comment-header">
+                            <strong>${c.author}</strong>
+                            <span>${new Date(c.timestamp).toLocaleString()}</span>
+                        </div>
+                        <div>${c.content}</div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error("Failed to load comments", e);
+            }
+        }
+
+        async function postComment(lessonId, formId, listId) {
+            const form = document.getElementById(formId);
+            const author = form.querySelector('[name="author"]').value;
+            const content = form.querySelector('[name="content"]').value;
+            
+            if (!author || !content) return;
+
+            try {
+                await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ author, content, lesson_id: lessonId })
+                });
+                form.reset();
+                loadComments(lessonId, listId);
+            } catch (e) {
+                console.error("Failed to post comment", e);
+            }
+        }
+    </script>
+

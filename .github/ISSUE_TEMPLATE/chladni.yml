@@ -1,0 +1,50 @@
+name: "Chladni Issue"
+description: "Issue for the Chladni wave pattern simulation"
+labels: ["chladni"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Chladni Wave Pattern Simulation
+        Rust/WASM Chladni plate visualization with particle physics.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue Type
+      options:
+        - Feature
+        - Bug
+        - Enhancement
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the issue or feature request
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: What needs to be true for this to be complete?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - Wave Simulation
+        - Particle Physics
+        - WebGL Rendering
+        - UI/Controls
+        - Performance
+        - Other

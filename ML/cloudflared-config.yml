@@ -1,0 +1,8 @@
+tunnel: 20905bdd-6613-49a9-87a8-0f171d82cd36
+credentials-file: /home/curious/.cloudflared/20905bdd-6613-49a9-87a8-0f171d82cd36.json
+
+ingress:
+  - hostname: sbl.too.foo
+    service: http://localhost:3000
+  - service: http_status:404
+

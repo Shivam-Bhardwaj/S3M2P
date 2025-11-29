@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antimony Labs - Zero to AGI</title>
+    
+    <!-- Vega-Lite Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    <!-- Marked for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f8fafc; 
+            color: #1e293b;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        aside {
+            width: 256px;
+            background-color: #0f172a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #1e293b;
+            flex-shrink: 0;
+        }
+        .sidebar-header h1 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .sidebar-header p {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.25rem;
+        }
+        nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+        .nav-section {
+            padding: 0 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .sidebar-link {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar-link:hover { background-color: #334155; }
+        .sidebar-link.active { background-color: #2563eb; border-left: 4px solid #93c5fd; }
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid #1e293b;
+            font-size: 0.75rem;
+            color: #64748b;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        header h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e293b;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            background-color: #dcfce7;
+            color: #166534;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        #content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+        .max-w-5xl {
+            max-width: 80rem;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #475569;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-body {
+            padding: 1rem;
+        }
+        .viz-container { 
+            width: 100%; 
+            height: 400px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: white; 
+            border-radius: 0.5rem; 
+            border: 1px solid #e2e8f0; 
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            padding: 0 1rem;
+        }
+        .tab-btn { 
+            cursor: pointer; 
+            padding: 0.5rem 1rem; 
+            border-bottom: 2px solid transparent; 
+            transition: all 0.2s; 
+            color: #64748b; 
+            background: none;
+            border: none;
+            font-size: 0.875rem;
+        }
+        .tab-btn:hover { color: #2563eb; }
+        .tab-btn.active { border-bottom-color: #2563eb; color: #2563eb; font-weight: 600; }
+        .tab-panels {
+            padding: 2rem;
+        }
+        .tab-panel.hidden {
+            display: none;
+        }
+        .tab-panel.block {
+            display: block;
+        }
+        .prose { 
+            max-width: none; 
+            line-height: 1.75;
+        }
+        .prose h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .prose p {
+            margin-bottom: 1rem;
+        }
+        .prose ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .prose li {
+            margin-bottom: 0.5rem;
+        }
+        .prose code {
+            background-color: #f1f5f9;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875em;
+        }
+        .prose pre {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .prose pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+        .katex { font-size: 1.1em; }
+        input, textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.25rem;
+            font-family: inherit;
+            font-size: 0.875rem;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            ring: 2px;
+            ring-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        .comment-item {
+            background-color: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1rem;
+        }
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .comment-author {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .comment-time {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .comment-text {
+            color: #475569;
+            font-size: 0.875rem;
+        }
+        .opacity-50 { opacity: 0.5; }
+        .opacity-75 { opacity: 0.75; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside>
+        <div class="sidebar-header">
+            <h1>Antimony Labs</h1>
+            <p>Zero to AGI in Rust</p>
+        </div>
+        <nav id="lesson-nav">
+            <div class="nav-section">Foundations</div>
+            <a href="#" data-lesson="intro" id="nav-intro" class="sidebar-link">Welcome</a>
+            <a href="#" data-lesson="lesson_00" id="nav-lesson_00" class="sidebar-link">0. Rust Refresher</a>
+            <a href="#" data-lesson="lesson_01" id="nav-lesson_01" class="sidebar-link">1. Linear Regression</a>
+            <a href="#" data-lesson="lesson_02" id="nav-lesson_02" class="sidebar-link">2. Logistic Regression</a>
+            <a href="#" data-lesson="lesson_03" id="nav-lesson_03" class="sidebar-link">3. Neural Networks</a>
+            
+            <div class="nav-section" style="margin-top: 1.5rem;">Deep Learning</div>
+            <a href="#" data-lesson="lesson_04" id="nav-lesson_04" class="sidebar-link">4. CNNs</a>
+            <a href="#" data-lesson="lesson_05" id="nav-lesson_05" class="sidebar-link">5. Policy Networks</a>
+            
+            <div class="nav-section" style="margin-top: 1.5rem;">Reinforcement Learning</div>
+            <a href="#" data-lesson="lesson_06" id="nav-lesson_06" class="sidebar-link">6. Q-Learning</a>
+            <a href="#" data-lesson="lesson_07" id="nav-lesson_07" class="sidebar-link">7. Policy Gradients</a>
+            <a href="#" data-lesson="lesson_08" id="nav-lesson_08" class="sidebar-link">8. MCTS</a>
+
+            <div class="nav-section" style="margin-top: 1.5rem;">AGI</div>
+            <a href="#" data-lesson="lesson_09" id="nav-lesson_09" class="sidebar-link">9. AlphaZero</a>
+            <a href="#" data-lesson="lesson_10" id="nav-lesson_10" class="sidebar-link">10. LLMs</a>
+            <a href="#" data-lesson="lesson_11" id="nav-lesson_11" class="sidebar-link">11. AGI Architecture</a>
+        </nav>
+        <div class="sidebar-footer">
+            Running on Rust + Linux
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Header -->
+        <header>
+            <h2 id="page-title">Welcome</h2>
+            <div>
+                <span class="status-badge">System Online</span>
+            </div>
+        </header>
+
+        <!-- Content Scroll Area -->
+        <div id="content-area">
+            <!-- Dynamic Content Injected Here -->
+        </div>
+    </main>
+
+    <!-- Templates (Hidden) -->
+    <template id="tpl-lesson">
+        <div class="max-w-5xl">
+            <!-- Visualization Card -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <span>Interactive Visualization</span>
+                    <span style="font-size: 0.75rem; color: #94a3b8;">Powered by Vega-Lite & Rust</span>
+                </div>
+                <div class="card-body">
+                    <div id="viz-target" class="viz-container">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Detail Tabs -->
+            <div class="card">
+                <div class="tabs">
+                    <button onclick="switchTab('intuition')" id="tab-intuition" class="tab-btn active">Level 1: Intuition</button>
+                    <button onclick="switchTab('math')" id="tab-math" class="tab-btn">Level 2: The Math</button>
+                    <button onclick="switchTab('code')" id="tab-code" class="tab-btn">Level 3: Code Deep Dive</button>
+                    <button onclick="switchTab('comments')" id="tab-comments" class="tab-btn">Discussion</button>
+                </div>
+                
+                <div class="tab-panels">
+                    <div id="content-intuition" class="tab-panel block prose"></div>
+                    <div id="content-math" class="tab-panel hidden prose"></div>
+                    <div id="content-code" class="tab-panel hidden prose"></div>
+                    
+                    <!-- Comments Section -->
+                    <div id="content-comments" class="tab-panel hidden">
+                        <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 1rem;">Community Discussion</h3>
+                        <div style="margin-bottom: 2rem;">
+                            <input type="text" id="comment-author" placeholder="Your Name" style="margin-bottom: 0.5rem;">
+                            <textarea id="comment-content" rows="3" placeholder="Add to the knowledge base..."></textarea>
+                            <button onclick="submitComment()">Post Comment</button>
+                        </div>
+                        <div id="comment-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Data / Script -->
+    <script>
+        // Debug: Check if dependencies loaded
+        console.log('Script starting...');
+        console.log('marked:', typeof marked !== 'undefined' ? 'loaded' : 'MISSING');
+        console.log('vegaEmbed:', typeof vegaEmbed !== 'undefined' ? 'loaded' : 'MISSING');
+        console.log('renderMathInElement:', typeof renderMathInElement !== 'undefined' ? 'loaded' : 'MISSING');
+
+        // Content Data Store
+        const lessons = {
+            intro: {
+                title: "Welcome to Antimony Labs",
+                viz: null,
+                intuition: `
+                    ### The Goal: AGI from Scratch
+                    We are building an Artificial General Intelligence (AGI) starting from the absolute basics. No cheating, no pre-built black boxes. We write the math in Rust.
+                    
+                    ### How to use this platform
+                    1. **Select a Lesson** from the sidebar.
+                    2. **Interact** with the visualization at the top.
+                    3. **Dive Deeper** using the tabs:
+                       - **Intuition**: Simple English explanation.
+                       - **Math**: The equations behind the magic.
+                       - **Code**: How we implemented it in Rust.
+                `,
+                math: "Math content coming soon...",
+                code: "Code content coming soon..."
+            },
+            lesson_00: {
+                title: "Lesson 0: Rust Refresher",
+                viz: "/static/lesson_00.json",
+                intuition: `
+                    ### Why Rust for AGI?
+                    Rust provides **memory safety without garbage collection**. This is crucial for high-performance AI where we need control over every byte of memory (like GPUs) but don't want the bugs of C++.
+                    
+                    ### Ownership & Borrowing
+                    Think of memory like a physical book.
+                    - **Ownership**: Only one person can hold the book at a time. If I give it to you (Move), I can't read it anymore.
+                    - **Borrowing**: I can let you look at the book (Reference), but I still own it.
+                    
+                    The visualization above shows a variable being passed between owners (A -> B) and then borrowed by C.
+                `,
+                math: `
+                    ### The Rules of Ownership
+                    1. Each value in Rust has a variable that’s called its **owner**.
+                    2. There can only be one owner at a time.
+                    3. When the owner goes out of scope, the value will be dropped.
+                    
+                    ### Borrow Checker Logic
+                    $$ \\text{References} \\implies \\text{No Mutation} $$
+                    $$ \\text{Mutable Reference} \\implies \\text{Exclusive Access} $$
+                `,
+                code: `
+                    ### Ownership in Action
+                    
+                    \`\`\`rust
+                    fn main() {
+                        // 1. A owns the vector
+                        let a = vec![1, 2, 3]; 
+                        
+                        // 2. Ownership MOVED to B
+                        let b = a; 
+                        // println!("{:?}", a); // Error! 'a' is gone.
+                        
+                        // 3. C borrows B (Read-only)
+                        print_len(&b); 
+                    }
+                    
+                    fn print_len(v: &Vec<i32>) {
+                        println!("Length is {}", v.len());
+                    }
+                    \`\`\`
+                `
+            },
+            lesson_01: {
+                title: "Lesson 1: Linear Regression",
+                viz: "/static/lesson_01.json",
+                intuition: `
+                    ### Fitting a Line
+                    Imagine you have a scatter of points that roughly look like a line. **Linear Regression** is simply the process of finding the "best" straight line that passes through them.
+                    
+                    - **The Model**: A straight line is defined by how steep it is (slope, $w$) and where it starts (intercept, $b$).
+                    - **The Error**: We measure how "wrong" our line is by calculating the distance between the line and the actual dots.
+                    - **The Learning**: We tweak $w$ and $b$ slightly to reduce that error. Repeat this many times, and the line "snaps" into place.
+                `,
+                math: `
+                    ### The Model
+                    $$ y = wx + b $$
+                    
+                    ### The Loss Function (Mean Squared Error)
+                    We want to minimize the average squared difference between our prediction ($\\hat{y}$) and the truth ($y$).
+                    $$ L = \\frac{1}{N} \\sum_{i=1}^N (\\hat{y}_i - y_i)^2 $$
+                    
+                    ### Gradient Descent
+                    To find the best $w$ and $b$, we calculate the derivative (gradient) of the loss with respect to them.
+                    $$ \\frac{\\partial L}{\\partial w} = \\frac{2}{N} \\sum (\\hat{y}_i - y_i) x_i $$
+                    $$ \\frac{\\partial L}{\\partial b} = \\frac{2}{N} \\sum (\\hat{y}_i - y_i) $$
+                    
+                    Update rule:
+                    $$ w \\leftarrow w - \\eta \\frac{\\partial L}{\\partial w} $$
+                `,
+                code: `
+                    ### Rust Implementation
+                    We use \`ndarray\` for vectorized operations.
+                    
+                    \`\`\`rust
+                    // Forward Pass
+                    let y_pred = &x * w + b;
+
+                    // Calculate Error
+                    let error = &y_pred - &y;
+
+                    // Gradients
+                    let dw = 2.0 * (&error * &x).mean().unwrap();
+                    let db = 2.0 * error.mean().unwrap();
+
+                    // Update
+                    w -= learning_rate * dw;
+                    b -= learning_rate * db;
+                    \`\`\`
+                `
+            },
+            lesson_02: {
+                title: "Lesson 2: Logistic Regression",
+                viz: "/static/lesson_02.json",
+                intuition: `
+                    ### Making Decisions (Red vs Blue)
+                    Linear regression predicts numbers (like price). **Logistic Regression** predicts *probabilities* (like "Is this spam?").
+                    
+                    We still use a line (or plane), but we squash the result between 0 and 1 using a special function called the **Sigmoid**.
+                    
+                    - If output > 0.5, we say "Blue Team".
+                    - If output < 0.5, we say "Red Team".
+                `,
+                math: `
+                    ### The Sigmoid Function
+                    $$ \\sigma(z) = \\frac{1}{1 + e^{-z}} $$
+                    
+                    ### The Model
+                    $$ z = w_1 x_1 + w_2 x_2 + b $$
+                    $$ \\hat{y} = \\sigma(z) $$
+                    
+                    ### Cross-Entropy Loss
+                    We cannot use MSE here. We use Log Loss:
+                    $$ L = - [y \\log(\\hat{y}) + (1-y) \\log(1-\\hat{y})] $$
+                `,
+                code: `
+                    ### Rust Implementation
+                    
+                    \`\`\`rust
+                    // Sigmoid Activation
+                    let pred = z.mapv(|v| 1.0 / (1.0 + (-v).exp()));
+
+                    // Gradient (Chain Rule Magic)
+                    // Surprisingly, the gradient for Log Loss + Sigmoid 
+                    // simplifies to (pred - y)!
+                    let error = &pred - &y;
+                    \`\`\`
+                `
+            },
+            lesson_03: {
+                title: "Lesson 3: Neural Networks (XOR)",
+                viz: "/static/lesson_03.json",
+                intuition: `
+                    ### The XOR Problem
+                    Single neurons (Linear/Logistic Regression) can only draw **straight lines**. 
+                    
+                    The XOR problem ("Exclusive OR") is simple:
+                    - (0,0) -> 0
+                    - (1,1) -> 0
+                    - (0,1) -> 1
+                    - (1,0) -> 1
+                    
+                    Try drawing a single straight line to separate the 0s from the 1s. **It's impossible.**
+                    
+                    ### The Solution: Hidden Layers
+                    By adding a "Hidden Layer" of neurons, we allow the network to bend and warp the space.
+                    - Neuron 1 draws one line.
+                    - Neuron 2 draws another line.
+                    - The Output Neuron combines them to create a non-linear shape (like a curved region).
+                `,
+                math: `
+                    ### The Network Architecture
+                    $$ \\text{Input} \\rightarrow W_1, b_1 \\rightarrow \\text{Hidden} \\rightarrow \\tanh \\rightarrow W_2, b_2 \\rightarrow \\text{Output} $$
+                    
+                    $$ h = \\tanh(x W_1 + b_1) $$
+                    $$ y = h W_2 + b_2 $$
+                    
+                    ### Backpropagation (Chain Rule)
+                    To train this, we need to calculate how the Error changes with respect to $W_1$, which is buried deep inside.
+                    
+                    $$ \\frac{\\partial L}{\\partial W_1} = \\frac{\\partial L}{\\partial y} \\cdot \\frac{\\partial y}{\\partial h} \\cdot \\frac{\\partial h}{\\partial z} \\cdot \\frac{\\partial z}{\\partial W_1} $$
+                    
+                    This is tedious to do by hand. We built an **Autograd Engine** to do it automatically!
+                `,
+                code: `
+### Autograd Engine
+We built a Value struct that remembers its history.
+
+\`\`\`rust
+// Building the graph dynamically
+let z = x1 * w1 + x2 * w2 + b;
+let activation = z.tanh();
+
+// Magic: Calculates all gradients automatically
+loss.backward(); 
+\`\`\`
+                `
+            },
+            lesson_04: { 
+                title: "Lesson 4: Convolutional Neural Networks",
+                viz: "/static/lesson_04.json",
+                intuition: `
+### Teaching Computers to See
+
+**Convolutional Neural Networks (CNNs)** are the backbone of computer vision. They're inspired by how our visual cortex works!
+
+### The Key Insight: Filters (Kernels)
+
+Instead of looking at every pixel independently, CNNs slide small "filters" across the image. Each filter detects a specific pattern:
+- **Vertical Edge Filter**: Responds to vertical lines
+- **Horizontal Edge Filter**: Responds to horizontal lines
+- **Corner Detector**: Responds where edges meet
+
+### The CNN Pipeline
+1. **Convolution**: Slide filters over input to create "feature maps"
+2. **Activation (ReLU)**: Keep positive values, zero out negatives
+3. **Pooling**: Shrink the image while keeping important features
+4. **Repeat**: Stack more layers to detect increasingly complex patterns
+
+The visualization shows how different filters "see" the same input!
+                `,
+                math: `
+### Convolution Operation
+
+$$ (I * K)[i,j] = \\sum_{m}\\sum_{n} I[i+m, j+n] \\cdot K[m,n] $$
+
+Where $I$ is the input image and $K$ is the kernel/filter.
+
+### Feature Map Dimensions
+
+For input size $H \\times W$, kernel size $k$, stride $s$, padding $p$:
+$$ H_{out} = \\lfloor \\frac{H - k + 2p}{s} \\rfloor + 1 $$
+
+### Common Edge Detection Kernels
+
+Sobel Vertical:
+$$ K_x = \\begin{bmatrix} -1 & 0 & 1 \\\\ -2 & 0 & 2 \\\\ -1 & 0 & 1 \\end{bmatrix} $$
+                `,
+                code: `
+### Rust Implementation
+
+\`\`\`rust
+fn convolve2d(input: &[Vec<f64>], kernel: &[Vec<f64>]) -> Vec<Vec<f64>> {
+    let out_h = input.len() - kernel.len() + 1;
+    let out_w = input[0].len() - kernel[0].len() + 1;
+    
+    let mut output = vec![vec![0.0; out_w]; out_h];
+    
+    for i in 0..out_h {
+        for j in 0..out_w {
+            let mut sum = 0.0;
+            for ki in 0..kernel.len() {
+                for kj in 0..kernel[0].len() {
+                    sum += input[i + ki][j + kj] * kernel[ki][kj];
+                }
+            }
+            output[i][j] = sum;
+        }
+    }
+    output
+}
+\`\`\`
+                `
+            },
+            lesson_05: { 
+                title: "Lesson 5: Policy Networks",
+                viz: "/static/lesson_05.json",
+                intuition: `
+### Learning to Make Decisions
+
+A **Policy Network** directly maps states to actions. Instead of learning "what's the value?", it learns "what should I do?"
+
+### State → Action (Probabilities)
+
+Given the current situation (state), the policy outputs a probability for each possible action:
+- Move Right: 40%
+- Move Left: 10%
+- Move Down: 45%
+- Move Up: 5%
+
+Then we **sample** from this distribution to pick an action.
+
+### Why Probabilities?
+- **Exploration**: Random sampling encourages trying new things
+- **Smooth Learning**: Gradients flow through soft decisions
+- **Stochastic Policies**: Can handle uncertain environments
+                `,
+                math: `
+### The Policy
+
+$$ \\pi_\\theta(a|s) = P(\\text{action} = a | \\text{state} = s) $$
+
+### Softmax Output
+
+$$ \\pi(a|s) = \\frac{e^{f_a(s)}}{\\sum_{a'} e^{f_{a'}(s)}} $$
+
+### REINFORCE Gradient
+
+$$ \\nabla J(\\theta) = \\mathbb{E}\\left[ \\nabla \\log \\pi_\\theta(a|s) \\cdot G_t \\right] $$
+
+Where $G_t$ is the return (sum of future rewards).
+                `,
+                code: `
+### Rust Implementation
+
+\`\`\`rust
+fn softmax(logits: &[f64]) -> Vec<f64> {
+    let max = logits.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+    let exp_vals: Vec<f64> = logits.iter().map(|&x| (x - max).exp()).collect();
+    let sum: f64 = exp_vals.iter().sum();
+    exp_vals.iter().map(|&x| x / sum).collect()
+}
+
+fn sample_action(probs: &[f64], rng: &mut impl Rng) -> usize {
+    let r: f64 = rng.random();
+    let mut cumsum = 0.0;
+    for (i, &p) in probs.iter().enumerate() {
+        cumsum += p;
+        if r < cumsum { return i; }
+    }
+    probs.len() - 1
+}
+\`\`\`
+                `
+            },
+            lesson_06: { 
+                title: "Lesson 6: Q-Learning",
+                viz: "/static/lesson_06.json",
+                intuition: `
+### Learning from Experience
+
+**Q-Learning** learns the "quality" of taking an action in a state. Q(s, a) = "How good is it to do action a in state s?"
+
+### The Q-Table
+Think of it as a giant lookup table:
+| State | Move Right | Move Left | Move Down | Move Up |
+|-------|-----------|----------|-----------|---------|
+| (0,0) | 5.2 | 2.1 | 4.8 | -1.0 |
+| (1,0) | 3.1 | 4.5 | ... | ... |
+
+### The Learning Rule
+After taking action $a$ and getting reward $r$:
+1. Look at the best possible next action
+2. Update: Q(s,a) ← Q(s,a) + α × (target - Q(s,a))
+
+### Epsilon-Greedy
+- With probability ε: take a random action (explore)
+- With probability 1-ε: take the best known action (exploit)
+                `,
+                math: `
+### Bellman Equation
+
+$$ Q(s,a) = r + \\gamma \\max_{a'} Q(s', a') $$
+
+### TD Update
+
+$$ Q(s,a) \\leftarrow Q(s,a) + \\alpha \\left[ r + \\gamma \\max_{a'} Q(s',a') - Q(s,a) \\right] $$
+
+Where:
+- $\\alpha$ = learning rate
+- $\\gamma$ = discount factor
+- $r$ = immediate reward
+                `,
+                code: `
+### Rust Implementation
+
+\`\`\`rust
+// Q-Learning update
+let old_q = q_table.get(state, action);
+let next_max_q = q_table.max_q(next_state);
+let td_target = reward + gamma * next_max_q;
+let new_q = old_q + alpha * (td_target - old_q);
+q_table.set(state, action, new_q);
+
+// Epsilon-greedy action selection
+let action = if rng.random::<f64>() < epsilon {
+    rng.random_range(0..4)  // Random
+} else {
+    q_table.best_action(state)  // Greedy
+};
+\`\`\`
+                `
+            },
+            lesson_07: { 
+                title: "Lesson 7: Policy Gradients (Actor-Critic)",
+                viz: "/static/lesson_07.json",
+                intuition: `
+### Direct Policy Optimization
+
+Instead of learning values (Q-Learning), **Policy Gradients** optimize the policy directly!
+
+### The Actor-Critic Architecture
+- **Actor**: The policy network (chooses actions)
+- **Critic**: Estimates how good the current state is
+
+### Why Two Networks?
+The Critic provides a "baseline" that reduces variance:
+- Without baseline: "I got +10 reward, so everything I did was good!"
+- With baseline: "I got +10, but the Critic expected +8, so I did +2 better than expected"
+
+### CartPole Challenge
+Balance a pole on a cart by moving left/right. The longer you balance, the more reward!
+                `,
+                math: `
+### Policy Gradient Theorem
+
+$$ \\nabla J(\\theta) = \\mathbb{E}\\left[ \\nabla \\log \\pi_\\theta(a|s) \\cdot A(s,a) \\right] $$
+
+### Advantage Function
+
+$$ A(s,a) = Q(s,a) - V(s) $$
+
+Simplifies to:
+$$ A(s,a) \\approx r + \\gamma V(s') - V(s) $$
+
+This is the **TD Error** – how much better/worse was the outcome than expected?
+                `,
+                code: `
+### Rust Implementation
+
+\`\`\`rust
+// Compute advantage
+let advantage = returns[t] - critic.forward(&state);
+
+// Actor update (REINFORCE with baseline)
+let loss = logit * (-advantage);
+loss.backward();
+actor.update(learning_rate);
+
+// Critic update (minimize MSE)
+critic.update(&state, returns[t], critic_lr);
+\`\`\`
+                `
+            },
+            lesson_08: { 
+                title: "Lesson 8: Monte Carlo Tree Search (MCTS)",
+                viz: "/static/lesson_08.json",
+                intuition: `
+### Planning by Simulation
+
+**MCTS** builds a game tree by simulating random games and using statistics to guide the search.
+
+### The Four Steps (Repeated)
+1. **Selection**: Start at root, pick promising children using UCB1
+2. **Expansion**: Add a new node to the tree
+3. **Simulation**: Play randomly until game ends
+4. **Backpropagation**: Update statistics up the tree
+
+### UCB1: The Magic Formula
+$$ \\text{UCB1} = \\frac{\\text{wins}}{\\text{visits}} + c \\sqrt{\\frac{\\ln(\\text{parent visits})}{\\text{visits}}} $$
+
+This balances:
+- **Exploitation**: Pick moves that have won before
+- **Exploration**: Try moves that haven't been tested much
+                `,
+                math: `
+### Upper Confidence Bound
+
+$$ \\text{UCB1}(i) = \\bar{X}_i + c\\sqrt{\\frac{\\ln n}{n_i}} $$
+
+Where:
+- $\\bar{X}_i$ = average reward of node $i$
+- $n$ = total visits to parent
+- $n_i$ = visits to node $i$
+- $c$ = exploration constant (typically $\\sqrt{2}$)
+
+### Win Rate Estimation
+
+After many simulations, the move with the most visits is usually best.
+                `,
+                code: `
+### Rust Implementation
+
+\`\`\`rust
+fn ucb1(&self, child_idx: usize, c: f64) -> f64 {
+    let child = &nodes[child_idx];
+    if child.visits == 0 { return f64::INFINITY; }
+    
+    let exploitation = child.wins / child.visits as f64;
+    let exploration = c * ((self.visits as f64).ln() / child.visits as f64).sqrt();
+    
+    exploitation + exploration
+}
+
+// Select best child
+let best = children.iter()
+    .max_by(|a, b| ucb1(*a).partial_cmp(&ucb1(*b)).unwrap())
+    .unwrap();
+\`\`\`
+                `
+            },
+            lesson_09: { 
+                title: "Lesson 9: AlphaZero (Self-Play)",
+                viz: "/static/lesson_09.json",
+                intuition: `
+### The AlphaZero Breakthrough
+
+**AlphaZero** combines MCTS with neural networks. Instead of random simulations, it uses a neural network to evaluate positions!
+
+### The Neural Network
+Two outputs (heads):
+- **Policy Head**: Probability for each move
+- **Value Head**: Who's winning? (-1 to +1)
+
+### Self-Play Training Loop
+1. Play games against yourself using MCTS + Neural Net
+2. Store (state, MCTS policy, game outcome) as training data
+3. Train the network to predict the MCTS policy and outcome
+4. Repeat!
+
+### Why It Works
+The network learns from MCTS (which looks ahead), and MCTS uses the network (which has learned patterns). They make each other stronger!
+                `,
+                math: `
+### PUCT Selection (AlphaZero's UCB variant)
+
+$$ a^* = \\arg\\max_a \\left( Q(s,a) + c \\cdot P(s,a) \\cdot \\frac{\\sqrt{N(s)}}{1 + N(s,a)} \\right) $$
+
+Where $P(s,a)$ is the policy prior from the neural network.
+
+### Training Loss
+
+$$ L = (z - v)^2 - \\pi^T \\log p + c\\|\\theta\\|^2 $$
+
+- MSE for value prediction
+- Cross-entropy for policy
+- L2 regularization
+                `,
+                code: `
+### Rust Implementation
+
+\`\`\`rust
+// Neural network forward pass
+let (policy, value) = net.forward(&state.to_features());
+
+// MCTS with neural network guidance
+fn select_action(&self, state: &State) -> usize {
+    let prior = self.net.get_policy(state);
+    
+    children.iter()
+        .map(|&a| {
+            let q = self.q_values.get(&a).unwrap_or(&0.0);
+            let n = self.visits.get(&a).unwrap_or(&0);
+            let exploration = c_puct * prior[a] * total_n.sqrt() / (1 + n);
+            (a, q + exploration)
+        })
+        .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+        .unwrap().0
+}
+\`\`\`
+                `
+            },
+            lesson_10: { 
+                title: "Lesson 10: Large Language Models (Transformers)",
+                viz: "/static/lesson_10.json",
+                intuition: `
+### The Attention Revolution
+
+**Transformers** revolutionized NLP with one key insight: **Attention**.
+
+### What is Attention?
+For each word, look at all other words and decide which ones are relevant:
+- "The **cat** sat on the **mat**" – when predicting "sat", attend to "cat"
+- "The bank of the **river** was muddy" – "bank" attends to "river" to understand meaning
+
+### Self-Attention Steps
+1. Create Query (Q), Key (K), Value (V) for each token
+2. Compute attention scores: Q @ K^T
+3. Apply softmax to get weights
+4. Weighted sum of Values
+
+### The Transformer Architecture
+- **Encoder**: Bidirectional (sees all tokens)
+- **Decoder**: Causal (can only see past tokens)
+- GPT uses decoder-only with causal masking
+                `,
+                math: `
+### Scaled Dot-Product Attention
+
+$$ \\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V $$
+
+### Multi-Head Attention
+
+$$ \\text{MultiHead}(Q, K, V) = \\text{Concat}(\\text{head}_1, ..., \\text{head}_h)W^O $$
+
+### Positional Encoding
+
+$$ PE_{(pos, 2i)} = \\sin(pos / 10000^{2i/d}) $$
+$$ PE_{(pos, 2i+1)} = \\cos(pos / 10000^{2i/d}) $$
+                `,
+                code: `
+### Rust Implementation
+
+\`\`\`rust
+fn attention(q: &[Vec<f64>], k: &[Vec<f64>], v: &[Vec<f64>]) -> Vec<Vec<f64>> {
+    let d_k = q[0].len() as f64;
+    
+    // Q @ K^T / sqrt(d_k)
+    let mut scores = compute_dot_products(q, k);
+    for row in &mut scores {
+        for s in row { *s /= d_k.sqrt(); }
+    }
+    
+    // Causal mask (for decoder)
+    apply_causal_mask(&mut scores);
+    
+    // Softmax
+    let weights = softmax_2d(&scores);
+    
+    // Attention @ V
+    matmul(&weights, v)
+}
+\`\`\`
+                `
+            },
+            lesson_11: { 
+                title: "Lesson 11: AGI Architecture",
+                viz: "/static/lesson_11.json",
+                intuition: `
+### The Final Frontier
+
+**Artificial General Intelligence (AGI)** is the holy grail: a system that can learn any task a human can.
+
+### Our Mini-AGI Architecture
+
+1. **Multimodal Encoder**: Process text, vision, and actions into a unified space
+2. **Working Memory**: Short-term buffer with attention-based retrieval
+3. **Long-Term Memory**: Episodic storage of past experiences
+4. **Reasoning Engine**: Combine state, goal, and memory for decisions
+5. **Action Generator**: Produce actions based on reasoning
+
+### Key AGI Capabilities
+- **Generalization**: Transfer knowledge between domains
+- **Memory**: Remember and use past experiences
+- **Planning**: Think ahead before acting
+- **Learning**: Improve from feedback
+                `,
+                math: `
+### Unified Embedding Space
+
+All modalities map to the same vector space:
+$$ e_{\\text{text}} = \\text{Enc}_{\\text{text}}(x) \\in \\mathbb{R}^d $$
+$$ e_{\\text{vision}} = \\text{Enc}_{\\text{vision}}(x) \\in \\mathbb{R}^d $$
+$$ e_{\\text{action}} = \\text{Enc}_{\\text{action}}(x) \\in \\mathbb{R}^d $$
+
+### Memory Attention
+
+$$ \\text{retrieve}(q) = \\text{softmax}(q \\cdot M^T) M $$
+
+### Reasoning
+
+$$ r = f(s \\oplus g \\oplus m) $$
+
+Where $s$ = state, $g$ = goal, $m$ = memory context.
+                `,
+                code: `
+### Rust Implementation
+
+\`\`\`rust
+struct AGIAgent {
+    encoder: MultimodalEncoder,
+    working_memory: WorkingMemory,
+    long_term_memory: LongTermMemory,
+    reasoning: ReasoningEngine,
+    action_gen: ActionGenerator,
+}
+
+impl AGIAgent {
+    fn think(&mut self) -> String {
+        // Attend over working memory with goal
+        let state = self.working_memory.attend(&self.goal);
+        
+        // Recall relevant past experiences
+        let memories = self.long_term_memory.recall(&state, k=3);
+        
+        // Reason about state, goal, and memories
+        let reasoning = self.reasoning.reason(&state, &goal, &memories);
+        
+        // Generate action
+        self.action_gen.generate(&reasoning)
+    }
+}
+\`\`\`
+                `,
+            },
+        };
+
+        let currentLessonId = 'intro';
+
+        function cleanMd(str) {
+            // Remove common leading indentation from multiline strings
+            const lines = str.split('\n');
+            // Find the first non-empty line
+            const firstLine = lines.find(line => line.trim().length > 0);
+            if (!firstLine) return str;
+            
+            // Count leading spaces
+            const indent = firstLine.match(/^\s*/)[0].length;
+            
+            // Remove that many spaces from each line
+            return lines.map(line => line.substring(indent)).join('\n');
+        }
+
+        function loadLesson(lessonId) {
+            console.log('loadLesson called with:', lessonId);
+            currentLessonId = lessonId;
+            const data = lessons[lessonId];
+            
+            if (!data) {
+                console.error('No lesson data found for:', lessonId);
+                return;
+            }
+            console.log('Lesson data:', data.title);
+            
+            // Update Navigation Active State
+            document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+            const navEl = document.getElementById('nav-' + lessonId);
+            if(navEl) navEl.classList.add('active');
+
+            // Update Title
+            document.getElementById('page-title').innerText = data.title;
+
+            // Render Template
+            const container = document.getElementById('content-area');
+            if (lessonId === 'intro') {
+                container.innerHTML = `
+                    <div class="prose" style="max-width: 48rem;">
+                        ${marked.parse(cleanMd(data.intuition))}
+                    </div>
+                `;
+                return;
+            }
+
+            const tpl = document.getElementById('tpl-lesson');
+            const clone = tpl.content.cloneNode(true);
+            
+            // Inject Content
+            clone.querySelector('#content-intuition').innerHTML = marked.parse(cleanMd(data.intuition));
+            clone.querySelector('#content-math').innerHTML = marked.parse(cleanMd(data.math));
+            clone.querySelector('#content-code').innerHTML = marked.parse(cleanMd(data.code));
+            
+            container.innerHTML = '';
+            container.appendChild(clone);
+
+            // Render Math
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false}
+                ]
+            });
+
+            // Render Viz
+            if (data.viz) {
+                vegaEmbed('#viz-target', data.viz).catch(console.error);
+            } else {
+                document.getElementById('viz-target').innerHTML = '<div class="text-slate-400 italic">Visualization coming soon...</div>';
+            }
+
+            // Load Comments
+            loadComments();
+        }
+
+        function switchTab(tabName) {
+            // Update Buttons
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+
+            // Update Content
+            document.querySelectorAll('.tab-panel').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('block'));
+            
+            const content = document.getElementById('content-' + tabName);
+            content.classList.remove('hidden');
+            content.classList.add('block');
+        }
+
+        async function loadComments() {
+            const list = document.getElementById('comment-list');
+            list.innerHTML = '<div style="text-align: center; color: #94a3b8;">Loading comments...</div>';
+            
+            try {
+                const res = await fetch('/api/comments/' + currentLessonId);
+                const comments = await res.json();
+                
+                if (comments.length === 0) {
+                    list.innerHTML = '<div style="text-align: center; color: #94a3b8; font-style: italic;">No comments yet. Start the discussion!</div>';
+                    return;
+                }
+
+                list.innerHTML = comments.map(c => `
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <span class="comment-author">${c.author}</span>
+                            <span class="comment-time">${new Date(c.timestamp).toLocaleString()}</span>
+                        </div>
+                        <div class="comment-text">${c.content}</div>
+                    </div>
+                `).join('');
+            } catch(e) {
+                console.error(e);
+                list.innerHTML = '<div style="color: #ef4444;">Failed to load comments.</div>';
+            }
+        }
+
+        async function submitComment() {
+            const author = document.getElementById('comment-author').value;
+            const content = document.getElementById('comment-content').value;
+            
+            if (!author || !content) {
+                alert("Please fill in both fields.");
+                return;
+            }
+
+            try {
+                await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ author, content, lesson_id: currentLessonId })
+                });
+                
+                document.getElementById('comment-content').value = '';
+                loadComments();
+            } catch(e) {
+                alert("Failed to post comment.");
+            }
+        }
+
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Ready');
+            
+            // Event Delegation for navigation
+            const nav = document.getElementById('lesson-nav');
+            if (!nav) {
+                console.error('lesson-nav element not found!');
+                return;
+            }
+            
+            nav.addEventListener('click', function(e) {
+                console.log('Nav clicked:', e.target);
+                const link = e.target.closest('a[data-lesson]');
+                if (link) {
+                    e.preventDefault();
+                    const lessonId = link.getAttribute('data-lesson');
+                    console.log('Loading lesson:', lessonId);
+                    try {
+                        loadLesson(lessonId);
+                    } catch(err) {
+                        console.error('Error loading lesson:', err);
+                    }
+                }
+            });
+
+            // Init
+            console.log('Initializing app...');
+            try {
+                loadLesson('intro');
+            } catch(err) {
+                console.error('Error on initial load:', err);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+name: "ML Issue"
+description: "Issue for the ML learning curriculum"
+labels: ["ml"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ML Learning Curriculum
+        Zero to AGI in Rust - from scratch implementations.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue Type
+      options:
+        - New Lesson
+        - Bug Fix
+        - Enhancement
+        - Visualization
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the issue or feature request
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: What needs to be true for this to be complete?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+
+  - type: dropdown
+    id: lesson
+    attributes:
+      label: Related Lesson
+      options:
+        - Lesson 0 (Rust Refresher)
+        - Lesson 1 (Linear Regression)
+        - Lesson 2 (Logistic Regression)
+        - Lesson 3 (Neural Networks)
+        - Lesson 4 (CNNs)
+        - Lesson 5 (Policy Networks)
+        - Lesson 6 (Q-Learning)
+        - Lesson 7 (Policy Gradients)
+        - Lesson 8 (MCTS)
+        - Lesson 9 (AlphaZero)
+        - Lesson 10 (LLMs)
+        - Lesson 11 (AGI)
+        - Web Interface
+        - Core Engine
+        - New Lesson

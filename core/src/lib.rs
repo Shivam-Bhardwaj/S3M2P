@@ -48,6 +48,22 @@ pub mod color;
 pub use color::*;
 
 // ============================================================================
+// MATH AND FILTERING MODULES
+// ============================================================================
+
+/// 2x2 Matrix operations for 2D transforms and filters
+pub mod mat2;
+pub use mat2::Mat2;
+
+/// Extended Kalman Filter for state estimation
+pub mod ekf;
+pub use ekf::EKF;
+
+/// A* and grid-based pathfinding
+pub mod pathfinding;
+pub use pathfinding::{GridMap, Heuristic, PathResult, astar};
+
+// ============================================================================
 // CORE TYPES
 // ============================================================================
 

@@ -1,0 +1,52 @@
+name: "Blog Issue"
+description: "Issue for the Blog engine"
+labels: ["blog"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Blog Engine
+        Rust/WASM markdown blog with AI content support.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue Type
+      options:
+        - Feature
+        - Bug
+        - Enhancement
+        - Content Request
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the issue or feature request
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: What needs to be true for this to be complete?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - Markdown Parsing
+        - Routing
+        - Rendering
+        - Styling
+        - Search
+        - RSS/Feed
+        - Other

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog | too.foo</title>
+    <link data-trunk rel="rust" href="Cargo.toml" data-wasm-opt="z" />
+    <link data-trunk rel="copy-dir" href="posts" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Rajdhani:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050508;
+            --surface: #0a0a10;
+            --text: #e0e0e0;
+            --text-muted: #888;
+            --accent: #00ffff;
+            --accent-dim: rgba(0, 255, 255, 0.3);
+            --border: rgba(0, 255, 255, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            min-height: 100%;
+            background: var(--bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Layout */
+        #app {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        .blog-header, .tag-header {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .blog-header h1, .tag-header h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2.5rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Post Cards */
+        .post-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .post-card:hover {
+            border-color: var(--accent);
+            transform: translateX(4px);
+        }
+
+        .post-card a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .post-card h3 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.3rem;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .post-card time {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .post-card p {
+            margin-top: 10px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .card-tags {
+            margin-top: 12px;
+        }
+
+        .card-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            color: var(--accent);
+            background: rgba(0, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 6px;
+        }
+
+        /* Full Post */
+        .blog-post {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .post-header h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2.2rem;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .post-meta {
+            margin-top: 12px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .ai-badge {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .post-tags {
+            margin-top: 16px;
+        }
+
+        .tag {
+            display: inline-block;
+            color: var(--accent);
+            font-size: 0.85rem;
+            margin-right: 10px;
+        }
+
+        .post-content {
+            margin-top: 40px;
+        }
+
+        .post-content h1, .post-content h2, .post-content h3 {
+            font-family: 'Rajdhani', sans-serif;
+            color: #fff;
+            margin-top: 32px;
+            margin-bottom: 16px;
+        }
+
+        .post-content h2 { font-size: 1.5rem; }
+        .post-content h3 { font-size: 1.25rem; }
+
+        .post-content p {
+            margin-bottom: 16px;
+        }
+
+        .post-content code {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--surface);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .post-content pre {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .post-content ul, .post-content ol {
+            margin: 16px 0;
+            padding-left: 24px;
+        }
+
+        .post-content blockquote {
+            border-left: 3px solid var(--accent);
+            padding-left: 16px;
+            margin: 20px 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .post-footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Tags Sidebar */
+        .tags-sidebar {
+            margin-top: 40px;
+            padding: 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .tags-sidebar h3 {
+            font-family: 'Rajdhani', sans-serif;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .tag-cloud .tag {
+            display: inline-block;
+            margin: 4px;
+        }
+
+        /* 404 */
+        .not-found {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .not-found h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 6rem;
+            color: var(--accent);
+            opacity: 0.3;
+        }
+
+        /* Navigation */
+        nav {
+            margin-bottom: 40px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav .logo {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+
+        nav .links a {
+            margin-left: 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        nav .links a:hover {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <nav>
+            <a href="/" class="logo">too.foo/blog</a>
+            <div class="links">
+                <a href="/archive">Archive</a>
+                <a href="/about">About</a>
+                <a href="https://too.foo">← Home</a>
+            </div>
+        </nav>
+        <main id="blog-root">
+            <!-- Rendered by WASM -->
+            <div class="blog-home">
+                <header class="blog-header">
+                    <h1>Blog</h1>
+                    <p class="subtitle">Thoughts on code, robotics, and the universe. Some posts AI-generated.</p>
+                </header>
+                <section class="recent-posts">
+                    <h2>Recent Posts</h2>
+                    <p style="color: var(--text-muted);">Posts loading... or create your first post in /blog/posts/</p>
+                </section>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

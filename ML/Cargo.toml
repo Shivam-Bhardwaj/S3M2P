@@ -1,0 +1,26 @@
+[package]
+name = "antimony-labs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = "0.8.7"
+chrono = { version = "0.4.42", features = ["serde"] }
+ndarray = "0.17.1"
+plotters = "0.3.7"
+rand = "0.9.2"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+tokio = { version = "1.48.0", features = ["full"] }
+tower-http = { version = "0.6.7", features = ["fs", "trace", "cors"] }
+uuid = { version = "1.18.1", features = ["v4"] }
+
+[dev-dependencies]
+approx = "0.5"  # For floating point comparisons in tests
+
+[[test]]
+name = "integration"
+path = "tests/integration.rs"
+
+[features]
+default = []

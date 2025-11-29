@@ -6,6 +6,12 @@ members = [
     "simulation-cli",
     "helios",
     "too.foo",
-    "PROJECT_N"
+    "PROJECT_N",
+    "portfolio",
+    "autocrate",
+    "chladni",
+    "blog",
+    "learn",
 ]
+# ML is excluded - runs as standalone native Rust server with different deps
 

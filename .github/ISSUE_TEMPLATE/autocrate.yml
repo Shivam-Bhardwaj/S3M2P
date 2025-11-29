@@ -1,0 +1,83 @@
+name: "[autocrate] Issue"
+description: Issues related to the AutoCrate shipping crate generator
+title: "[autocrate] "
+labels: ["project:autocrate"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## AutoCrate Issue
+        This issue affects the `autocrate` project - ASTM standard shipping crate generator.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue Type
+      options:
+        - Bug fix
+        - New feature
+        - Calculation fix
+        - UI/UX improvement
+        - TypeScript conversion
+        - Performance optimization
+        - Documentation
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      options:
+        - Calculator (structural)
+        - Geometry engine
+        - Constants/standards
+        - 3D visualization
+        - Input validation
+        - Export (STEP/NX)
+        - UI
+        - All components
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Clear description of the issue or feature
+      placeholder: What needs to be done?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: What defines "done" for this issue?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Tests pass
+    validations:
+      required: true
+
+  - type: textarea
+    id: original_ts
+    attributes:
+      label: Original TypeScript Reference
+      description: If converting from TypeScript, link to or describe the original code
+      placeholder: |
+        Original file: src/lib/calculator.ts
+        Function: calculateSkids()
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 - Critical
+        - P1 - High
+        - P2 - Medium
+        - P3 - Low
+    validations:
+      required: true
