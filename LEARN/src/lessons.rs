@@ -9,7 +9,7 @@ pub struct Lesson {
     pub icon: &'static str,
     pub description: &'static str,
     pub intuition: &'static str,
-    pub math: &'static str,  // KaTeX formatted
+    pub math: &'static str, // KaTeX formatted
     pub key_concepts: &'static [&'static str],
 }
 

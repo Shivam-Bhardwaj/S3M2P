@@ -55,7 +55,10 @@ impl InteractionResult {
     /// Check if this result is harmful
     #[inline]
     pub fn is_harmful(&self) -> bool {
-        matches!(self, InteractionResult::Damage(_) | InteractionResult::Death)
+        matches!(
+            self,
+            InteractionResult::Damage(_) | InteractionResult::Death
+        )
     }
 }
 
@@ -151,9 +154,9 @@ mod tests {
         }
 
         let positions = vec![
-            Vec2::new(100.0, 100.0),  // Inside zone
-            Vec2::new(500.0, 500.0),  // Outside zone
-            Vec2::new(110.0, 100.0),  // Inside zone
+            Vec2::new(100.0, 100.0), // Inside zone
+            Vec2::new(500.0, 500.0), // Outside zone
+            Vec2::new(110.0, 100.0), // Inside zone
         ];
         let alive = vec![true, true, true];
 

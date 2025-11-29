@@ -23,12 +23,10 @@
 //! | test_season_cycle_bounds | lib.rs | SeasonCycle | Low - Time math |
 
 use dna::{
-    BoidArena, SpatialGrid, SimConfig, Genome, BoidRole, BoidState,
-    SeasonCycle, FoodSource, PredatorZone,
-    compute_flocking_forces, simulation_step, feed_from_sources,
-    apply_predator_zones, compute_diversity, update_states,
-    trigger_mass_extinction, trigger_migration, trigger_earthquake,
-    get_boid_color,
+    apply_predator_zones, compute_diversity, compute_flocking_forces, feed_from_sources,
+    get_boid_color, simulation_step, trigger_earthquake, trigger_mass_extinction,
+    trigger_migration, update_states, BoidArena, BoidRole, BoidState, FoodSource, Genome,
+    PredatorZone, SeasonCycle, SimConfig, SpatialGrid,
 };
 use glam::Vec2;
 
@@ -70,8 +68,14 @@ fn test_full_capacity_arena() {
 
     // Spawning beyond capacity should fail gracefully
     let overflow_handle = arena.spawn(Vec2::ZERO, Vec2::ZERO, Genome::default());
-    assert!(!overflow_handle.is_valid(), "Overflow spawn should return invalid handle");
-    assert_eq!(arena.alive_count, 10, "Count should not increase on failed spawn");
+    assert!(
+        !overflow_handle.is_valid(),
+        "Overflow spawn should return invalid handle"
+    );
+    assert_eq!(
+        arena.alive_count, 10,
+        "Count should not increase on failed spawn"
+    );
 }
 
 #[test]
@@ -126,8 +130,16 @@ fn test_position_nan_handling() {
             let pos = arena.positions[idx];
             assert!(!pos.x.is_nan(), "Position X became NaN at frame {}", frame);
             assert!(!pos.y.is_nan(), "Position Y became NaN at frame {}", frame);
-            assert!(pos.x.is_finite(), "Position X became infinite at frame {}", frame);
-            assert!(pos.y.is_finite(), "Position Y became infinite at frame {}", frame);
+            assert!(
+                pos.x.is_finite(),
+                "Position X became infinite at frame {}",
+                frame
+            );
+            assert!(
+                pos.y.is_finite(),
+                "Position Y became infinite at frame {}",
+                frame
+            );
         }
     }
 }
@@ -162,7 +174,9 @@ fn test_velocity_bounds() {
         assert!(
             speed <= max_speed + 0.001, // Small epsilon for floating point
             "Velocity {} exceeds max_speed {} at index {}",
-            speed, max_speed, idx
+            speed,
+            max_speed,
+            idx
         );
     }
 }
@@ -255,18 +269,33 @@ fn test_all_state_transitions() {
     let mut grid: SpatialGrid<32> = SpatialGrid::new(1000.0, 1000.0, 50.0);
 
     // Test WANDER (default high energy, no threats)
-    let wander_genes = Genome { role: BoidRole::Herbivore, ..Genome::default() };
-    let wander_idx = arena.spawn(Vec2::new(100.0, 100.0), Vec2::ZERO, wander_genes).index();
+    let wander_genes = Genome {
+        role: BoidRole::Herbivore,
+        ..Genome::default()
+    };
+    let wander_idx = arena
+        .spawn(Vec2::new(100.0, 100.0), Vec2::ZERO, wander_genes)
+        .index();
     arena.energy[wander_idx] = 100.0;
 
     // Test FORAGE (low energy)
-    let forage_genes = Genome { role: BoidRole::Herbivore, ..Genome::default() };
-    let forage_idx = arena.spawn(Vec2::new(300.0, 100.0), Vec2::ZERO, forage_genes).index();
+    let forage_genes = Genome {
+        role: BoidRole::Herbivore,
+        ..Genome::default()
+    };
+    let forage_idx = arena
+        .spawn(Vec2::new(300.0, 100.0), Vec2::ZERO, forage_genes)
+        .index();
     arena.energy[forage_idx] = 50.0;
 
     // Test REPRODUCE (high energy)
-    let repro_genes = Genome { role: BoidRole::Herbivore, ..Genome::default() };
-    let repro_idx = arena.spawn(Vec2::new(500.0, 100.0), Vec2::ZERO, repro_genes).index();
+    let repro_genes = Genome {
+        role: BoidRole::Herbivore,
+        ..Genome::default()
+    };
+    let repro_idx = arena
+        .spawn(Vec2::new(500.0, 100.0), Vec2::ZERO, repro_genes)
+        .index();
     arena.energy[repro_idx] = 200.0;
 
     grid.build(&arena);
@@ -288,18 +317,27 @@ fn test_flee_priority_over_other_states() {
         sensor_radius: 100.0,
         ..Genome::default()
     };
-    let herb_idx = arena.spawn(Vec2::new(100.0, 100.0), Vec2::ZERO, herb_genes).index();
+    let herb_idx = arena
+        .spawn(Vec2::new(100.0, 100.0), Vec2::ZERO, herb_genes)
+        .index();
     arena.energy[herb_idx] = 200.0; // High energy
 
     // Nearby carnivore
-    let carn_genes = Genome { role: BoidRole::Carnivore, ..Genome::default() };
+    let carn_genes = Genome {
+        role: BoidRole::Carnivore,
+        ..Genome::default()
+    };
     arena.spawn(Vec2::new(110.0, 100.0), Vec2::ZERO, carn_genes);
 
     grid.build(&arena);
     update_states(&mut arena, &grid);
 
     // Should FLEE despite high energy
-    assert_eq!(arena.states[herb_idx], BoidState::Flee, "Flee should override Reproduce");
+    assert_eq!(
+        arena.states[herb_idx],
+        BoidState::Flee,
+        "Flee should override Reproduce"
+    );
 }
 
 // =============================================================================
@@ -319,8 +357,13 @@ fn test_food_source_depletion() {
     }];
 
     // Spawn hungry herbivore at food source
-    let genes = Genome { role: BoidRole::Herbivore, ..Genome::default() };
-    let idx = arena.spawn(Vec2::new(100.0, 100.0), Vec2::ZERO, genes).index();
+    let genes = Genome {
+        role: BoidRole::Herbivore,
+        ..Genome::default()
+    };
+    let idx = arena
+        .spawn(Vec2::new(100.0, 100.0), Vec2::ZERO, genes)
+        .index();
     arena.energy[idx] = 50.0;
 
     let initial_food = sources[0].energy;
@@ -330,7 +373,10 @@ fn test_food_source_depletion() {
     feed_from_sources(&mut arena, &mut sources, &season);
 
     assert!(sources[0].energy < initial_food, "Food should deplete");
-    assert!(arena.energy[idx] > initial_energy, "Boid should gain energy");
+    assert!(
+        arena.energy[idx] > initial_energy,
+        "Boid should gain energy"
+    );
 }
 
 #[test]
@@ -369,15 +415,21 @@ fn test_predator_zone_damage_scaling() {
     }];
 
     // Boid at center (max damage)
-    let idx_center = arena.spawn(Vec2::new(100.0, 100.0), Vec2::ZERO, Genome::default()).index();
+    let idx_center = arena
+        .spawn(Vec2::new(100.0, 100.0), Vec2::ZERO, Genome::default())
+        .index();
     arena.energy[idx_center] = 100.0;
 
     // Boid at edge (min damage)
-    let idx_edge = arena.spawn(Vec2::new(149.0, 100.0), Vec2::ZERO, Genome::default()).index();
+    let idx_edge = arena
+        .spawn(Vec2::new(149.0, 100.0), Vec2::ZERO, Genome::default())
+        .index();
     arena.energy[idx_edge] = 100.0;
 
     // Boid outside (no damage)
-    let idx_outside = arena.spawn(Vec2::new(200.0, 100.0), Vec2::ZERO, Genome::default()).index();
+    let idx_outside = arena
+        .spawn(Vec2::new(200.0, 100.0), Vec2::ZERO, Genome::default())
+        .index();
     arena.energy[idx_outside] = 100.0;
 
     apply_predator_zones(&mut arena, &predators);
@@ -386,7 +438,10 @@ fn test_predator_zone_damage_scaling() {
     let dmg_edge = 100.0 - arena.energy[idx_edge];
     let dmg_outside = 100.0 - arena.energy[idx_outside];
 
-    assert!(dmg_center > dmg_edge, "Center should take more damage than edge");
+    assert!(
+        dmg_center > dmg_edge,
+        "Center should take more damage than edge"
+    );
     assert!(dmg_outside == 0.0, "Outside should take no damage");
 }
 
@@ -401,12 +456,17 @@ fn test_inactive_predator_zone() {
         lifetime: 0.0,
     }];
 
-    let idx = arena.spawn(Vec2::new(100.0, 100.0), Vec2::ZERO, Genome::default()).index();
+    let idx = arena
+        .spawn(Vec2::new(100.0, 100.0), Vec2::ZERO, Genome::default())
+        .index();
     arena.energy[idx] = 100.0;
 
     apply_predator_zones(&mut arena, &predators);
 
-    assert_eq!(arena.energy[idx], 100.0, "Inactive predator should deal no damage");
+    assert_eq!(
+        arena.energy[idx], 100.0,
+        "Inactive predator should deal no damage"
+    );
 }
 
 // =============================================================================
@@ -426,7 +486,11 @@ fn test_diversity_monoculture() {
     }
 
     let diversity = compute_diversity(&arena);
-    assert!(diversity < 0.5, "Monoculture should have low diversity: {}", diversity);
+    assert!(
+        diversity < 0.5,
+        "Monoculture should have low diversity: {}",
+        diversity
+    );
 }
 
 #[test]
@@ -454,7 +518,11 @@ fn test_diversity_balanced_ecosystem() {
     }
 
     let diversity = compute_diversity(&arena);
-    assert!(diversity > 0.6, "Balanced ecosystem should have high diversity: {}", diversity);
+    assert!(
+        diversity > 0.6,
+        "Balanced ecosystem should have high diversity: {}",
+        diversity
+    );
 }
 
 // =============================================================================
@@ -487,8 +555,16 @@ fn test_season_food_multiplier_range() {
         max_mult = max_mult.max(mult);
     }
 
-    assert!(min_mult >= 0.3, "Min multiplier should be >= 0.3: {}", min_mult);
-    assert!(max_mult <= 2.0, "Max multiplier should be <= 2.0: {}", max_mult);
+    assert!(
+        min_mult >= 0.3,
+        "Min multiplier should be >= 0.3: {}",
+        min_mult
+    );
+    assert!(
+        max_mult <= 2.0,
+        "Max multiplier should be <= 2.0: {}",
+        max_mult
+    );
 }
 
 // =============================================================================
@@ -510,8 +586,16 @@ fn test_mass_extinction_survival() {
     trigger_mass_extinction(&mut arena, 0.9, 1000.0, 1000.0);
 
     // Should have survivors + founders
-    assert!(arena.alive_count > 10, "Some should survive: {}", arena.alive_count);
-    assert!(arena.alive_count < 100, "Most should die: {}", arena.alive_count);
+    assert!(
+        arena.alive_count > 10,
+        "Some should survive: {}",
+        arena.alive_count
+    );
+    assert!(
+        arena.alive_count < 100,
+        "Most should die: {}",
+        arena.alive_count
+    );
 }
 
 // =============================================================================
@@ -529,7 +613,10 @@ fn test_migration_applies_velocity() {
     trigger_migration(&mut arena, Vec2::new(1.0, 0.0), 5.0);
 
     for idx in arena.iter_alive() {
-        assert!(arena.velocities[idx].x > 4.0, "Migration should add velocity");
+        assert!(
+            arena.velocities[idx].x > 4.0,
+            "Migration should add velocity"
+        );
     }
 }
 
@@ -550,7 +637,10 @@ fn test_earthquake_randomizes_velocity() {
             has_different = true;
         }
     }
-    assert!(has_different, "Earthquake should randomize velocities differently");
+    assert!(
+        has_different,
+        "Earthquake should randomize velocities differently"
+    );
 }
 
 // =============================================================================
@@ -563,13 +653,19 @@ fn test_boid_color_bounds() {
 
     // Test with various energy levels
     for energy in [0.0, 50.0, 100.0, 200.0, 500.0] {
-        let idx = arena.spawn(Vec2::new(0.0, 0.0), Vec2::ZERO, Genome::default()).index();
+        let idx = arena
+            .spawn(Vec2::new(0.0, 0.0), Vec2::ZERO, Genome::default())
+            .index();
         arena.energy[idx] = energy;
 
         let (hue, sat, light) = get_boid_color(&arena, idx);
 
         assert!(hue <= 360, "Hue {} out of range", hue);
         assert!(sat <= 100, "Saturation {} out of range", sat);
-        assert!(light >= 25 && light <= 80, "Lightness {} out of range", light);
+        assert!(
+            light >= 25 && light <= 80,
+            "Lightness {} out of range",
+            light
+        );
     }
 }

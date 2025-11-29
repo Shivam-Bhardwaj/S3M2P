@@ -1,8 +1,8 @@
 // Geometry types for crate components
 
+use crate::LumberSize;
 use glam::Vec3;
 use serde::{Deserialize, Serialize};
-use crate::LumberSize;
 
 /// 3D point (origin-based coordinate system)
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize)]
@@ -24,7 +24,11 @@ impl Point3 {
 
 impl From<Vec3> for Point3 {
     fn from(v: Vec3) -> Self {
-        Self { x: v.x, y: v.y, z: v.z }
+        Self {
+            x: v.x,
+            y: v.y,
+            z: v.z,
+        }
     }
 }
 

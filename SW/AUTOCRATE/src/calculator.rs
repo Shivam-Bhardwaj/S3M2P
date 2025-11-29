@@ -1,9 +1,9 @@
 // Crate geometry calculator
 // Computes all dimensions and component positions
 
-use crate::{CrateSpec, CrateGeometry, LumberSize};
 use crate::constants;
 use crate::geometry::*;
+use crate::{CrateGeometry, CrateSpec, LumberSize};
 
 /// Calculate complete crate geometry from specification
 pub fn calculate_crate(spec: &CrateSpec) -> CrateGeometry {
@@ -103,7 +103,8 @@ fn calculate_floorboards(
     let board_dims = spec.floorboard_size.actual();
 
     // Floorboards run across width (X axis)
-    let board_count = ((length - crate::constants::geometry::STANDARD_TOLERANCE) / board_dims.1).floor() as usize;
+    let board_count =
+        ((length - crate::constants::geometry::STANDARD_TOLERANCE) / board_dims.1).floor() as usize;
     let total_board_length = board_count as f32 * board_dims.1;
     let start_y = -total_board_length / 2.0;
 
@@ -112,11 +113,7 @@ fn calculate_floorboards(
     for i in 0..board_count {
         let y = start_y + board_dims.1 * (i as f32 + 0.5);
 
-        let min = Point3::new(
-            -width / 2.0,
-            y - board_dims.1 / 2.0,
-            skid_height,
-        );
+        let min = Point3::new(-width / 2.0, y - board_dims.1 / 2.0, skid_height);
         let max = Point3::new(
             width / 2.0,
             y + board_dims.1 / 2.0,
@@ -150,7 +147,11 @@ fn calculate_panels(
         width,
         panel_height,
         panel_thickness,
-        Point3::new(0.0, -length / 2.0 + panel_thickness / 2.0, base_height + ground_clearance),
+        Point3::new(
+            0.0,
+            -length / 2.0 + panel_thickness / 2.0,
+            base_height + ground_clearance,
+        ),
         spec,
     );
 
@@ -160,7 +161,11 @@ fn calculate_panels(
         width,
         panel_height,
         panel_thickness,
-        Point3::new(0.0, length / 2.0 - panel_thickness / 2.0, base_height + ground_clearance),
+        Point3::new(
+            0.0,
+            length / 2.0 - panel_thickness / 2.0,
+            base_height + ground_clearance,
+        ),
         spec,
     );
 
@@ -170,7 +175,11 @@ fn calculate_panels(
         length - 2.0 * panel_thickness, // Between front and back
         panel_height,
         panel_thickness,
-        Point3::new(-width / 2.0 + panel_thickness / 2.0, 0.0, base_height + ground_clearance),
+        Point3::new(
+            -width / 2.0 + panel_thickness / 2.0,
+            0.0,
+            base_height + ground_clearance,
+        ),
         spec,
     );
 
@@ -180,7 +189,11 @@ fn calculate_panels(
         length - 2.0 * panel_thickness,
         panel_height,
         panel_thickness,
-        Point3::new(width / 2.0 - panel_thickness / 2.0, 0.0, base_height + ground_clearance),
+        Point3::new(
+            width / 2.0 - panel_thickness / 2.0,
+            0.0,
+            base_height + ground_clearance,
+        ),
         spec,
     );
 
@@ -194,7 +207,13 @@ fn calculate_panels(
         spec,
     );
 
-    PanelSet { front, back, left, right, top }
+    PanelSet {
+        front,
+        back,
+        left,
+        right,
+        top,
+    }
 }
 
 fn calculate_single_panel(
@@ -208,15 +227,31 @@ fn calculate_single_panel(
     let bounds = match panel_type {
         PanelType::Front | PanelType::Back => BoundingBox::new(
             Point3::new(center.x - dim1 / 2.0, center.y - thickness / 2.0, center.z),
-            Point3::new(center.x + dim1 / 2.0, center.y + thickness / 2.0, center.z + dim2),
+            Point3::new(
+                center.x + dim1 / 2.0,
+                center.y + thickness / 2.0,
+                center.z + dim2,
+            ),
         ),
         PanelType::Left | PanelType::Right => BoundingBox::new(
             Point3::new(center.x - thickness / 2.0, center.y - dim1 / 2.0, center.z),
-            Point3::new(center.x + thickness / 2.0, center.y + dim1 / 2.0, center.z + dim2),
+            Point3::new(
+                center.x + thickness / 2.0,
+                center.y + dim1 / 2.0,
+                center.z + dim2,
+            ),
         ),
         PanelType::Top => BoundingBox::new(
-            Point3::new(center.x - dim1 / 2.0, center.y - dim2 / 2.0, center.z - thickness / 2.0),
-            Point3::new(center.x + dim1 / 2.0, center.y + dim2 / 2.0, center.z + thickness / 2.0),
+            Point3::new(
+                center.x - dim1 / 2.0,
+                center.y - dim2 / 2.0,
+                center.z - thickness / 2.0,
+            ),
+            Point3::new(
+                center.x + dim1 / 2.0,
+                center.y + dim2 / 2.0,
+                center.z + thickness / 2.0,
+            ),
         ),
     };
 

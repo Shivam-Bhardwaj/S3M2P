@@ -101,8 +101,14 @@ impl GridMap {
     /// Get 8-connected neighbors (including diagonals)
     pub fn neighbors_8(&self, x: i32, y: i32) -> impl Iterator<Item = (i32, i32)> + '_ {
         const DIRS: [(i32, i32); 8] = [
-            (0, -1), (0, 1), (-1, 0), (1, 0),
-            (-1, -1), (-1, 1), (1, -1), (1, 1),
+            (0, -1),
+            (0, 1),
+            (-1, 0),
+            (1, 0),
+            (-1, -1),
+            (-1, 1),
+            (1, -1),
+            (1, 1),
         ];
         DIRS.iter()
             .map(move |(dx, dy)| (x + dx, y + dy))
@@ -148,7 +154,10 @@ impl PartialOrd for PathNode {
 impl Ord for PathNode {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         // Reverse ordering for min-heap behavior
-        other.f.partial_cmp(&self.f).unwrap_or(std::cmp::Ordering::Equal)
+        other
+            .f
+            .partial_cmp(&self.f)
+            .unwrap_or(std::cmp::Ordering::Equal)
     }
 }
 
@@ -289,14 +298,22 @@ pub fn astar(
 /// Convert grid path to world coordinates
 pub fn path_to_world(path: &[(i32, i32)], cell_size: f32, offset: Vec2) -> Vec<Vec2> {
     path.iter()
-        .map(|&(x, y)| Vec2::new(x as f32 * cell_size + offset.x, y as f32 * cell_size + offset.y))
+        .map(|&(x, y)| {
+            Vec2::new(
+                x as f32 * cell_size + offset.x,
+                y as f32 * cell_size + offset.y,
+            )
+        })
         .collect()
 }
 
 /// Convert world position to grid cell
 pub fn world_to_grid(pos: Vec2, cell_size: f32, offset: Vec2) -> (i32, i32) {
     let local = pos - offset;
-    ((local.x / cell_size).floor() as i32, (local.y / cell_size).floor() as i32)
+    (
+        (local.x / cell_size).floor() as i32,
+        (local.y / cell_size).floor() as i32,
+    )
 }
 
 #[cfg(test)]
@@ -323,7 +340,10 @@ mod tests {
         let result = astar(&map, (0, 2), (4, 2), Heuristic::Manhattan, false);
         assert!(!result.path.is_empty());
         // Path should go around the wall
-        assert!(result.path.iter().all(|&(x, _)| x != 2 || map.is_passable(x, 0)));
+        assert!(result
+            .path
+            .iter()
+            .all(|&(x, _)| x != 2 || map.is_passable(x, 0)));
     }
 
     #[test]

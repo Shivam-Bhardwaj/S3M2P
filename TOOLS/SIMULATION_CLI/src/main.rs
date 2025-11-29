@@ -1,13 +1,13 @@
 use clap::{Parser, Subcommand};
-use std::path::PathBuf;
 use dna::spatial::SpatialKey;
 use glam::Vec3;
+use indicatif::{ProgressBar, ProgressStyle};
 use rand::Rng;
+use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
-use indicatif::{ProgressBar, ProgressStyle};
-use serde::Deserialize;
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -46,7 +46,7 @@ enum Commands {
         /// Simulation duration in years
         #[arg(short, long, default_value_t = 1000)]
         duration: u32,
-    }
+    },
 }
 
 #[derive(serde::Serialize, Clone)]
@@ -62,7 +62,7 @@ struct StarData {
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
 struct RawStarRecord {
-    id: u64,  // Required by CSV format but unused in processing
+    id: u64, // Required by CSV format but unused in processing
     x: f32,
     y: f32,
     z: f32,
@@ -74,10 +74,18 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Generate { output, count, level } => {
+        Commands::Generate {
+            output,
+            count,
+            level,
+        } => {
             generate_synthetic(output, count, level)?;
         }
-        Commands::Ingest { input, output, level } => {
+        Commands::Ingest {
+            input,
+            output,
+            level,
+        } => {
             ingest_catalog(input, output, level)?;
         }
         Commands::Orbit { output, duration } => {
@@ -94,31 +102,39 @@ fn generate_synthetic(output: PathBuf, count: usize, level: u8) -> anyhow::Resul
     let mut spatial_map: HashMap<SpatialKey, Vec<StarData>> = HashMap::new();
 
     let pb = ProgressBar::new(count as u64);
-    pb.set_style(ProgressStyle::default_bar()
-        .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})")?
-        .progress_chars("#>-"));
+    pb.set_style(
+        ProgressStyle::default_bar()
+            .template(
+                "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})",
+            )?
+            .progress_chars("#>-"),
+    );
 
     for i in 0..count {
         let angle = rng.gen_range(0.0..std::f32::consts::TAU * 5.0);
         let dist = rng.gen_range(1.0..1000.0);
         let spread = rng.gen_range(-50.0..50.0);
-        
+
         let x = angle.cos() * dist + rng.gen_range(-10.0..10.0);
         let y = spread * (-dist / 1000.0).exp();
         let z = angle.sin() * dist + rng.gen_range(-10.0..10.0);
-        
+
         let pos = Vec3::new(x, y, z);
         let key = SpatialKey::from_point(pos.normalize(), level);
-        
+
         let star = StarData {
-            x: pos.x, y: pos.y, z: pos.z,
+            x: pos.x,
+            y: pos.y,
+            z: pos.z,
             temp: rng.gen_range(2000.0..10000.0),
             mag: rng.gen_range(-1.0..15.0),
         };
 
         spatial_map.entry(key).or_default().push(star);
-        
-        if i % 1000 == 0 { pb.inc(1000); }
+
+        if i % 1000 == 0 {
+            pb.inc(1000);
+        }
     }
     pb.finish_with_message("Simulation Complete");
 
@@ -141,10 +157,12 @@ fn ingest_catalog(input: PathBuf, output: PathBuf, level: u8) -> anyhow::Result<
 
         let pos = Vec3::new(record.x, record.y, record.z);
         // Skip stars at origin or invalid
-        if pos.length_squared() < 0.001 { continue; }
+        if pos.length_squared() < 0.001 {
+            continue;
+        }
 
         let key = SpatialKey::from_point(pos.normalize(), level);
-        
+
         // Estimate temp from Color Index (CI)
         let temp = match record.ci {
             Some(ci) => 4600.0 * ((1.0 / (0.92 * ci + 1.7)) + (1.0 / (0.92 * ci + 0.62))),
@@ -172,33 +190,37 @@ fn generate_orbits(_output: PathBuf, duration: u32) -> anyhow::Result<()> {
     // Placeholder for N-body simulation logic
     // In reality, this would output a different layer, e.g., "orbits"
     // Storing splines or sampled points.
-    
+
     println!("⚠️  N-body simulation module not yet linked to output.");
     Ok(())
 }
 
-fn write_chunks(map: HashMap<SpatialKey, Vec<StarData>>, output: PathBuf, layer: &str) -> anyhow::Result<()> {
+fn write_chunks(
+    map: HashMap<SpatialKey, Vec<StarData>>,
+    output: PathBuf,
+    layer: &str,
+) -> anyhow::Result<()> {
     println!("💾 Writing spatial chunks...");
     let pb = ProgressBar::new(map.len() as u64);
-    
+
     for (key, data) in map {
         let (face, level, x, y) = (key.face(), key.level(), key.coords().0, key.coords().1);
-        
+
         let mut path = output.clone();
         path.push(layer);
         path.push(face.to_string());
         path.push(level.to_string());
         path.push(x.to_string());
-        
+
         std::fs::create_dir_all(&path)?;
         path.push(format!("{}.bin", y));
-        
+
         let encoded: Vec<u8> = bincode::serialize(&data)?;
         let mut file = File::create(path)?;
         file.write_all(&encoded)?;
         pb.inc(1);
     }
-    
+
     pb.finish_with_message("Write Complete");
     Ok(())
 }

@@ -268,11 +268,11 @@ impl Gradient {
     /// Create a heat map gradient (blue -> cyan -> green -> yellow -> red)
     pub fn heat_map() -> Self {
         Self::new(vec![
-            (0.0, Rgb::new(0, 0, 255)),     // Blue
-            (0.25, Rgb::new(0, 255, 255)),  // Cyan
-            (0.5, Rgb::new(0, 255, 0)),     // Green
-            (0.75, Rgb::new(255, 255, 0)),  // Yellow
-            (1.0, Rgb::new(255, 0, 0)),     // Red
+            (0.0, Rgb::new(0, 0, 255)),    // Blue
+            (0.25, Rgb::new(0, 255, 255)), // Cyan
+            (0.5, Rgb::new(0, 255, 0)),    // Green
+            (0.75, Rgb::new(255, 255, 0)), // Yellow
+            (1.0, Rgb::new(255, 0, 0)),    // Red
         ])
     }
 
@@ -295,32 +295,32 @@ pub mod themes {
     /// Nature/ecosystem theme
     pub struct Nature;
     impl Nature {
-        pub const HERBIVORE: Rgb = Rgb::new(0, 255, 180);      // Cyan-green
-        pub const CARNIVORE: Rgb = Rgb::new(255, 60, 60);      // Red
-        pub const SCAVENGER: Rgb = Rgb::new(200, 150, 50);     // Gold
-        pub const FOOD: Rgb = Rgb::new(100, 200, 50);          // Green
-        pub const DANGER: Rgb = Rgb::new(150, 0, 150);         // Purple
-        pub const BACKGROUND: Rgb = Rgb::new(10, 15, 25);      // Dark blue
+        pub const HERBIVORE: Rgb = Rgb::new(0, 255, 180); // Cyan-green
+        pub const CARNIVORE: Rgb = Rgb::new(255, 60, 60); // Red
+        pub const SCAVENGER: Rgb = Rgb::new(200, 150, 50); // Gold
+        pub const FOOD: Rgb = Rgb::new(100, 200, 50); // Green
+        pub const DANGER: Rgb = Rgb::new(150, 0, 150); // Purple
+        pub const BACKGROUND: Rgb = Rgb::new(10, 15, 25); // Dark blue
     }
 
     /// Space/astronomy theme
     pub struct Space;
     impl Space {
-        pub const STAR_HOT: Rgb = Rgb::new(155, 176, 255);     // Blue-white
-        pub const STAR_WARM: Rgb = Rgb::new(255, 255, 220);    // Yellow-white
-        pub const STAR_COOL: Rgb = Rgb::new(255, 180, 100);    // Orange
-        pub const NEBULA: Rgb = Rgb::new(100, 50, 150);        // Purple
-        pub const VOID: Rgb = Rgb::new(5, 5, 15);              // Near-black
+        pub const STAR_HOT: Rgb = Rgb::new(155, 176, 255); // Blue-white
+        pub const STAR_WARM: Rgb = Rgb::new(255, 255, 220); // Yellow-white
+        pub const STAR_COOL: Rgb = Rgb::new(255, 180, 100); // Orange
+        pub const NEBULA: Rgb = Rgb::new(100, 50, 150); // Purple
+        pub const VOID: Rgb = Rgb::new(5, 5, 15); // Near-black
     }
 
     /// Matrix/cyber theme
     pub struct Cyber;
     impl Cyber {
-        pub const PRIMARY: Rgb = Rgb::new(0, 255, 136);        // Neon green
-        pub const SECONDARY: Rgb = Rgb::new(255, 0, 128);      // Neon pink
-        pub const ACCENT: Rgb = Rgb::new(0, 200, 255);         // Cyan
-        pub const GRID: Rgb = Rgb::new(30, 40, 50);            // Dark gray
-        pub const BACKGROUND: Rgb = Rgb::new(10, 12, 18);      // Very dark
+        pub const PRIMARY: Rgb = Rgb::new(0, 255, 136); // Neon green
+        pub const SECONDARY: Rgb = Rgb::new(255, 0, 128); // Neon pink
+        pub const ACCENT: Rgb = Rgb::new(0, 200, 255); // Cyan
+        pub const GRID: Rgb = Rgb::new(30, 40, 50); // Dark gray
+        pub const BACKGROUND: Rgb = Rgb::new(10, 12, 18); // Very dark
     }
 }
 

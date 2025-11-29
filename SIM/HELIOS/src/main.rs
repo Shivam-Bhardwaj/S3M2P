@@ -3,26 +3,25 @@
 
 #![allow(unexpected_cfgs)]
 
-mod simulation;
 mod render;
+mod simulation;
 
 #[cfg(target_arch = "wasm32")]
-use simulation::{SimulationState, DragMode};
+use simulation::{DragMode, SimulationState};
 
+#[cfg(target_arch = "wasm32")]
+use std::cell::RefCell;
+#[cfg(target_arch = "wasm32")]
+use std::rc::Rc;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsCast;
 #[cfg(target_arch = "wasm32")]
 use web_sys::{
-    window, HtmlCanvasElement, CanvasRenderingContext2d,
-    HtmlInputElement, HtmlButtonElement, InputEvent,
-    KeyboardEvent, MouseEvent, WheelEvent, TouchEvent,
+    window, CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlInputElement,
+    InputEvent, KeyboardEvent, MouseEvent, TouchEvent, WheelEvent,
 };
-#[cfg(target_arch = "wasm32")]
-use std::rc::Rc;
-#[cfg(target_arch = "wasm32")]
-use std::cell::RefCell;
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
@@ -35,7 +34,9 @@ fn main() {
     #[cfg(target_arch = "wasm32")]
     {
         console_error_panic_hook::set_once();
-        wasm_bindgen_futures::spawn_local(async { run(); });
+        wasm_bindgen_futures::spawn_local(async {
+            run();
+        });
     }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -48,12 +49,18 @@ fn main() {
 fn run() {
     let window = match window() {
         Some(w) => w,
-        None => { log("No window found"); return; }
+        None => {
+            log("No window found");
+            return;
+        }
     };
 
     let document = match window.document() {
         Some(d) => d,
-        None => { log("No document found"); return; }
+        None => {
+            log("No document found");
+            return;
+        }
     };
 
     log("Helios - Heliosphere Visualization (Canvas 2D)");
@@ -63,9 +70,15 @@ fn run() {
     let canvas = match document.get_element_by_id("helios-canvas") {
         Some(el) => match el.dyn_into::<HtmlCanvasElement>() {
             Ok(c) => c,
-            Err(_) => { log("Element is not a canvas"); return; }
+            Err(_) => {
+                log("Element is not a canvas");
+                return;
+            }
         },
-        None => { log("Canvas not found"); return; }
+        None => {
+            log("Canvas not found");
+            return;
+        }
     };
 
     // Set canvas size
@@ -80,19 +93,27 @@ fn run() {
     let ctx = match canvas.get_context("2d") {
         Ok(Some(ctx)) => match ctx.dyn_into::<CanvasRenderingContext2d>() {
             Ok(c) => c,
-            Err(_) => { log("Failed to get 2D context"); return; }
+            Err(_) => {
+                log("Failed to get 2D context");
+                return;
+            }
         },
-        _ => { log("Failed to get 2D context"); return; }
+        _ => {
+            log("Failed to get 2D context");
+            return;
+        }
     };
 
     // Initialize simulation state
     let state = Rc::new(RefCell::new(SimulationState::new()));
-    state.borrow_mut().set_viewport(window_width as f64, window_height as f64);
+    state
+        .borrow_mut()
+        .set_viewport(window_width as f64, window_height as f64);
     state.borrow_mut().view_heliosphere(); // Start with heliosphere view - shows pulsating solar cycle
 
     // Time tracking
     let start_time = Rc::new(RefCell::new(
-        window.performance().map(|p| p.now()).unwrap_or(0.0) / 1000.0
+        window.performance().map(|p| p.now()).unwrap_or(0.0) / 1000.0,
     ));
     let last_frame_time = Rc::new(RefCell::new(*start_time.borrow()));
     let frame_times = Rc::new(RefCell::new([0.0f64; 60]));
@@ -111,11 +132,13 @@ fn run() {
             event.prevent_default();
             let mut s = state.borrow_mut();
             s.view_heliosphere();
-            s.view.tilt = 0.4;      // Reset tilt
-            s.view.rotation = 0.0;  // Reset rotation
+            s.view.tilt = 0.4; // Reset tilt
+            s.view.rotation = 0.0; // Reset rotation
             s.orbit_dirty = true;
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("dblclick", closure.as_ref().unchecked_ref()).unwrap();
+        canvas
+            .add_event_listener_with_callback("dblclick", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
@@ -145,7 +168,9 @@ fn run() {
                 s.view.last_center_y = s.view.center_y;
             }
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref()).unwrap();
+        canvas
+            .add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
@@ -154,7 +179,9 @@ fn run() {
         let closure = Closure::wrap(Box::new(move |event: MouseEvent| {
             event.prevent_default();
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("contextmenu", closure.as_ref().unchecked_ref()).unwrap();
+        canvas
+            .add_event_listener_with_callback("contextmenu", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
@@ -164,7 +191,9 @@ fn run() {
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
             state.borrow_mut().view.drag_mode = DragMode::None;
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("mouseup", closure.as_ref().unchecked_ref()).unwrap();
+        canvas
+            .add_event_listener_with_callback("mouseup", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
@@ -174,7 +203,9 @@ fn run() {
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
             state.borrow_mut().view.drag_mode = DragMode::None;
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("mouseleave", closure.as_ref().unchecked_ref()).unwrap();
+        canvas
+            .add_event_listener_with_callback("mouseleave", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
@@ -210,7 +241,9 @@ fn run() {
                 DragMode::None => {}
             }
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("mousemove", closure.as_ref().unchecked_ref()).unwrap();
+        canvas
+            .add_event_listener_with_callback("mousemove", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
@@ -234,7 +267,9 @@ fn run() {
             s.view.center_x += au_x - new_au_x;
             s.view.center_y += au_y - new_au_y;
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("wheel", closure.as_ref().unchecked_ref()).unwrap();
+        canvas
+            .add_event_listener_with_callback("wheel", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
@@ -273,7 +308,9 @@ fn run() {
                 }
             }
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("touchstart", closure.as_ref().unchecked_ref()).unwrap();
+        canvas
+            .add_event_listener_with_callback("touchstart", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
@@ -285,7 +322,9 @@ fn run() {
             s.view.drag_mode = DragMode::None;
             s.view.pinching = false;
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("touchend", closure.as_ref().unchecked_ref()).unwrap();
+        canvas
+            .add_event_listener_with_callback("touchend", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
@@ -307,13 +346,15 @@ fn run() {
                     if s.view.pinch_start_dist > 10.0 {
                         // Pinch zoom
                         let scale = s.view.pinch_start_dist / dist;
-                        let new_zoom = (s.view.pinch_start_zoom * scale)
-                            .max(0.0001)
-                            .min(10.0);
+                        let new_zoom = (s.view.pinch_start_zoom * scale).max(0.0001).min(10.0);
 
-                        let (au_x, au_y) = s.view.screen_to_au(s.view.pinch_center_x, s.view.pinch_center_y);
+                        let (au_x, au_y) = s
+                            .view
+                            .screen_to_au(s.view.pinch_center_x, s.view.pinch_center_y);
                         s.view.zoom = new_zoom;
-                        let (new_au_x, new_au_y) = s.view.screen_to_au(s.view.pinch_center_x, s.view.pinch_center_y);
+                        let (new_au_x, new_au_y) = s
+                            .view
+                            .screen_to_au(s.view.pinch_center_x, s.view.pinch_center_y);
                         s.view.center_x += au_x - new_au_x;
                         s.view.center_y += au_y - new_au_y;
                     }
@@ -342,7 +383,9 @@ fn run() {
                 }
             }
         }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("touchmove", closure.as_ref().unchecked_ref()).unwrap();
+        canvas
+            .add_event_listener_with_callback("touchmove", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
@@ -365,8 +408,14 @@ fn run() {
                 "i" | "I" => s.view_inner_system(),
                 "o" | "O" => s.view_outer_system(),
                 "h" | "H" => s.view_heliosphere(),
-                "+" | "=" => { let ts = s.time_scale * 2.0; s.set_time_scale(ts); }
-                "-" | "_" => { let ts = s.time_scale / 2.0; s.set_time_scale(ts); }
+                "+" | "=" => {
+                    let ts = s.time_scale * 2.0;
+                    s.set_time_scale(ts);
+                }
+                "-" | "_" => {
+                    let ts = s.time_scale / 2.0;
+                    s.set_time_scale(ts);
+                }
                 "ArrowLeft" => s.julian_date -= 30.0, // Month back
                 "ArrowRight" => s.julian_date += 30.0, // Month forward
                 "ArrowUp" => s.julian_date += 365.25, // Year forward
@@ -398,14 +447,17 @@ fn run() {
                 _ => {}
             }
         }) as Box<dyn FnMut(_)>);
-        document.add_event_listener_with_callback("keydown", closure.as_ref().unchecked_ref()).unwrap();
+        document
+            .add_event_listener_with_callback("keydown", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
     // === UI CONTROLS ===
 
     // Get UI elements
-    let time_slider = document.get_element_by_id("time-slider")
+    let time_slider = document
+        .get_element_by_id("time-slider")
         .and_then(|el| el.dyn_into::<HtmlInputElement>().ok());
     let date_display = document.get_element_by_id("date-display");
     let speed_display = document.get_element_by_id("speed-display");
@@ -422,7 +474,8 @@ fn run() {
             s.julian_date = simulation::J2000_EPOCH + 8766.0 + days_offset;
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("time-slider") {
-            el.add_event_listener_with_callback("input", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("input", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }
@@ -434,7 +487,8 @@ fn run() {
             state.borrow_mut().toggle_pause();
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("play-pause") {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }
@@ -448,7 +502,8 @@ fn run() {
             s.set_time_scale(ts);
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("btn-slower") {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }
@@ -462,7 +517,8 @@ fn run() {
             s.set_time_scale(ts);
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("btn-faster") {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }
@@ -477,14 +533,23 @@ fn run() {
             state.borrow_mut().focus_on_sun();
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("nav-sun") {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }
 
     // Planet navigation helper macro - planets 0-7
-    let planet_ids = ["nav-mercury", "nav-venus", "nav-earth", "nav-mars",
-                      "nav-jupiter", "nav-saturn", "nav-uranus", "nav-neptune"];
+    let planet_ids = [
+        "nav-mercury",
+        "nav-venus",
+        "nav-earth",
+        "nav-mars",
+        "nav-jupiter",
+        "nav-saturn",
+        "nav-uranus",
+        "nav-neptune",
+    ];
 
     for (idx, id) in planet_ids.iter().enumerate() {
         let state = state.clone();
@@ -492,7 +557,8 @@ fn run() {
             state.borrow_mut().focus_on_planet(idx);
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id(id) {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }
@@ -504,7 +570,8 @@ fn run() {
             state.borrow_mut().view_heliosphere();
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("nav-heliosphere") {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }
@@ -518,7 +585,8 @@ fn run() {
             state.borrow_mut().view_inner_system();
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("view-inner") {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }
@@ -530,7 +598,8 @@ fn run() {
             state.borrow_mut().view_outer_system();
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("view-outer") {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }
@@ -542,7 +611,8 @@ fn run() {
             state.borrow_mut().zoom_by(0.7);
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("view-zoom-in") {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }
@@ -554,7 +624,8 @@ fn run() {
             state.borrow_mut().zoom_by(1.4);
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("view-zoom-out") {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }
@@ -571,7 +642,8 @@ fn run() {
             s.mark_orbits_dirty();
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("view-tilt-up") {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }
@@ -586,7 +658,8 @@ fn run() {
             s.mark_orbits_dirty();
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("view-tilt-down") {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }
@@ -601,7 +674,8 @@ fn run() {
             s.mark_orbits_dirty();
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("view-3d-reset") {
-            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref()).unwrap();
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
         }
         closure.forget();
     }

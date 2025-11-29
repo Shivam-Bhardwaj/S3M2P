@@ -4,7 +4,7 @@
 use wasm_bindgen::prelude::*;
 use web_sys::{Document, Element, HtmlElement};
 
-use crate::{Post, PostMeta, BlogIndex};
+use crate::{BlogIndex, Post, PostMeta};
 
 pub struct BlogRenderer {
     document: Document,
@@ -38,15 +38,18 @@ impl BlogRenderer {
 
         // Header
         let header = self.create_element("header", "blog-header")?;
-        header.set_inner_html(r#"
+        header.set_inner_html(
+            r#"
             <h1>Blog</h1>
             <p class="subtitle">Thoughts on code, robotics, and the universe</p>
-        "#);
+        "#,
+        );
         container.append_child(&header)?;
 
         // Recent posts
         let posts_section = self.create_element("section", "recent-posts")?;
-        let posts_html: String = index.recent(10)
+        let posts_html: String = index
+            .recent(10)
             .iter()
             .map(|meta| self.render_post_card(meta))
             .collect();
@@ -55,12 +58,16 @@ impl BlogRenderer {
 
         // Tags sidebar
         let tags_section = self.create_element("aside", "tags-sidebar")?;
-        let tags: String = index.all_tags()
+        let tags: String = index
+            .all_tags()
             .iter()
             .map(|tag| format!(r#"<a href="/tag/{}" class="tag">#{}</a>"#, tag, tag))
             .collect::<Vec<_>>()
             .join(" ");
-        tags_section.set_inner_html(&format!("<h3>Tags</h3><div class='tag-cloud'>{}</div>", tags));
+        tags_section.set_inner_html(&format!(
+            "<h3>Tags</h3><div class='tag-cloud'>{}</div>",
+            tags
+        ));
         container.append_child(&tags_section)?;
 
         self.root.append_child(&container)?;
@@ -77,7 +84,9 @@ impl BlogRenderer {
         let content_html = post.render_html();
         let reading_time = post.reading_time();
 
-        let tags_html: String = meta.tags.iter()
+        let tags_html: String = meta
+            .tags
+            .iter()
             .map(|tag| format!(r#"<a href="/tag/{}" class="tag">#{}</a>"#, tag, tag))
             .collect::<Vec<_>>()
             .join(" ");
@@ -88,7 +97,8 @@ impl BlogRenderer {
             ""
         };
 
-        article.set_inner_html(&format!(r#"
+        article.set_inner_html(&format!(
+            r#"
             <header class="post-header">
                 <h1>{}</h1>
                 <div class="post-meta">
@@ -104,7 +114,9 @@ impl BlogRenderer {
             <footer class="post-footer">
                 <a href="/" class="back-link">← Back to Blog</a>
             </footer>
-        "#, meta.title, meta.date, reading_time, ai_badge, tags_html, content_html));
+        "#,
+            meta.title, meta.date, reading_time, ai_badge, tags_html, content_html
+        ));
 
         self.root.append_child(&article)?;
         Ok(())
@@ -112,13 +124,16 @@ impl BlogRenderer {
 
     /// Render a post card for listings
     fn render_post_card(&self, meta: &PostMeta) -> String {
-        let tags: String = meta.tags.iter()
+        let tags: String = meta
+            .tags
+            .iter()
             .take(3)
             .map(|t| format!(r#"<span class="card-tag">{}</span>"#, t))
             .collect::<Vec<_>>()
             .join("");
 
-        format!(r#"
+        format!(
+            r#"
             <article class="post-card">
                 <a href="/post/{}">
                     <h3>{}</h3>
@@ -127,7 +142,9 @@ impl BlogRenderer {
                     <div class="card-tags">{}</div>
                 </a>
             </article>
-        "#, meta.slug, meta.title, meta.date, meta.summary, tags)
+        "#,
+            meta.slug, meta.title, meta.date, meta.summary, tags
+        )
     }
 
     /// Render posts filtered by tag
@@ -137,11 +154,13 @@ impl BlogRenderer {
         let container = self.create_element("div", "blog-tag-page")?;
 
         let posts = index.by_tag(tag);
-        let posts_html: String = posts.iter()
+        let posts_html: String = posts
+            .iter()
             .map(|meta| self.render_post_card(meta))
             .collect();
 
-        container.set_inner_html(&format!(r#"
+        container.set_inner_html(&format!(
+            r#"
             <header class="tag-header">
                 <h1>#{}</h1>
                 <p>{} posts</p>
@@ -150,7 +169,11 @@ impl BlogRenderer {
             <section class="tag-posts">
                 {}
             </section>
-        "#, tag, posts.len(), posts_html));
+        "#,
+            tag,
+            posts.len(),
+            posts_html
+        ));
 
         self.root.append_child(&container)?;
         Ok(())
@@ -160,11 +183,13 @@ impl BlogRenderer {
     pub fn render_404(&self) -> Result<(), JsValue> {
         self.clear();
         let container = self.create_element("div", "not-found")?;
-        container.set_inner_html(r#"
+        container.set_inner_html(
+            r#"
             <h1>404</h1>
             <p>Post not found</p>
             <a href="/">← Back to Blog</a>
-        "#);
+        "#,
+        );
         self.root.append_child(&container)?;
         Ok(())
     }

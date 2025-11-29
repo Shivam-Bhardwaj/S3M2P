@@ -105,7 +105,10 @@ mod tests {
         for _ in 0..100 {
             let dir = random_direction();
             let length = dir.length();
-            assert!((length - 1.0).abs() < 0.001, "Direction should be unit vector");
+            assert!(
+                (length - 1.0).abs() < 0.001,
+                "Direction should be unit vector"
+            );
         }
     }
 
@@ -162,6 +165,9 @@ mod tests {
             }
         }
         // Allow wide margin for randomness
-        assert!(hits > 300 && hits < 700, "50% chance should hit roughly half");
+        assert!(
+            hits > 300 && hits < 700,
+            "50% chance should hit roughly half"
+        );
     }
 }

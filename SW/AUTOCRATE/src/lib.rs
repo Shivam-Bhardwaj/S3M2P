@@ -1,12 +1,12 @@
 // AutoCrate - ASTM Standard Shipping Crate Generator
 // Rust/WASM port of the original TypeScript application
 
-use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
+use wasm_bindgen::prelude::*;
 
+pub mod calculator;
 pub mod constants;
 pub mod geometry;
-pub mod calculator;
 
 pub use constants::LumberSize;
 pub use geometry::*;
@@ -22,7 +22,12 @@ pub struct ProductDimensions {
 
 impl Default for ProductDimensions {
     fn default() -> Self {
-        Self { length: 120.0, width: 120.0, height: 120.0, weight: 10000.0 }
+        Self {
+            length: 120.0,
+            width: 120.0,
+            height: 120.0,
+            weight: 10000.0,
+        }
     }
 }
 
@@ -36,7 +41,11 @@ pub struct Clearances {
 
 impl Default for Clearances {
     fn default() -> Self {
-        Self { side: 2.0, end: 2.0, top: 3.0 }
+        Self {
+            side: 2.0,
+            end: 2.0,
+            top: 3.0,
+        }
     }
 }
 

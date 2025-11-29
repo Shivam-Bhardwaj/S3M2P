@@ -1,12 +1,12 @@
 // Blog - Markdown-based blog engine
 // AI-assisted content, rendered in Rust/WASM
 
-use wasm_bindgen::prelude::*;
+use pulldown_cmark::{Options, Parser, html};
 use serde::{Deserialize, Serialize};
-use pulldown_cmark::{Parser, Options, html};
+use wasm_bindgen::prelude::*;
 
-pub mod router;
 pub mod render;
+pub mod router;
 
 /// Blog post metadata (frontmatter)
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -26,7 +26,7 @@ pub struct PostMeta {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Post {
     pub meta: PostMeta,
-    pub content: String,  // Raw markdown
+    pub content: String, // Raw markdown
 }
 
 impl Post {
@@ -65,22 +65,22 @@ impl BlogIndex {
 
     /// Filter posts by tag
     pub fn by_tag(&self, tag: &str) -> Vec<&PostMeta> {
-        self.posts.iter()
+        self.posts
+            .iter()
             .filter(|p| !p.draft && p.tags.iter().any(|t| t == tag))
             .collect()
     }
 
     /// Get recent posts
     pub fn recent(&self, count: usize) -> Vec<&PostMeta> {
-        self.posts.iter()
-            .filter(|p| !p.draft)
-            .take(count)
-            .collect()
+        self.posts.iter().filter(|p| !p.draft).take(count).collect()
     }
 
     /// Get all unique tags
     pub fn all_tags(&self) -> Vec<String> {
-        let mut tags: Vec<String> = self.posts.iter()
+        let mut tags: Vec<String> = self
+            .posts
+            .iter()
             .flat_map(|p| p.tags.iter().cloned())
             .collect();
         tags.sort();
@@ -143,7 +143,8 @@ pub fn parse_frontmatter(content: &str) -> Option<(PostMeta, String)> {
                 "draft" => meta.draft = value == "true",
                 "ai_generated" => meta.ai_generated = value == "true",
                 "tags" => {
-                    meta.tags = value.trim_matches(|c| c == '[' || c == ']')
+                    meta.tags = value
+                        .trim_matches(|c| c == '[' || c == ']')
                         .split(',')
                         .map(|s| s.trim().trim_matches('"').to_string())
                         .collect();

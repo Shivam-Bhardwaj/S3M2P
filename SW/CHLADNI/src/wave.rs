@@ -1,8 +1,8 @@
 // Wave simulation for Chladni patterns
 // Implements 2D wave equation with modal excitation
 
-use glam::Vec2;
 use crate::PlateMode;
+use glam::Vec2;
 
 /// Chladni eigenmode patterns
 #[derive(Clone, Copy, Debug)]
@@ -19,9 +19,9 @@ pub enum ChladniMode {
 pub struct WaveSimulation {
     pub width: usize,
     pub height: usize,
-    pub amplitude: Vec<f32>,    // Current wave height
-    pub velocity: Vec<f32>,     // Rate of change
-    pub energy: Vec<f32>,       // Energy density for visualization
+    pub amplitude: Vec<f32>, // Current wave height
+    pub velocity: Vec<f32>,  // Rate of change
+    pub energy: Vec<f32>,    // Energy density for visualization
 }
 
 impl WaveSimulation {

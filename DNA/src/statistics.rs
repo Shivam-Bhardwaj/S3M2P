@@ -250,7 +250,10 @@ mod tests {
         assert_eq!(metrics.herbivore_count, 50);
         assert_eq!(metrics.carnivore_count, 0);
         assert_eq!(metrics.scavenger_count, 0);
-        assert!(metrics.diversity < 0.1, "Monoculture should have low diversity");
+        assert!(
+            metrics.diversity < 0.1,
+            "Monoculture should have low diversity"
+        );
     }
 
     #[test]

@@ -2,7 +2,7 @@
 // Renders wave field and particles
 
 use wasm_bindgen::prelude::*;
-use web_sys::{WebGl2RenderingContext as GL, WebGlProgram, WebGlShader, WebGlBuffer};
+use web_sys::{WebGl2RenderingContext as GL, WebGlBuffer, WebGlProgram, WebGlShader};
 
 use crate::{ChladniSimulation, Particle};
 
@@ -98,7 +98,12 @@ impl WaveRenderer {
         self.gl.attach_shader(&program, &frag_shader);
         self.gl.link_program(&program);
 
-        if !self.gl.get_program_parameter(&program, GL::LINK_STATUS).as_bool().unwrap_or(false) {
+        if !self
+            .gl
+            .get_program_parameter(&program, GL::LINK_STATUS)
+            .as_bool()
+            .unwrap_or(false)
+        {
             let info = self.gl.get_program_info_log(&program).unwrap_or_default();
             return Err(JsValue::from_str(&format!("Link error: {}", info)));
         }
@@ -107,11 +112,19 @@ impl WaveRenderer {
     }
 
     fn compile_shader(&self, shader_type: u32, source: &str) -> Result<WebGlShader, JsValue> {
-        let shader = self.gl.create_shader(shader_type).ok_or("Failed to create shader")?;
+        let shader = self
+            .gl
+            .create_shader(shader_type)
+            .ok_or("Failed to create shader")?;
         self.gl.shader_source(&shader, source);
         self.gl.compile_shader(&shader);
 
-        if !self.gl.get_shader_parameter(&shader, GL::COMPILE_STATUS).as_bool().unwrap_or(false) {
+        if !self
+            .gl
+            .get_shader_parameter(&shader, GL::COMPILE_STATUS)
+            .as_bool()
+            .unwrap_or(false)
+        {
             let info = self.gl.get_shader_info_log(&shader).unwrap_or_default();
             return Err(JsValue::from_str(&format!("Compile error: {}", info)));
         }
@@ -129,7 +142,9 @@ impl WaveRenderer {
             self.gl.use_program(Some(program));
 
             // Upload particle positions
-            let positions: Vec<f32> = sim.particles.iter()
+            let positions: Vec<f32> = sim
+                .particles
+                .iter()
                 .filter(|p| p.active)
                 .flat_map(|p| [p.pos.x, p.pos.y])
                 .collect();
@@ -146,12 +161,17 @@ impl WaveRenderer {
 
             // Set uniforms
             let res_loc = self.gl.get_uniform_location(program, "u_resolution");
-            self.gl.uniform2f(res_loc.as_ref(), sim.config.grid_size as f32, sim.config.grid_size as f32);
+            self.gl.uniform2f(
+                res_loc.as_ref(),
+                sim.config.grid_size as f32,
+                sim.config.grid_size as f32,
+            );
 
             // Set attributes
             let pos_loc = self.gl.get_attrib_location(program, "a_position") as u32;
             self.gl.enable_vertex_attrib_array(pos_loc);
-            self.gl.vertex_attrib_pointer_with_i32(pos_loc, 2, GL::FLOAT, false, 0, 0);
+            self.gl
+                .vertex_attrib_pointer_with_i32(pos_loc, 2, GL::FLOAT, false, 0, 0);
 
             // Draw particles
             let particle_count = positions.len() / 2;

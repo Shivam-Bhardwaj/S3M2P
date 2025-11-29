@@ -1,5 +1,5 @@
-use wasm_bindgen::prelude::*;
 use std::f32::consts::PI;
+use wasm_bindgen::prelude::*;
 
 // Re-export types for WASM
 #[wasm_bindgen]
@@ -24,13 +24,13 @@ pub struct HeliosphereParameters {
     pub nose_vec: Vec<f32>,
 
     // ISM conditions
-    pub ism_rho: f32,  // density (particles/cm³)
-    pub ism_t: f32,    // temperature (K)
-    pub ism_b: f32,    // magnetic field strength (nT)
+    pub ism_rho: f32, // density (particles/cm³)
+    pub ism_t: f32,   // temperature (K)
+    pub ism_b: f32,   // magnetic field strength (nT)
 
     // Solar wind conditions
-    pub sw_mdot: f32,  // mass loss rate (proxy)
-    pub sw_v: f32,     // wind speed (km/s)
+    pub sw_mdot: f32, // mass loss rate (proxy)
+    pub sw_v: f32,    // wind speed (km/s)
 
     // Morphology
     pub morphology: HeliosphereMorphology,
@@ -140,9 +140,9 @@ impl HeliosphereSurface {
         let tail_spread = self.params.shape_params.get(2).unwrap_or(&0.3);
 
         let base_radius = self.cometary_shape(alpha, r_nose);
-        
+
         let latitude_factor = 1.0 - flattening * theta.sin().powi(2);
-        
+
         let tail_factor = if alpha > PI / 2.0 {
             1.0 + tail_spread * (2.0 * (alpha - PI / 2.0)).sin()
         } else {
@@ -169,19 +169,19 @@ impl HeliosphereSurface {
     // Mesh generation helper
     // Returns a flat vector of [x, y, z, nx, ny, nz, ...]
     pub fn generate_mesh_data(
-        &self, 
-        theta_steps: usize, 
-        phi_steps: usize, 
-        is_termination_shock: bool
+        &self,
+        theta_steps: usize,
+        phi_steps: usize,
+        is_termination_shock: bool,
     ) -> Vec<f32> {
         let mut data = Vec::with_capacity((theta_steps + 1) * (phi_steps + 1) * 6);
-        
+
         for i in 0..=theta_steps {
             let theta = (i as f32 / theta_steps as f32) * PI;
-            
+
             for j in 0..=phi_steps {
                 let phi = (j as f32 / phi_steps as f32) * 2.0 * PI;
-                
+
                 let r = if is_termination_shock {
                     self.termination_shock_radius(theta, phi)
                 } else {
@@ -209,18 +209,18 @@ impl HeliosphereSurface {
         }
         data
     }
-    
+
     pub fn generate_indices(&self, theta_steps: usize, phi_steps: usize) -> Vec<u32> {
         let mut indices = Vec::new();
         for i in 0..theta_steps {
             for j in 0..phi_steps {
                 let a = (i * (phi_steps + 1) + j) as u32;
                 let b = a + (phi_steps + 1) as u32;
-                
+
                 indices.push(a);
                 indices.push(b);
                 indices.push(a + 1);
-                
+
                 indices.push(b);
                 indices.push(b + 1);
                 indices.push(a + 1);
@@ -234,40 +234,44 @@ impl HeliosphereSurface {
 pub fn interpolate_parameters(
     params0: &HeliosphereParameters,
     params1: &HeliosphereParameters,
-    t: f32
+    t: f32,
 ) -> HeliosphereParameters {
     let t = t.clamp(0.0, 1.0);
-    
+
     let r_hp_nose = params0.r_hp_nose * (1.0 - t) + params1.r_hp_nose * t;
     let r_ts_over_hp = params0.r_ts_over_hp * (1.0 - t) + params1.r_ts_over_hp * t;
-    
+
     let n0 = &params0.nose_vec;
     let n1 = &params1.nose_vec;
-    
+
     let nx = n0.first().unwrap_or(&1.0) * (1.0 - t) + n1.first().unwrap_or(&1.0) * t;
     let ny = n0.get(1).unwrap_or(&0.0) * (1.0 - t) + n1.get(1).unwrap_or(&0.0) * t;
     let nz = n0.get(2).unwrap_or(&0.0) * (1.0 - t) + n1.get(2).unwrap_or(&0.0) * t;
-    
+
     let len = (nx * nx + ny * ny + nz * nz).sqrt();
     let nose_vec = vec![nx / len, ny / len, nz / len];
-    
+
     let ism_rho = params0.ism_rho * (1.0 - t) + params1.ism_rho * t;
     let ism_t = params0.ism_t * (1.0 - t) + params1.ism_t * t;
     let ism_b = params0.ism_b * (1.0 - t) + params1.ism_b * t;
     let sw_mdot = params0.sw_mdot * (1.0 - t) + params1.sw_mdot * t;
     let sw_v = params0.sw_v * (1.0 - t) + params1.sw_v * t;
-    
-    let morphology = if t < 0.5 { params0.morphology } else { params1.morphology };
-    
+
+    let morphology = if t < 0.5 {
+        params0.morphology
+    } else {
+        params1.morphology
+    };
+
     let max_params = params0.shape_params.len().max(params1.shape_params.len());
     let mut shape_params = Vec::with_capacity(max_params);
-    
+
     for i in 0..max_params {
         let p0 = params0.shape_params.get(i).unwrap_or(&0.0);
         let p1 = params1.shape_params.get(i).unwrap_or(&0.0);
         shape_params.push(p0 * (1.0 - t) + p1 * t);
     }
-    
+
     HeliosphereParameters {
         r_hp_nose,
         r_ts_over_hp,
@@ -281,4 +285,3 @@ pub fn interpolate_parameters(
         shape_params,
     }
 }
-

@@ -2,7 +2,7 @@
 // Client-side ML learning with visualizations
 
 use wasm_bindgen::prelude::*;
-use web_sys::{Document, Element, HtmlCanvasElement, CanvasRenderingContext2d};
+use web_sys::{CanvasRenderingContext2d, Document, Element, HtmlCanvasElement};
 
 pub mod lessons;
 pub mod render;

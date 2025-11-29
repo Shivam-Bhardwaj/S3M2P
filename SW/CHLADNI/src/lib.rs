@@ -1,15 +1,15 @@
 // Chladni - Wave Pattern Visualization
 // Rust/WASM port of realistic Chladni plate simulation
 
+use glam::Vec2;
 use wasm_bindgen::prelude::*;
 use web_sys::{HtmlCanvasElement, WebGl2RenderingContext as GL};
-use glam::Vec2;
 
-pub mod wave;
 pub mod renderer;
+pub mod wave;
 
-pub use wave::{WaveSimulation, ChladniMode};
 pub use renderer::WaveRenderer;
+pub use wave::{ChladniMode, WaveSimulation};
 
 /// Chladni plate modes (m, n) - defines the vibration pattern
 #[derive(Clone, Copy, Debug)]
@@ -34,17 +34,17 @@ impl PlateMode {
 #[derive(Clone, Debug)]
 pub struct SimConfig {
     pub grid_size: u32,
-    pub plate_size: f32,      // Physical size in meters
-    pub damping: f32,         // Wave damping factor
-    pub wave_speed: f32,      // Wave propagation speed
-    pub time_scale: f32,      // Simulation speed multiplier
+    pub plate_size: f32, // Physical size in meters
+    pub damping: f32,    // Wave damping factor
+    pub wave_speed: f32, // Wave propagation speed
+    pub time_scale: f32, // Simulation speed multiplier
 }
 
 impl Default for SimConfig {
     fn default() -> Self {
         Self {
             grid_size: 256,
-            plate_size: 0.3,    // 30cm plate
+            plate_size: 0.3, // 30cm plate
             damping: 0.002,
             wave_speed: 100.0,
             time_scale: 1.0,
@@ -113,7 +113,8 @@ impl ChladniSimulation {
         self.time += dt_scaled;
 
         // Update wave field
-        self.wave.update(dt_scaled, self.current_mode, self.config.wave_speed);
+        self.wave
+            .update(dt_scaled, self.current_mode, self.config.wave_speed);
 
         // Update particles based on wave gradient
         self.update_particles(dt_scaled);

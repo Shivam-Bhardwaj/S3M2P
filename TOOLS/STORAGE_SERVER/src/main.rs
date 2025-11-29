@@ -1,18 +1,18 @@
 use axum::{
     extract::{Path, State},
-    http::{StatusCode, Method},
+    http::{Method, StatusCode},
     response::{IntoResponse, Response},
     routing::{get, post},
     Json, Router,
 };
 use serde::Deserialize;
 use std::path::PathBuf;
+use tokio::fs;
 use tower_http::cors::CorsLayer;
 use tracing::info;
-use tokio::fs;
 // Reserved for future batch endpoint implementation
 #[allow(unused_imports)]
-use dna::spatial::{SpatialKey, DataLayer};
+use dna::spatial::{DataLayer, SpatialKey};
 
 #[derive(Clone)]
 struct AppState {
@@ -25,7 +25,7 @@ async fn main() -> anyhow::Result<()> {
 
     let data_dir = std::env::var("DATA_DIR").unwrap_or_else(|_| "./data".to_string());
     let data_path = PathBuf::from(data_dir);
-    
+
     if !data_path.exists() {
         fs::create_dir_all(&data_path).await?;
     }
@@ -48,7 +48,7 @@ async fn main() -> anyhow::Result<()> {
 
     let addr = "0.0.0.0:3000";
     info!("Listening on {}", addr);
-    
+
     let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, app).await?;
 
@@ -68,10 +68,7 @@ struct ChunkParams {
     y: u32,
 }
 
-async fn get_chunk(
-    State(state): State<AppState>,
-    Path(params): Path<ChunkParams>,
-) -> Response {
+async fn get_chunk(State(state): State<AppState>, Path(params): Path<ChunkParams>) -> Response {
     // Construct path: data/{layer}/{face}/{level}/{x}_{y}.bin
     let mut path = state.data_dir.clone();
     path.push(&params.layer);
@@ -107,4 +104,3 @@ async fn batch_get_chunks(
     // TODO: Implement efficient batch retrieval
     StatusCode::NOT_IMPLEMENTED
 }
-

@@ -1,8 +1,8 @@
 // Extended Kalman Filter for 2D state estimation
 // Useful for smoothing noisy position data, sensor fusion
 
-use glam::Vec2;
 use crate::mat2::Mat2;
+use glam::Vec2;
 
 /// Extended Kalman Filter for 2D position estimation
 ///
@@ -49,11 +49,7 @@ impl EKF {
     }
 
     /// Create EKF with custom noise parameters
-    pub fn with_noise(
-        initial_pos: Vec2,
-        process_noise: f32,
-        measurement_noise: f32,
-    ) -> Self {
+    pub fn with_noise(initial_pos: Vec2, process_noise: f32, measurement_noise: f32) -> Self {
         Self {
             state: initial_pos,
             covariance: Mat2::IDENTITY,

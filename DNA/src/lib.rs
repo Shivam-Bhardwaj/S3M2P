@@ -61,7 +61,7 @@ pub use ekf::EKF;
 
 /// A* and grid-based pathfinding
 pub mod pathfinding;
-pub use pathfinding::{GridMap, Heuristic, PathResult, astar};
+pub use pathfinding::{astar, GridMap, Heuristic, PathResult};
 
 // ============================================================================
 // CORE TYPES
@@ -93,11 +93,11 @@ pub enum BoidState {
 #[derive(Clone, Copy, Debug)]
 pub struct Genome {
     pub role: BoidRole,
-    pub max_speed: f32,    // 2.0 - 6.0
+    pub max_speed: f32,     // 2.0 - 6.0
     pub agility: f32,       // Turn rate / Force multiplier (0.5 - 2.0)
-    pub size: f32,         // 0.5 - 2.0 multiplier
-    pub strength: f32,     // Combat/Health (0.5 - 2.0)
-    pub sensor_radius: f32,// Vision (40.0 - 120.0)
+    pub size: f32,          // 0.5 - 2.0 multiplier
+    pub strength: f32,      // Combat/Health (0.5 - 2.0)
+    pub sensor_radius: f32, // Vision (40.0 - 120.0)
     pub metabolism: f32,    // Energy cost (0.7 - 1.3)
     pub color_hs: (u16, u8),
 }
@@ -128,16 +128,16 @@ impl Genome {
         } else {
             BoidRole::Scavenger
         };
-        
+
         let max_speed = rng.gen_range(2.0..=4.0);
         let agility = rng.gen_range(0.5..=2.0);
         let size = rng.gen_range(0.5..=2.0);
         let strength = rng.gen_range(0.5..=2.0);
         let sensor_radius = rng.gen_range(40.0..=120.0);
         let metabolism = rng.gen_range(0.7..=1.3);
-        
+
         let color_hs = Self::compute_color_hs(role, max_speed, metabolism);
-        
+
         Self {
             role,
             max_speed,
@@ -154,11 +154,11 @@ impl Genome {
     #[inline]
     fn compute_color_hs(role: BoidRole, max_speed: f32, metabolism: f32) -> (u16, u8) {
         let (base_hue, base_sat) = match role {
-            BoidRole::Herbivore => (120, 70),  // Green
-            BoidRole::Carnivore => (0, 80),     // Red
-            BoidRole::Scavenger => (280, 60),  // Purple
+            BoidRole::Herbivore => (120, 70), // Green
+            BoidRole::Carnivore => (0, 80),   // Red
+            BoidRole::Scavenger => (280, 60), // Purple
         };
-        
+
         let speed_norm = ((max_speed - 2.0) / 2.0).clamp(0.0, 1.0);
         let hue = (base_hue as f32 + speed_norm * 30.0) as u16 % 360;
         let sat = (base_sat as f32 + (metabolism - 0.7) * 20.0) as u8;
@@ -175,9 +175,9 @@ impl Genome {
     pub fn mutate(&self) -> Self {
         let mut rng = rand::thread_rng();
         let event_roll = rng.gen::<f32>();
-        
+
         let mut new_genome = *self;
-        
+
         // 5 Evolutionary Events
         if event_roll < 0.2 {
             // 1. Gigantism: ++Size/Strength, --Speed/Efficiency
@@ -211,13 +211,15 @@ impl Genome {
             new_genome.agility = (self.agility * rng.gen_range(0.95..=1.05)).clamp(0.5, 2.0);
             new_genome.size = (self.size * rng.gen_range(0.95..=1.05)).clamp(0.5, 2.0);
             new_genome.strength = (self.strength * rng.gen_range(0.95..=1.05)).clamp(0.5, 2.0);
-            new_genome.sensor_radius = (self.sensor_radius * rng.gen_range(0.95..=1.05)).clamp(40.0, 120.0);
+            new_genome.sensor_radius =
+                (self.sensor_radius * rng.gen_range(0.95..=1.05)).clamp(40.0, 120.0);
             new_genome.metabolism = (self.metabolism * rng.gen_range(0.95..=1.05)).clamp(0.7, 1.3);
         }
-        
+
         // Recompute color
-        new_genome.color_hs = Self::compute_color_hs(new_genome.role, new_genome.max_speed, new_genome.metabolism);
-        
+        new_genome.color_hs =
+            Self::compute_color_hs(new_genome.role, new_genome.max_speed, new_genome.metabolism);
+
         new_genome
     }
 }
@@ -234,8 +236,11 @@ pub struct BoidHandle {
 }
 
 impl BoidHandle {
-    pub const INVALID: Self = Self { index: u16::MAX, generation: 0 };
-    
+    pub const INVALID: Self = Self {
+        index: u16::MAX,
+        generation: 0,
+    };
+
     #[inline]
     pub fn is_valid(&self) -> bool {
         self.index != u16::MAX
@@ -259,18 +264,18 @@ pub struct BoidArena<const CAPACITY: usize> {
     pub energy: Vec<f32>,
     pub age: Vec<f32>,
     pub generation: Vec<u16>,
-    
+
     // Metadata
     pub alive: Vec<bool>,
-    gen: Vec<u16>,  // Generation counter for handles
-    
+    gen: Vec<u16>, // Generation counter for handles
+
     // Free list (indices of dead slots)
     free_list: Vec<u16>,
     free_count: usize,
-    
+
     // Active count for fast iteration
     pub alive_count: usize,
-    
+
     // Pre-allocated scratch buffers (avoid per-frame allocations)
     pub scratch_accel: Vec<Vec2>,
     pub scratch_density: Vec<u8>,
@@ -295,12 +300,12 @@ impl<const CAPACITY: usize> BoidArena<CAPACITY> {
             scratch_accel: vec![Vec2::ZERO; CAPACITY],
             scratch_density: vec![0; CAPACITY],
         };
-        
+
         // Initialize free list (all slots available)
         for i in 0..CAPACITY {
             arena.free_list[i] = i as u16;
         }
-        
+
         arena
     }
 
@@ -310,10 +315,10 @@ impl<const CAPACITY: usize> BoidArena<CAPACITY> {
         if self.free_count == 0 {
             return BoidHandle::INVALID;
         }
-        
+
         self.free_count -= 1;
         let idx = self.free_list[self.free_count] as usize;
-        
+
         self.positions[idx] = pos;
         self.velocities[idx] = vel;
         self.genes[idx] = genes;
@@ -325,7 +330,7 @@ impl<const CAPACITY: usize> BoidArena<CAPACITY> {
         self.alive[idx] = true;
         self.gen[idx] = self.gen[idx].wrapping_add(1);
         self.alive_count += 1;
-        
+
         BoidHandle {
             index: idx as u16,
             generation: self.gen[idx],
@@ -338,19 +343,19 @@ impl<const CAPACITY: usize> BoidArena<CAPACITY> {
         if self.free_count == 0 || !self.alive[parent_idx] {
             return BoidHandle::INVALID;
         }
-        
+
         let mut rng = rand::thread_rng();
         let pos = self.positions[parent_idx];
         let vel = Vec2::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0));
         let genes = self.genes[parent_idx].mutate();
         let parent_gen = self.generation[parent_idx];
-        
+
         // Cost to parent
         self.energy[parent_idx] -= 50.0;
-        
+
         self.free_count -= 1;
         let idx = self.free_list[self.free_count] as usize;
-        
+
         self.positions[idx] = pos;
         self.velocities[idx] = vel;
         self.genes[idx] = genes;
@@ -362,7 +367,7 @@ impl<const CAPACITY: usize> BoidArena<CAPACITY> {
         self.alive[idx] = true;
         self.gen[idx] = self.gen[idx].wrapping_add(1);
         self.alive_count += 1;
-        
+
         BoidHandle {
             index: idx as u16,
             generation: self.gen[idx],
@@ -427,7 +432,7 @@ impl<const CELL_CAPACITY: usize> SpatialGrid<CELL_CAPACITY> {
         let cols = ((width / cell_size).ceil() as usize).max(1);
         let rows = ((height / cell_size).ceil() as usize).max(1);
         let cell_count = cols * rows;
-        
+
         Self {
             cell_size,
             cols,
@@ -440,7 +445,7 @@ impl<const CELL_CAPACITY: usize> SpatialGrid<CELL_CAPACITY> {
     pub fn resize(&mut self, width: f32, height: f32) {
         let new_cols = ((width / self.cell_size).ceil() as usize).max(1);
         let new_rows = ((height / self.cell_size).ceil() as usize).max(1);
-        
+
         if new_cols != self.cols || new_rows != self.rows {
             self.cols = new_cols;
             self.rows = new_rows;
@@ -494,23 +499,23 @@ impl<const CELL_CAPACITY: usize> SpatialGrid<CELL_CAPACITY> {
     ) -> usize {
         let radius_sq = radius * radius;
         let mut count = 0;
-        
+
         let min_col = ((pos.x - radius) / self.cell_size).floor().max(0.0) as usize;
         let max_col = (((pos.x + radius) / self.cell_size).ceil() as usize).min(self.cols);
         let min_row = ((pos.y - radius) / self.cell_size).floor().max(0.0) as usize;
         let max_row = (((pos.y + radius) / self.cell_size).ceil() as usize).min(self.rows);
-        
+
         for row in min_row..max_row {
             for col in min_col..max_col {
                 let cell_idx = row * self.cols + col;
                 let cell_count = self.cell_counts[cell_idx] as usize;
-                
+
                 for i in 0..cell_count {
                     let other_idx = self.cells[cell_idx][i] as usize;
                     if other_idx == exclude_idx {
                         continue;
                     }
-                    
+
                     let dist_sq = (arena.positions[other_idx] - pos).length_squared();
                     if dist_sq < radius_sq && count < output.len() {
                         output[count] = other_idx as u16;
@@ -519,7 +524,7 @@ impl<const CELL_CAPACITY: usize> SpatialGrid<CELL_CAPACITY> {
                 }
             }
         }
-        
+
         count
     }
 
@@ -550,26 +555,27 @@ pub fn compute_flocking_forces<const CAP: usize, const CELL_CAP: usize>(
     obstacles: &[Obstacle],
 ) {
     let mut neighbors = [0u16; 64]; // Stack-allocated neighbor buffer
-    
+
     for idx in 0..CAP {
         if !arena.alive[idx] {
             arena.scratch_accel[idx] = Vec2::ZERO;
             continue;
         }
-        
+
         let pos = arena.positions[idx];
         let state = arena.states[idx];
         let role = arena.roles[idx];
         let sensor_radius = arena.genes[idx].sensor_radius;
         let effective_radius = sensor_radius.max(vision_radius);
-        
-        let neighbor_count = grid.query_neighbors(pos, effective_radius, arena, idx, &mut neighbors);
-        
+
+        let neighbor_count =
+            grid.query_neighbors(pos, effective_radius, arena, idx, &mut neighbors);
+
         // Store density for population dynamics
         arena.scratch_density[idx] = neighbor_count.min(255) as u8;
-        
+
         let mut force = Vec2::ZERO;
-        
+
         match state {
             BoidState::Flee => {
                 // Flee from predators
@@ -591,7 +597,7 @@ pub fn compute_flocking_forces<const CAP: usize, const CELL_CAP: usize>(
                 let mut seek_force = Vec2::ZERO;
                 let mut closest_dist = f32::MAX;
                 let mut closest_prey = None;
-                
+
                 for &neighbor_idx in neighbors.iter().take(neighbor_count) {
                     let other_idx = neighbor_idx as usize;
                     if arena.roles[other_idx] != BoidRole::Carnivore && arena.alive[other_idx] {
@@ -603,7 +609,7 @@ pub fn compute_flocking_forces<const CAP: usize, const CELL_CAP: usize>(
                         }
                     }
                 }
-                
+
                 if let Some(prey_idx) = closest_prey {
                     let diff = arena.positions[prey_idx] - pos;
                     let dist = diff.length();
@@ -616,12 +622,12 @@ pub fn compute_flocking_forces<const CAP: usize, const CELL_CAP: usize>(
             BoidState::Forage => {
                 // Wander with slight cohesion to same-species
                 if neighbor_count > 0 {
-        let mut cohesion = Vec2::ZERO;
-        let mut separation = Vec2::ZERO;
+                    let mut cohesion = Vec2::ZERO;
+                    let mut separation = Vec2::ZERO;
                     let mut same_species_count = 0;
-        
-        for &neighbor_idx in neighbors.iter().take(neighbor_count) {
-            let other_idx = neighbor_idx as usize;
+
+                    for &neighbor_idx in neighbors.iter().take(neighbor_count) {
+                        let other_idx = neighbor_idx as usize;
                         if arena.roles[other_idx] == role && arena.alive[other_idx] {
                             let diff = arena.positions[other_idx] - pos;
                             let dist = diff.length();
@@ -632,7 +638,7 @@ pub fn compute_flocking_forces<const CAP: usize, const CELL_CAP: usize>(
                             same_species_count += 1;
                         }
                     }
-                    
+
                     if same_species_count > 0 {
                         cohesion = (cohesion / same_species_count as f32) - pos;
                         force += cohesion * 0.5 + separation * 2.0;
@@ -645,7 +651,10 @@ pub fn compute_flocking_forces<const CAP: usize, const CELL_CAP: usize>(
                     let mut mate_force = Vec2::ZERO;
                     for &neighbor_idx in neighbors.iter().take(neighbor_count) {
                         let other_idx = neighbor_idx as usize;
-                        if arena.roles[other_idx] == role && arena.alive[other_idx] && arena.states[other_idx] == BoidState::Reproduce {
+                        if arena.roles[other_idx] == role
+                            && arena.alive[other_idx]
+                            && arena.states[other_idx] == BoidState::Reproduce
+                        {
                             let diff = arena.positions[other_idx] - pos;
                             let dist = diff.length();
                             if dist > 0.001 {
@@ -680,7 +689,7 @@ pub fn compute_flocking_forces<const CAP: usize, const CELL_CAP: usize>(
                             same_species_count += 1;
                         }
                     }
-                    
+
                     if same_species_count > 0 {
                         let n = same_species_count as f32;
                         cohesion = (cohesion / n - pos) * 0.8; // Reduced cohesion
@@ -691,15 +700,15 @@ pub fn compute_flocking_forces<const CAP: usize, const CELL_CAP: usize>(
                 }
             }
         }
-        
+
         // Apply agility multiplier
         let agility_mult = arena.genes[idx].agility;
         force *= agility_mult;
-        
+
         // Always avoid obstacles
         let avoidance = compute_obstacle_avoidance(pos, obstacles);
         force += avoidance;
-        
+
         arena.scratch_accel[idx] = force;
     }
 }
@@ -730,21 +739,21 @@ pub fn update_states<const CAP: usize, const CELL_CAP: usize>(
     grid: &SpatialGrid<CELL_CAP>,
 ) {
     let mut neighbors = [0u16; 64];
-    
+
     for idx in 0..CAP {
         if !arena.alive[idx] {
             continue;
         }
-        
+
         let pos = arena.positions[idx];
         let role = arena.roles[idx];
         let energy = arena.energy[idx];
         let sensor_radius = arena.genes[idx].sensor_radius;
-        
+
         // Check for predators (Carnivores) in sensor range
         let mut has_predator = false;
         let neighbor_count = grid.query_neighbors(pos, sensor_radius, arena, idx, &mut neighbors);
-        
+
         for &neighbor_idx in neighbors.iter().take(neighbor_count) {
             let other_idx = neighbor_idx as usize;
             if arena.roles[other_idx] == BoidRole::Carnivore && role != BoidRole::Carnivore {
@@ -752,7 +761,7 @@ pub fn update_states<const CAP: usize, const CELL_CAP: usize>(
                 break;
             }
         }
-        
+
         // State transition logic
         if has_predator {
             arena.states[idx] = BoidState::Flee;
@@ -793,36 +802,36 @@ pub fn process_predation<const CAP: usize>(arena: &mut BoidArena<CAP>) {
     const PREDATION_RADIUS: f32 = 15.0; // Close contact required
     const PREDATION_DAMAGE: f32 = 20.0;
     const PREDATION_GAIN: f32 = 30.0;
-    
+
     for idx in 0..CAP {
         if !arena.alive[idx] || arena.roles[idx] != BoidRole::Carnivore {
             continue;
         }
-        
+
         let pos = arena.positions[idx];
-        
+
         // Find nearby prey
         for other_idx in 0..CAP {
             if !arena.alive[other_idx] || other_idx == idx {
                 continue;
             }
-            
+
             // Carnivores don't eat other carnivores
             if arena.roles[other_idx] == BoidRole::Carnivore {
                 continue;
             }
-            
+
             let other_pos = arena.positions[other_idx];
             let dist_sq = pos.distance_squared(other_pos);
-            
+
             if dist_sq < PREDATION_RADIUS * PREDATION_RADIUS {
                 // Attack!
                 let damage = PREDATION_DAMAGE * arena.genes[idx].strength;
                 arena.energy[other_idx] -= damage;
-                
+
                 // Carnivore gains energy
                 arena.energy[idx] = (arena.energy[idx] + PREDATION_GAIN).min(200.0);
-                
+
                 // Kill prey if energy depleted
                 if arena.energy[other_idx] <= 0.0 {
                     arena.kill(other_idx);
@@ -836,23 +845,23 @@ pub fn process_predation<const CAP: usize>(arena: &mut BoidArena<CAP>) {
 pub fn process_scavenging<const CAP: usize>(arena: &mut BoidArena<CAP>) {
     const SCAVENGING_RADIUS: f32 = 20.0;
     const SCAVENGING_GAIN: f32 = 15.0;
-    
+
     for idx in 0..CAP {
         if !arena.alive[idx] || arena.roles[idx] != BoidRole::Scavenger {
             continue;
         }
-        
+
         let pos = arena.positions[idx];
-        
+
         // Find dead boids nearby
         for other_idx in 0..CAP {
             if arena.alive[other_idx] || arena.states[other_idx] != BoidState::Dead {
                 continue;
             }
-            
+
             let other_pos = arena.positions[other_idx];
             let dist_sq = pos.distance_squared(other_pos);
-            
+
             if dist_sq < SCAVENGING_RADIUS * SCAVENGING_RADIUS {
                 // Consume corpse
                 arena.energy[idx] = (arena.energy[idx] + SCAVENGING_GAIN).min(200.0);
@@ -880,11 +889,11 @@ impl Default for SimConfig {
     fn default() -> Self {
         Self {
             carrying_capacity: 800,
-            reproduction_threshold: 120.0,  // Easier to reproduce
-            reproduction_cost: 40.0,        // Cheaper reproduction
-            max_age: 2000.0,                // Longer lifespan
-            base_mortality: 0.00002,        // Much gentler base mortality
-            starvation_threshold: 10.0,     // Only die when very low energy
+            reproduction_threshold: 120.0, // Easier to reproduce
+            reproduction_cost: 40.0,       // Cheaper reproduction
+            max_age: 2000.0,               // Longer lifespan
+            base_mortality: 0.00002,       // Much gentler base mortality
+            starvation_threshold: 10.0,    // Only die when very low energy
         }
     }
 }
@@ -898,56 +907,65 @@ pub fn simulation_step<const CAP: usize, const CELL_CAP: usize>(
     width: f32,
     height: f32,
     dt: f32,
-) -> (usize, usize) { // returns (births, deaths)
+) -> (usize, usize) {
+    // returns (births, deaths)
     let mut rng = rand::thread_rng();
     let mut births = 0usize;
     let mut deaths = 0usize;
     let population = arena.alive_count;
-    
+
     // Phase 0: Update states based on environment
     update_states(arena, grid);
-    
+
     // Collect reproduction candidates first (to avoid borrowing issues)
     let mut reproduce_indices = [0u16; 128];
     let mut reproduce_count = 0;
-    
+
     // Phase 1: Apply forces and update physics
     for idx in 0..CAP {
         if !arena.alive[idx] {
             continue;
         }
-        
+
         // Apply acceleration
         let accel = arena.scratch_accel[idx] * 0.05;
         arena.velocities[idx] += accel;
-        
+
         // Limit speed (guard against zero division)
         let max_speed = arena.genes[idx].max_speed;
         let speed = arena.velocities[idx].length();
         if speed > max_speed && speed > 0.0001 {
             arena.velocities[idx] = arena.velocities[idx] / speed * max_speed;
         }
-        
+
         // Update position
         arena.positions[idx] += arena.velocities[idx] * dt;
-        
+
         // Wrap around
-        if arena.positions[idx].x < 0.0 { arena.positions[idx].x += width; }
-        if arena.positions[idx].x >= width { arena.positions[idx].x -= width; }
-        if arena.positions[idx].y < 0.0 { arena.positions[idx].y += height; }
-        if arena.positions[idx].y >= height { arena.positions[idx].y -= height; }
-        
+        if arena.positions[idx].x < 0.0 {
+            arena.positions[idx].x += width;
+        }
+        if arena.positions[idx].x >= width {
+            arena.positions[idx].x -= width;
+        }
+        if arena.positions[idx].y < 0.0 {
+            arena.positions[idx].y += height;
+        }
+        if arena.positions[idx].y >= height {
+            arena.positions[idx].y -= height;
+        }
+
         // Metabolism (size affects cost)
         let size_cost = arena.genes[idx].size;
         let metabolism_cost = speed * 0.002 * arena.genes[idx].metabolism * size_cost;
         arena.energy[idx] -= metabolism_cost;
-        
+
         // Aging
         arena.age[idx] += dt;
-        
+
         // Check reproduction (only in Reproduce state and high energy)
         if arena.states[idx] == BoidState::Reproduce
-            && arena.energy[idx] > config.reproduction_threshold 
+            && arena.energy[idx] > config.reproduction_threshold
             && reproduce_count < 128
             && population + reproduce_count < config.carrying_capacity
         {
@@ -955,11 +973,11 @@ pub fn simulation_step<const CAP: usize, const CELL_CAP: usize>(
             reproduce_count += 1;
         }
     }
-    
+
     // Phase 2: Process interactions (predation, scavenging)
     process_predation(arena);
     process_scavenging(arena);
-    
+
     // Phase 3: Reproduction (separate pass to avoid borrow conflicts)
     for &parent_idx_u16 in reproduce_indices.iter().take(reproduce_count) {
         let parent_idx = parent_idx_u16 as usize;
@@ -990,14 +1008,14 @@ pub fn simulation_step<const CAP: usize, const CELL_CAP: usize>(
             }
         }
     }
-    
+
     // Phase 4: Death checks
     for idx in 0..CAP {
         if !arena.alive[idx] {
             continue;
         }
-        
-        let should_die = 
+
+        let should_die =
             // Starvation - primary death cause
             arena.energy[idx] <= config.starvation_threshold ||
             // Old age guaranteed death
@@ -1008,19 +1026,19 @@ pub fn simulation_step<const CAP: usize, const CELL_CAP: usize>(
                 let pop_excess = if over_capacity {
                     (population - config.carrying_capacity) as f32 / config.carrying_capacity as f32
                 } else { 0.0 };
-                
+
                 // Only apply population pressure, age mortality is gentle
                 let death_prob = config.base_mortality + pop_excess * 0.02;
-                    
+
                 rng.gen::<f32>() < death_prob
             };
-        
+
         if should_die {
             arena.kill(idx);
             deaths += 1;
         }
     }
-    
+
     (births, deaths)
 }
 
@@ -1067,12 +1085,12 @@ impl FoodSource {
         let regen = self.regen_rate * season_multiplier * dt;
         self.energy = (self.energy + regen).min(self.max_energy);
     }
-    
+
     #[inline]
     pub fn is_depleted(&self) -> bool {
         self.energy < self.max_energy * 0.1
     }
-    
+
     #[inline]
     pub fn fullness(&self) -> f32 {
         self.energy / self.max_energy
@@ -1099,7 +1117,7 @@ impl PredatorZone {
             lifetime: 0.0,
         }
     }
-    
+
     pub fn update(&mut self, dt: f32) {
         self.lifetime += dt;
         // Predators fade after ~15 seconds
@@ -1114,11 +1132,11 @@ impl PredatorZone {
 /// World events for drama
 #[derive(Clone, Debug)]
 pub enum WorldEvent {
-    Famine,           // Food stops regenerating
-    Bloom,            // Food regenerates 3x faster
-    PredatorSpawn,    // New predator zone appears
-    Migration,        // Boids get pushed in a direction
-    Earthquake,       // Randomize all velocities
+    Famine,        // Food stops regenerating
+    Bloom,         // Food regenerates 3x faster
+    PredatorSpawn, // New predator zone appears
+    Migration,     // Boids get pushed in a direction
+    Earthquake,    // Randomize all velocities
 }
 
 /// Seasonal cycle affects food and mortality
@@ -1136,19 +1154,22 @@ impl Default for SeasonCycle {
 
 impl SeasonCycle {
     pub fn new() -> Self {
-        Self { time: 0.0, period: 1800.0 } // 30 second seasons
+        Self {
+            time: 0.0,
+            period: 1800.0,
+        } // 30 second seasons
     }
-    
+
     pub fn update(&mut self, dt: f32) {
         self.time += dt;
     }
-    
+
     /// Returns 0.0-1.0 season phase (0=winter, 0.5=summer)
     #[inline]
     pub fn phase(&self) -> f32 {
         (self.time / self.period).fract()
     }
-    
+
     /// Food multiplier: low in winter, high in summer
     #[inline]
     pub fn food_multiplier(&self) -> f32 {
@@ -1156,14 +1177,19 @@ impl SeasonCycle {
         // Sinusoidal: 0.3 in winter, 2.0 in summer
         0.3 + 1.7 * (phase * std::f32::consts::TAU).sin().max(0.0)
     }
-    
+
     /// Returns season name
     pub fn season_name(&self) -> &'static str {
         let phase = self.phase();
-        if phase < 0.25 { "SPRING" }
-        else if phase < 0.5 { "SUMMER" }
-        else if phase < 0.75 { "AUTUMN" }
-        else { "WINTER" }
+        if phase < 0.25 {
+            "SPRING"
+        } else if phase < 0.5 {
+            "SUMMER"
+        } else if phase < 0.75 {
+            "AUTUMN"
+        } else {
+            "WINTER"
+        }
     }
 }
 
@@ -1174,14 +1200,14 @@ pub fn feed_from_sources<const CAP: usize>(
     season: &SeasonCycle,
 ) {
     let food_mult = season.food_multiplier();
-    
+
     for idx in 0..CAP {
         if !arena.alive[idx] {
             continue;
         }
-        
+
         let pos = arena.positions[idx];
-        
+
         for food in food_sources.iter_mut() {
             let dist = pos.distance(food.position);
             if dist < food.radius && food.energy > 0.0 {
@@ -1192,7 +1218,7 @@ pub fn feed_from_sources<const CAP: usize>(
             }
         }
     }
-    
+
     // Regenerate food based on season
     for food in food_sources.iter_mut() {
         food.regenerate(1.0, food_mult);
@@ -1205,38 +1231,38 @@ pub fn apply_predator_zones<const CAP: usize>(
     predators: &[PredatorZone],
 ) -> usize {
     let mut kills = 0;
-    
+
     for idx in 0..CAP {
         if !arena.alive[idx] {
             continue;
         }
-        
+
         let pos = arena.positions[idx];
-        
+
         for pred in predators {
             if !pred.active {
                 continue;
             }
-            
+
             let dist = pos.distance(pred.position);
             if dist < pred.radius {
                 // Drain energy based on proximity
                 let damage = pred.intensity * (1.0 - dist / pred.radius);
                 arena.energy[idx] -= damage;
-                
+
                 // Push boids away from predator
                 if dist > 1.0 {
                     let flee = (pos - pred.position).normalize() * 2.0;
                     arena.velocities[idx] += flee;
                 }
-                
+
                 if arena.energy[idx] <= 0.0 {
                     kills += 1;
                 }
             }
         }
     }
-    
+
     kills
 }
 
@@ -1257,13 +1283,10 @@ pub fn trigger_migration<const CAP: usize>(
 pub fn trigger_earthquake<const CAP: usize>(arena: &mut BoidArena<CAP>) {
     let mut rng = rand::thread_rng();
     use rand::Rng;
-    
+
     for idx in 0..CAP {
         if arena.alive[idx] {
-            arena.velocities[idx] = Vec2::new(
-                rng.gen_range(-3.0..3.0),
-                rng.gen_range(-3.0..3.0),
-            );
+            arena.velocities[idx] = Vec2::new(rng.gen_range(-3.0..3.0), rng.gen_range(-3.0..3.0));
             // Stress from earthquake
             arena.energy[idx] -= 5.0;
         }
@@ -1280,13 +1303,13 @@ pub fn compute_diversity<const CAP: usize>(arena: &BoidArena<CAP>) -> f32 {
     if arena.alive_count < 10 {
         return 1.0; // Too few to measure, assume diverse
     }
-    
+
     let mut herbivore_count = 0usize;
     let mut carnivore_count = 0usize;
     let mut scavenger_count = 0usize;
     let mut speed_sum = 0.0f32;
     let mut speed_sq_sum = 0.0f32;
-    
+
     for idx in arena.iter_alive() {
         match arena.roles[idx] {
             BoidRole::Herbivore => herbivore_count += 1,
@@ -1297,52 +1320,66 @@ pub fn compute_diversity<const CAP: usize>(arena: &BoidArena<CAP>) -> f32 {
         speed_sum += speed;
         speed_sq_sum += speed * speed;
     }
-    
+
     let total = arena.alive_count as f32;
-    
+
     // Role diversity: Shannon entropy normalized
     // Perfect balance = 0.33, 0.33, 0.33 -> entropy = log2(3) ≈ 1.58
     let h_frac = herbivore_count as f32 / total;
     let c_frac = carnivore_count as f32 / total;
     let s_frac = scavenger_count as f32 / total;
-    
+
     let mut entropy = 0.0f32;
-    if h_frac > 0.0 { entropy -= h_frac * h_frac.log2(); }
-    if c_frac > 0.0 { entropy -= c_frac * c_frac.log2(); }
-    if s_frac > 0.0 { entropy -= s_frac * s_frac.log2(); }
-    
+    if h_frac > 0.0 {
+        entropy -= h_frac * h_frac.log2();
+    }
+    if c_frac > 0.0 {
+        entropy -= c_frac * c_frac.log2();
+    }
+    if s_frac > 0.0 {
+        entropy -= s_frac * s_frac.log2();
+    }
+
     let max_entropy = 3.0f32.log2(); // ~1.58
     let role_diversity = (entropy / max_entropy).clamp(0.0, 1.0);
-    
+
     // Trait diversity: coefficient of variation of speed
     let speed_mean = speed_sum / total;
     let speed_variance = (speed_sq_sum / total) - (speed_mean * speed_mean);
     let speed_std = speed_variance.max(0.0).sqrt();
-    let cv = if speed_mean > 0.0 { speed_std / speed_mean } else { 0.0 };
+    let cv = if speed_mean > 0.0 {
+        speed_std / speed_mean
+    } else {
+        0.0
+    };
     // CV of 0.3+ is healthy diversity, normalize
     let trait_diversity = (cv / 0.4).clamp(0.0, 1.0);
-    
+
     // Combined score (weighted)
     0.7 * role_diversity + 0.3 * trait_diversity
 }
 
 /// Trigger mass extinction - kills most boids, resets ecosystem
 pub fn trigger_mass_extinction<const CAP: usize>(
-    arena: &mut BoidArena<CAP>, 
+    arena: &mut BoidArena<CAP>,
     kill_fraction: f32,
     width: f32,
     height: f32,
 ) {
     let mut rng = rand::thread_rng();
     use rand::Rng;
-    
+
     let mut killed = 0usize;
     let target_kills = (arena.alive_count as f32 * kill_fraction) as usize;
-    
+
     for idx in 0..CAP {
-        if !arena.alive[idx] { continue; }
-        if killed >= target_kills { break; }
-        
+        if !arena.alive[idx] {
+            continue;
+        }
+        if killed >= target_kills {
+            break;
+        }
+
         // Random chance to survive (larger/stronger have slight advantage)
         let survival_bonus = arena.genes[idx].strength * 0.1;
         if rng.gen::<f32>() > survival_bonus {
@@ -1350,7 +1387,7 @@ pub fn trigger_mass_extinction<const CAP: usize>(
             killed += 1;
         }
     }
-    
+
     // Spawn a few diverse founders to reseed (use actual world dimensions)
     let founders = 10.min(CAP - arena.alive_count);
     let margin = 50.0f32.min(width * 0.1).min(height * 0.1);
@@ -1386,11 +1423,11 @@ mod tests {
         let mut arena: BoidArena<100> = BoidArena::new();
         assert_eq!(arena.alive_count, 0);
         assert_eq!(arena.remaining_capacity(), 100);
-        
+
         let h1 = arena.spawn(Vec2::new(10.0, 10.0), Vec2::ZERO, Genome::random());
         assert!(h1.is_valid());
         assert_eq!(arena.alive_count, 1);
-        
+
         arena.kill(h1.index as usize);
         assert_eq!(arena.alive_count, 0);
         assert!(!arena.is_alive(h1)); // Handle invalidated by generation bump
@@ -1402,10 +1439,10 @@ mod tests {
         let h1 = arena.spawn(Vec2::new(10.0, 10.0), Vec2::ZERO, Genome::random());
         let _h2 = arena.spawn(Vec2::new(15.0, 10.0), Vec2::ZERO, Genome::random());
         let _h3 = arena.spawn(Vec2::new(100.0, 100.0), Vec2::ZERO, Genome::random());
-        
+
         let mut grid: SpatialGrid<16> = SpatialGrid::new(200.0, 200.0, 50.0);
         grid.build(&arena);
-        
+
         let count = grid.count_neighbors(Vec2::new(10.0, 10.0), 20.0, &arena, h1.index as usize);
         assert_eq!(count, 1); // Should find boid at (15, 10) but not self
     }
@@ -1437,13 +1474,16 @@ mod tests {
             metabolism: 1.0,
             color_hs: (120, 70),
         };
-        
+
         // Force gigantism by testing multiple mutations until we get one
         let mut found_gigantism = false;
         for _ in 0..100 {
             let child = parent.mutate();
             if child.size > parent.size * 1.15 && child.strength > parent.strength * 1.15 {
-                assert!(child.max_speed < parent.max_speed * 1.05 || child.max_speed <= parent.max_speed);
+                assert!(
+                    child.max_speed < parent.max_speed * 1.05
+                        || child.max_speed <= parent.max_speed
+                );
                 found_gigantism = true;
                 break;
             }
@@ -1463,7 +1503,7 @@ mod tests {
             metabolism: 1.0,
             color_hs: (120, 70),
         };
-        
+
         let mut role_changes = 0;
         for _ in 0..100 {
             let child = parent.mutate();
@@ -1471,9 +1511,13 @@ mod tests {
                 role_changes += 1;
             }
         }
-        
+
         // Speciation should be rare (~1%)
-        assert!(role_changes <= 5, "Role mutation rate should be low, got {} changes", role_changes);
+        assert!(
+            role_changes <= 5,
+            "Role mutation rate should be low, got {} changes",
+            role_changes
+        );
     }
 
     // ============================================================================
@@ -1484,7 +1528,7 @@ mod tests {
     fn test_state_transition_flee() {
         let mut arena: BoidArena<100> = BoidArena::new();
         let mut grid: SpatialGrid<16> = SpatialGrid::new(200.0, 200.0, 60.0);
-        
+
         // Spawn a Herbivore
         let herb_genes = Genome {
             role: BoidRole::Herbivore,
@@ -1496,8 +1540,10 @@ mod tests {
             metabolism: 1.0,
             color_hs: (120, 70),
         };
-        let herb_idx = arena.spawn(Vec2::new(50.0, 50.0), Vec2::ZERO, herb_genes).index as usize;
-        
+        let herb_idx = arena
+            .spawn(Vec2::new(50.0, 50.0), Vec2::ZERO, herb_genes)
+            .index as usize;
+
         // Spawn a Carnivore nearby
         let carn_genes = Genome {
             role: BoidRole::Carnivore,
@@ -1509,19 +1555,25 @@ mod tests {
             metabolism: 1.0,
             color_hs: (0, 80),
         };
-        let _carn_idx = arena.spawn(Vec2::new(60.0, 50.0), Vec2::ZERO, carn_genes).index as usize;
-        
+        let _carn_idx = arena
+            .spawn(Vec2::new(60.0, 50.0), Vec2::ZERO, carn_genes)
+            .index as usize;
+
         grid.build(&arena);
         update_states(&mut arena, &grid);
-        
-        assert_eq!(arena.states[herb_idx], BoidState::Flee, "Herbivore should flee from nearby Carnivore");
+
+        assert_eq!(
+            arena.states[herb_idx],
+            BoidState::Flee,
+            "Herbivore should flee from nearby Carnivore"
+        );
     }
 
     #[test]
     fn test_state_transition_hunt() {
         let mut arena: BoidArena<100> = BoidArena::new();
         let mut grid: SpatialGrid<16> = SpatialGrid::new(200.0, 200.0, 60.0);
-        
+
         // Spawn a Carnivore
         let carn_genes = Genome {
             role: BoidRole::Carnivore,
@@ -1533,8 +1585,10 @@ mod tests {
             metabolism: 1.0,
             color_hs: (0, 80),
         };
-        let carn_idx = arena.spawn(Vec2::new(50.0, 50.0), Vec2::ZERO, carn_genes).index as usize;
-        
+        let carn_idx = arena
+            .spawn(Vec2::new(50.0, 50.0), Vec2::ZERO, carn_genes)
+            .index as usize;
+
         // Spawn a Herbivore nearby
         let herb_genes = Genome {
             role: BoidRole::Herbivore,
@@ -1546,19 +1600,25 @@ mod tests {
             metabolism: 1.0,
             color_hs: (120, 70),
         };
-        let _herb_idx = arena.spawn(Vec2::new(60.0, 50.0), Vec2::ZERO, herb_genes).index as usize;
-        
+        let _herb_idx = arena
+            .spawn(Vec2::new(60.0, 50.0), Vec2::ZERO, herb_genes)
+            .index as usize;
+
         grid.build(&arena);
         update_states(&mut arena, &grid);
-        
-        assert_eq!(arena.states[carn_idx], BoidState::Hunt, "Carnivore should hunt nearby Herbivore");
+
+        assert_eq!(
+            arena.states[carn_idx],
+            BoidState::Hunt,
+            "Carnivore should hunt nearby Herbivore"
+        );
     }
 
     #[test]
     fn test_state_forage() {
         let mut arena: BoidArena<100> = BoidArena::new();
         let grid: SpatialGrid<16> = SpatialGrid::new(200.0, 200.0, 60.0);
-        
+
         // Use a Herbivore specifically (not random) since Carnivores have different logic
         let genes = Genome {
             role: BoidRole::Herbivore,
@@ -1571,13 +1631,17 @@ mod tests {
             color_hs: (120, 70),
         };
         let idx = arena.spawn(Vec2::new(50.0, 50.0), Vec2::ZERO, genes).index as usize;
-        
+
         // Set energy low (below 80 threshold)
         arena.energy[idx] = 40.0;
-        
+
         update_states(&mut arena, &grid);
-        
-        assert_eq!(arena.states[idx], BoidState::Forage, "Low energy Herbivore should forage");
+
+        assert_eq!(
+            arena.states[idx],
+            BoidState::Forage,
+            "Low energy Herbivore should forage"
+        );
     }
 
     // ============================================================================
@@ -1587,7 +1651,7 @@ mod tests {
     #[test]
     fn test_predation_damage() {
         let mut arena: BoidArena<100> = BoidArena::new();
-        
+
         let carn_genes = Genome {
             role: BoidRole::Carnivore,
             max_speed: 3.0,
@@ -1598,9 +1662,11 @@ mod tests {
             metabolism: 1.0,
             color_hs: (0, 80),
         };
-        let carn_idx = arena.spawn(Vec2::new(50.0, 50.0), Vec2::ZERO, carn_genes).index as usize;
+        let carn_idx = arena
+            .spawn(Vec2::new(50.0, 50.0), Vec2::ZERO, carn_genes)
+            .index as usize;
         arena.energy[carn_idx] = 100.0;
-        
+
         let herb_genes = Genome {
             role: BoidRole::Herbivore,
             max_speed: 3.0,
@@ -1611,14 +1677,22 @@ mod tests {
             metabolism: 1.0,
             color_hs: (120, 70),
         };
-        let herb_idx = arena.spawn(Vec2::new(51.0, 50.0), Vec2::ZERO, herb_genes).index as usize;
+        let herb_idx = arena
+            .spawn(Vec2::new(51.0, 50.0), Vec2::ZERO, herb_genes)
+            .index as usize;
         let initial_herb_energy = 100.0;
         arena.energy[herb_idx] = initial_herb_energy;
-        
+
         process_predation(&mut arena);
-        
-        assert!(arena.energy[herb_idx] < initial_herb_energy, "Herbivore should lose energy");
-        assert!(arena.energy[carn_idx] > 100.0 || arena.energy[carn_idx] == 100.0, "Carnivore should gain energy or stay at max");
+
+        assert!(
+            arena.energy[herb_idx] < initial_herb_energy,
+            "Herbivore should lose energy"
+        );
+        assert!(
+            arena.energy[carn_idx] > 100.0 || arena.energy[carn_idx] == 100.0,
+            "Carnivore should gain energy or stay at max"
+        );
     }
 
     #[test]
@@ -1626,10 +1700,14 @@ mod tests {
         let mut arena: BoidArena<100> = BoidArena::new();
         let genes = Genome::random();
         let idx = arena.spawn(Vec2::new(50.0, 50.0), Vec2::ZERO, genes).index as usize;
-        
+
         arena.kill(idx);
-        
-        assert_eq!(arena.states[idx], BoidState::Dead, "Dead boid should be marked as Dead");
+
+        assert_eq!(
+            arena.states[idx],
+            BoidState::Dead,
+            "Dead boid should be marked as Dead"
+        );
         assert!(!arena.alive[idx], "Dead boid should not be alive");
     }
 
@@ -1641,22 +1719,22 @@ mod tests {
     fn test_arena_capacity_4096() {
         let mut arena: BoidArena<4096> = BoidArena::new();
         let mut grid: SpatialGrid<32> = SpatialGrid::new(1000.0, 1000.0, 60.0);
-        
+
         // Fill arena
         for i in 0..4096 {
             let x = (i % 100) as f32 * 10.0;
             let y = (i / 100) as f32 * 10.0;
             arena.spawn(Vec2::new(x, y), Vec2::ZERO, Genome::random());
         }
-        
+
         assert_eq!(arena.alive_count, 4096);
-        
+
         grid.build(&arena);
-        
+
         // Run simulation step
         let config = SimConfig::default();
         let (births, deaths) = simulation_step(&mut arena, &grid, &config, 1000.0, 1000.0, 1.0);
-        
+
         // Should complete without panic
         let _ = (births, deaths);
     }

@@ -1,7 +1,7 @@
 // Canvas 2D Renderer - Following too.foo patterns
 // No GPU required, efficient CPU rendering
 
-use crate::simulation::{SimulationState, AU_KM, SOLAR_RADIUS_KM, ORBIT_SEGMENTS};
+use crate::simulation::{SimulationState, AU_KM, ORBIT_SEGMENTS, SOLAR_RADIUS_KM};
 use std::f64::consts::PI;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
@@ -38,24 +38,24 @@ pub fn render(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64
 // Coordinates are J2000 ecliptic.
 const BRIGHT_STARS: &[(&str, f64, f64, f64, &str)] = &[
     // (name, ecliptic_lon, ecliptic_lat, magnitude, color)
-    ("Sirius", 104.0, -39.6, -1.46, "#A3CFFF"),      // Alpha CMa - brightest star
-    ("Canopus", 96.0, -76.0, -0.72, "#FFFEF0"),     // Alpha Car
-    ("Arcturus", 214.0, 30.7, -0.05, "#FFB347"),    // Alpha Boo - orange giant
-    ("Vega", 285.0, 61.7, 0.03, "#A3CFFF"),         // Alpha Lyr - near solar apex
-    ("Capella", 79.0, 23.0, 0.08, "#FFFBCC"),       // Alpha Aur
-    ("Rigel", 78.0, -31.0, 0.13, "#B4CFFF"),        // Beta Ori
-    ("Procyon", 116.0, -16.0, 0.34, "#FFEFD5"),     // Alpha CMi
-    ("Betelgeuse", 89.0, -16.0, 0.42, "#FF6B35"),   // Alpha Ori - red supergiant
-    ("Aldebaran", 69.0, -5.5, 0.85, "#FF8C42"),     // Alpha Tau - orange giant
-    ("Spica", 204.0, -2.0, 1.04, "#B4CFFF"),        // Alpha Vir
-    ("Antares", 248.0, -4.5, 1.09, "#FF4500"),      // Alpha Sco - red supergiant
-    ("Pollux", 113.0, 6.7, 1.14, "#FFD27F"),        // Beta Gem
-    ("Fomalhaut", 334.0, -21.0, 1.16, "#A3CFFF"),   // Alpha PsA
-    ("Deneb", 310.0, 60.0, 1.25, "#FFFFFF"),        // Alpha Cyg
-    ("Regulus", 150.0, 0.5, 1.35, "#B4CFFF"),       // Alpha Leo
-    ("Castor", 113.5, 10.0, 1.58, "#A3CFFF"),       // Alpha Gem
-    ("Polaris", 88.0, 66.4, 1.98, "#FFFBCC"),       // Alpha UMi - near north ecliptic pole
-    ("Altair", 296.0, 29.3, 0.77, "#FFFFFF"),       // Alpha Aql
+    ("Sirius", 104.0, -39.6, -1.46, "#A3CFFF"), // Alpha CMa - brightest star
+    ("Canopus", 96.0, -76.0, -0.72, "#FFFEF0"), // Alpha Car
+    ("Arcturus", 214.0, 30.7, -0.05, "#FFB347"), // Alpha Boo - orange giant
+    ("Vega", 285.0, 61.7, 0.03, "#A3CFFF"),     // Alpha Lyr - near solar apex
+    ("Capella", 79.0, 23.0, 0.08, "#FFFBCC"),   // Alpha Aur
+    ("Rigel", 78.0, -31.0, 0.13, "#B4CFFF"),    // Beta Ori
+    ("Procyon", 116.0, -16.0, 0.34, "#FFEFD5"), // Alpha CMi
+    ("Betelgeuse", 89.0, -16.0, 0.42, "#FF6B35"), // Alpha Ori - red supergiant
+    ("Aldebaran", 69.0, -5.5, 0.85, "#FF8C42"), // Alpha Tau - orange giant
+    ("Spica", 204.0, -2.0, 1.04, "#B4CFFF"),    // Alpha Vir
+    ("Antares", 248.0, -4.5, 1.09, "#FF4500"),  // Alpha Sco - red supergiant
+    ("Pollux", 113.0, 6.7, 1.14, "#FFD27F"),    // Beta Gem
+    ("Fomalhaut", 334.0, -21.0, 1.16, "#A3CFFF"), // Alpha PsA
+    ("Deneb", 310.0, 60.0, 1.25, "#FFFFFF"),    // Alpha Cyg
+    ("Regulus", 150.0, 0.5, 1.35, "#B4CFFF"),   // Alpha Leo
+    ("Castor", 113.5, 10.0, 1.58, "#A3CFFF"),   // Alpha Gem
+    ("Polaris", 88.0, 66.4, 1.98, "#FFFBCC"),   // Alpha UMi - near north ecliptic pole
+    ("Altair", 296.0, 29.3, 0.77, "#FFFFFF"),   // Alpha Aql
 ];
 
 // ============================================================================
@@ -68,15 +68,15 @@ const BRIGHT_STARS: &[(&str, f64, f64, f64, &str)] = &[
 
 // Orion - The Hunter (prominent winter constellation)
 const ORION_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Betelgeuse", 89.0, -16.0, 0.42, "#FF6B35"),     // Left shoulder
-    ("Bellatrix", 82.0, -17.0, 1.64, "#B4CFFF"),      // Right shoulder
-    ("skip", 0.0, 0.0, 0.0, ""),                       // Lift pen
-    ("Alnitak", 85.5, -25.5, 1.77, "#B4CFFF"),        // Left belt
-    ("Alnilam", 84.0, -24.5, 1.69, "#B4CFFF"),        // Middle belt
-    ("Mintaka", 82.5, -23.5, 2.23, "#B4CFFF"),        // Right belt
+    ("Betelgeuse", 89.0, -16.0, 0.42, "#FF6B35"), // Left shoulder
+    ("Bellatrix", 82.0, -17.0, 1.64, "#B4CFFF"),  // Right shoulder
+    ("skip", 0.0, 0.0, 0.0, ""),                  // Lift pen
+    ("Alnitak", 85.5, -25.5, 1.77, "#B4CFFF"),    // Left belt
+    ("Alnilam", 84.0, -24.5, 1.69, "#B4CFFF"),    // Middle belt
+    ("Mintaka", 82.5, -23.5, 2.23, "#B4CFFF"),    // Right belt
     ("skip", 0.0, 0.0, 0.0, ""),
-    ("Rigel", 78.0, -31.0, 0.13, "#B4CFFF"),          // Right foot
-    ("Saiph", 87.0, -33.0, 2.06, "#B4CFFF"),          // Left foot
+    ("Rigel", 78.0, -31.0, 0.13, "#B4CFFF"), // Right foot
+    ("Saiph", 87.0, -33.0, 2.06, "#B4CFFF"), // Left foot
     ("skip", 0.0, 0.0, 0.0, ""),
     // Connect body
     ("Betelgeuse", 89.0, -16.0, 0.42, "#FF6B35"),
@@ -90,29 +90,29 @@ const ORION_STARS: &[(&str, f64, f64, f64, &str)] = &[
 
 // Ursa Major - The Big Dipper (circumpolar, always visible)
 const URSA_MAJOR_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Alkaid", 183.0, 55.0, 1.86, "#B4CFFF"),         // End of handle
-    ("Mizar", 175.0, 56.0, 2.04, "#FFFFFF"),          // Handle bend
-    ("Alioth", 166.0, 54.0, 1.77, "#FFFFFF"),         // Handle
-    ("Megrez", 157.0, 51.0, 3.31, "#FFFFFF"),         // Bowl corner
-    ("Phecda", 151.0, 45.0, 2.44, "#FFFFFF"),         // Bowl
-    ("Merak", 147.0, 48.0, 2.37, "#FFFFFF"),          // Pointer 1
+    ("Alkaid", 183.0, 55.0, 1.86, "#B4CFFF"), // End of handle
+    ("Mizar", 175.0, 56.0, 2.04, "#FFFFFF"),  // Handle bend
+    ("Alioth", 166.0, 54.0, 1.77, "#FFFFFF"), // Handle
+    ("Megrez", 157.0, 51.0, 3.31, "#FFFFFF"), // Bowl corner
+    ("Phecda", 151.0, 45.0, 2.44, "#FFFFFF"), // Bowl
+    ("Merak", 147.0, 48.0, 2.37, "#FFFFFF"),  // Pointer 1
     ("skip", 0.0, 0.0, 0.0, ""),
     ("Megrez", 157.0, 51.0, 3.31, "#FFFFFF"),
-    ("Dubhe", 149.0, 54.0, 1.79, "#FFD27F"),          // Pointer 2
+    ("Dubhe", 149.0, 54.0, 1.79, "#FFD27F"), // Pointer 2
     ("Merak", 147.0, 48.0, 2.37, "#FFFFFF"),
 ];
 
 // Leo - The Lion (spring constellation on ecliptic)
 const LEO_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Regulus", 150.0, 0.5, 1.35, "#B4CFFF"),         // Heart
-    ("eta Leo", 145.0, 2.0, 3.52, "#FFFFFF"),         // Neck
-    ("gamma Leo", 142.0, 9.0, 2.61, "#FFD27F"),       // Forehead
-    ("zeta Leo", 137.0, 10.0, 3.44, "#FFFFFF"),       // Nose
+    ("Regulus", 150.0, 0.5, 1.35, "#B4CFFF"),   // Heart
+    ("eta Leo", 145.0, 2.0, 3.52, "#FFFFFF"),   // Neck
+    ("gamma Leo", 142.0, 9.0, 2.61, "#FFD27F"), // Forehead
+    ("zeta Leo", 137.0, 10.0, 3.44, "#FFFFFF"), // Nose
     ("skip", 0.0, 0.0, 0.0, ""),
     ("gamma Leo", 142.0, 9.0, 2.61, "#FFD27F"),
-    ("delta Leo", 155.0, 8.0, 2.56, "#FFFFFF"),       // Back
-    ("theta Leo", 162.0, 3.0, 3.34, "#FFFFFF"),       // Haunch
-    ("beta Leo", 172.0, 9.0, 2.14, "#FFFFFF"),        // Tail (Denebola)
+    ("delta Leo", 155.0, 8.0, 2.56, "#FFFFFF"), // Back
+    ("theta Leo", 162.0, 3.0, 3.34, "#FFFFFF"), // Haunch
+    ("beta Leo", 172.0, 9.0, 2.14, "#FFFFFF"),  // Tail (Denebola)
     ("skip", 0.0, 0.0, 0.0, ""),
     ("Regulus", 150.0, 0.5, 1.35, "#B4CFFF"),
     ("theta Leo", 162.0, 3.0, 3.34, "#FFFFFF"),
@@ -120,126 +120,126 @@ const LEO_STARS: &[(&str, f64, f64, f64, &str)] = &[
 
 // Scorpius - The Scorpion (summer constellation on ecliptic)
 const SCORPIUS_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Antares", 248.0, -4.5, 1.09, "#FF4500"),        // Heart
-    ("sigma Sco", 245.0, -4.0, 2.89, "#B4CFFF"),      // Head
-    ("delta Sco", 243.0, -3.0, 2.32, "#B4CFFF"),      // Upper head
-    ("beta Sco", 241.0, 1.0, 2.62, "#B4CFFF"),        // Upper claw
+    ("Antares", 248.0, -4.5, 1.09, "#FF4500"),   // Heart
+    ("sigma Sco", 245.0, -4.0, 2.89, "#B4CFFF"), // Head
+    ("delta Sco", 243.0, -3.0, 2.32, "#B4CFFF"), // Upper head
+    ("beta Sco", 241.0, 1.0, 2.62, "#B4CFFF"),   // Upper claw
     ("skip", 0.0, 0.0, 0.0, ""),
     ("delta Sco", 243.0, -3.0, 2.32, "#B4CFFF"),
-    ("pi Sco", 242.0, -6.0, 2.89, "#B4CFFF"),         // Lower claw
+    ("pi Sco", 242.0, -6.0, 2.89, "#B4CFFF"), // Lower claw
     ("skip", 0.0, 0.0, 0.0, ""),
     ("Antares", 248.0, -4.5, 1.09, "#FF4500"),
-    ("tau Sco", 251.0, -8.0, 2.82, "#B4CFFF"),        // Body
-    ("epsilon Sco", 254.0, -12.0, 2.29, "#FFD27F"),   // Tail
-    ("mu Sco", 257.0, -15.0, 3.04, "#B4CFFF"),        // Tail
-    ("zeta Sco", 260.0, -17.0, 3.62, "#B4CFFF"),      // Tail
-    ("eta Sco", 263.0, -20.0, 3.33, "#B4CFFF"),       // Stinger area
-    ("lambda Sco", 265.0, -19.0, 1.63, "#B4CFFF"),    // Stinger (Shaula)
+    ("tau Sco", 251.0, -8.0, 2.82, "#B4CFFF"),      // Body
+    ("epsilon Sco", 254.0, -12.0, 2.29, "#FFD27F"), // Tail
+    ("mu Sco", 257.0, -15.0, 3.04, "#B4CFFF"),      // Tail
+    ("zeta Sco", 260.0, -17.0, 3.62, "#B4CFFF"),    // Tail
+    ("eta Sco", 263.0, -20.0, 3.33, "#B4CFFF"),     // Stinger area
+    ("lambda Sco", 265.0, -19.0, 1.63, "#B4CFFF"),  // Stinger (Shaula)
 ];
 
 // Gemini - The Twins (winter/spring, on ecliptic)
 const GEMINI_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Castor", 113.5, 10.0, 1.58, "#A3CFFF"),         // Castor's head
-    ("Pollux", 113.0, 6.7, 1.14, "#FFD27F"),          // Pollux's head
+    ("Castor", 113.5, 10.0, 1.58, "#A3CFFF"), // Castor's head
+    ("Pollux", 113.0, 6.7, 1.14, "#FFD27F"),  // Pollux's head
     ("skip", 0.0, 0.0, 0.0, ""),
     ("Castor", 113.5, 10.0, 1.58, "#A3CFFF"),
-    ("mu Gem", 107.0, 6.0, 2.88, "#FFFFFF"),          // Castor's body
-    ("gamma Gem", 99.0, 0.0, 1.93, "#FFFFFF"),        // Castor's foot
+    ("mu Gem", 107.0, 6.0, 2.88, "#FFFFFF"), // Castor's body
+    ("gamma Gem", 99.0, 0.0, 1.93, "#FFFFFF"), // Castor's foot
     ("skip", 0.0, 0.0, 0.0, ""),
     ("Pollux", 113.0, 6.7, 1.14, "#FFD27F"),
-    ("kappa Gem", 106.0, 2.0, 3.57, "#FFFFFF"),       // Pollux's body
-    ("eta Gem", 96.0, -4.0, 3.31, "#FF8C42"),         // Pollux's foot
+    ("kappa Gem", 106.0, 2.0, 3.57, "#FFFFFF"), // Pollux's body
+    ("eta Gem", 96.0, -4.0, 3.31, "#FF8C42"),   // Pollux's foot
 ];
 
 // Taurus - The Bull (winter, on ecliptic)
 const TAURUS_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Aldebaran", 69.0, -5.5, 0.85, "#FF8C42"),       // Eye
-    ("theta Tau", 66.0, -5.0, 3.84, "#FFFFFF"),       // Hyades
-    ("gamma Tau", 62.0, -7.5, 3.65, "#FFD27F"),       // Hyades
-    ("delta Tau", 61.0, -4.0, 3.77, "#FFFFFF"),       // Hyades
-    ("epsilon Tau", 64.0, -3.0, 3.54, "#FFD27F"),     // Hyades
+    ("Aldebaran", 69.0, -5.5, 0.85, "#FF8C42"),   // Eye
+    ("theta Tau", 66.0, -5.0, 3.84, "#FFFFFF"),   // Hyades
+    ("gamma Tau", 62.0, -7.5, 3.65, "#FFD27F"),   // Hyades
+    ("delta Tau", 61.0, -4.0, 3.77, "#FFFFFF"),   // Hyades
+    ("epsilon Tau", 64.0, -3.0, 3.54, "#FFD27F"), // Hyades
     ("skip", 0.0, 0.0, 0.0, ""),
     ("Aldebaran", 69.0, -5.5, 0.85, "#FF8C42"),
-    ("zeta Tau", 85.0, -2.0, 3.01, "#B4CFFF"),        // Horn tip (north)
+    ("zeta Tau", 85.0, -2.0, 3.01, "#B4CFFF"), // Horn tip (north)
     ("skip", 0.0, 0.0, 0.0, ""),
     ("Aldebaran", 69.0, -5.5, 0.85, "#FF8C42"),
-    ("beta Tau", 89.0, 5.0, 1.65, "#B4CFFF"),         // Horn tip (south) - El Nath
+    ("beta Tau", 89.0, 5.0, 1.65, "#B4CFFF"), // Horn tip (south) - El Nath
 ];
 
 // Sagittarius - The Archer (summer, on ecliptic, near galactic center)
 const SAGITTARIUS_STARS: &[(&str, f64, f64, f64, &str)] = &[
     // The "Teapot" asterism
-    ("delta Sgr", 271.0, -6.0, 2.70, "#FFFFFF"),      // Top of lid
-    ("gamma Sgr", 269.0, -8.0, 2.99, "#FFFFFF"),      // Spout top
-    ("epsilon Sgr", 274.0, -10.0, 1.85, "#FFD27F"),   // Handle bottom
-    ("delta Sgr", 271.0, -6.0, 2.70, "#FFFFFF"),      // Back to top
+    ("delta Sgr", 271.0, -6.0, 2.70, "#FFFFFF"), // Top of lid
+    ("gamma Sgr", 269.0, -8.0, 2.99, "#FFFFFF"), // Spout top
+    ("epsilon Sgr", 274.0, -10.0, 1.85, "#FFD27F"), // Handle bottom
+    ("delta Sgr", 271.0, -6.0, 2.70, "#FFFFFF"), // Back to top
     ("skip", 0.0, 0.0, 0.0, ""),
     ("gamma Sgr", 269.0, -8.0, 2.99, "#FFFFFF"),
-    ("zeta Sgr", 267.0, -12.0, 2.59, "#FFFFFF"),      // Spout bottom
-    ("tau Sgr", 273.0, -15.0, 3.32, "#FFFFFF"),       // Base
-    ("sigma Sgr", 277.0, -11.0, 2.02, "#FFD27F"),     // Handle
+    ("zeta Sgr", 267.0, -12.0, 2.59, "#FFFFFF"), // Spout bottom
+    ("tau Sgr", 273.0, -15.0, 3.32, "#FFFFFF"),  // Base
+    ("sigma Sgr", 277.0, -11.0, 2.02, "#FFD27F"), // Handle
     ("epsilon Sgr", 274.0, -10.0, 1.85, "#FFD27f"),
 ];
 
 // Virgo - The Virgin (spring, on ecliptic)
 const VIRGO_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Spica", 204.0, -2.0, 1.04, "#B4CFFF"),          // Alpha - brightest
-    ("gamma Vir", 191.0, 3.0, 2.74, "#FFFFFF"),       // Porrima
-    ("delta Vir", 186.0, 8.0, 3.38, "#FF8C42"),       // Auva
-    ("epsilon Vir", 177.0, 12.0, 2.83, "#FFD27F"),    // Vindemiatrix
+    ("Spica", 204.0, -2.0, 1.04, "#B4CFFF"), // Alpha - brightest
+    ("gamma Vir", 191.0, 3.0, 2.74, "#FFFFFF"), // Porrima
+    ("delta Vir", 186.0, 8.0, 3.38, "#FF8C42"), // Auva
+    ("epsilon Vir", 177.0, 12.0, 2.83, "#FFD27F"), // Vindemiatrix
     ("skip", 0.0, 0.0, 0.0, ""),
     ("gamma Vir", 191.0, 3.0, 2.74, "#FFFFFF"),
     ("eta Vir", 197.0, 0.0, 3.89, "#FFFFFF"),
     ("Spica", 204.0, -2.0, 1.04, "#B4CFFF"),
     ("skip", 0.0, 0.0, 0.0, ""),
     ("delta Vir", 186.0, 8.0, 3.38, "#FF8C42"),
-    ("beta Vir", 177.0, 1.0, 3.61, "#FFFFFF"),        // Zavijava
+    ("beta Vir", 177.0, 1.0, 3.61, "#FFFFFF"), // Zavijava
 ];
 
 // Cygnus - The Swan (summer, cross-shaped, near Milky Way)
 const CYGNUS_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Deneb", 310.0, 60.0, 1.25, "#FFFFFF"),          // Tail (Alpha)
-    ("gamma Cyg", 301.0, 54.0, 2.20, "#FFD27F"),      // Body (Sadr)
-    ("eta Cyg", 294.0, 47.0, 3.89, "#FFFFFF"),        // Wing
-    ("Albireo", 290.0, 48.0, 3.08, "#FFD27F"),        // Head (Beta) - famous double
+    ("Deneb", 310.0, 60.0, 1.25, "#FFFFFF"),     // Tail (Alpha)
+    ("gamma Cyg", 301.0, 54.0, 2.20, "#FFD27F"), // Body (Sadr)
+    ("eta Cyg", 294.0, 47.0, 3.89, "#FFFFFF"),   // Wing
+    ("Albireo", 290.0, 48.0, 3.08, "#FFD27F"),   // Head (Beta) - famous double
     ("skip", 0.0, 0.0, 0.0, ""),
     ("gamma Cyg", 301.0, 54.0, 2.20, "#FFD27F"),
-    ("delta Cyg", 308.0, 53.0, 2.87, "#B4CFFF"),      // Wing
+    ("delta Cyg", 308.0, 53.0, 2.87, "#B4CFFF"), // Wing
     ("skip", 0.0, 0.0, 0.0, ""),
     ("gamma Cyg", 301.0, 54.0, 2.20, "#FFD27F"),
-    ("epsilon Cyg", 296.0, 55.0, 2.48, "#FFD27F"),    // Wing (Gienah)
+    ("epsilon Cyg", 296.0, 55.0, 2.48, "#FFD27F"), // Wing (Gienah)
 ];
 
 // Cassiopeia - The Queen (circumpolar W-shape)
 const CASSIOPEIA_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Schedar", 51.0, 46.0, 2.23, "#FFD27F"),         // Alpha
-    ("Caph", 42.0, 46.0, 2.27, "#FFFFFF"),            // Beta
+    ("Schedar", 51.0, 46.0, 2.23, "#FFD27F"), // Alpha
+    ("Caph", 42.0, 46.0, 2.27, "#FFFFFF"),    // Beta
     ("skip", 0.0, 0.0, 0.0, ""),
     ("Schedar", 51.0, 46.0, 2.23, "#FFD27F"),
-    ("gamma Cas", 59.0, 43.0, 2.47, "#B4CFFF"),       // Gamma
-    ("delta Cas", 66.0, 46.0, 2.68, "#FFFFFF"),       // Ruchbah
-    ("epsilon Cas", 75.0, 44.0, 3.38, "#B4CFFF"),     // Segin
+    ("gamma Cas", 59.0, 43.0, 2.47, "#B4CFFF"),   // Gamma
+    ("delta Cas", 66.0, 46.0, 2.68, "#FFFFFF"),   // Ruchbah
+    ("epsilon Cas", 75.0, 44.0, 3.38, "#B4CFFF"), // Segin
 ];
 
 // Aquila - The Eagle (summer, home of Altair)
 const AQUILA_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Altair", 296.0, 29.3, 0.77, "#FFFFFF"),         // Alpha - bright!
-    ("gamma Aql", 294.0, 27.0, 2.72, "#FFD27F"),      // Tarazed
-    ("beta Aql", 291.0, 32.0, 3.71, "#FFD27F"),       // Alshain
+    ("Altair", 296.0, 29.3, 0.77, "#FFFFFF"), // Alpha - bright!
+    ("gamma Aql", 294.0, 27.0, 2.72, "#FFD27F"), // Tarazed
+    ("beta Aql", 291.0, 32.0, 3.71, "#FFD27F"), // Alshain
     ("skip", 0.0, 0.0, 0.0, ""),
     ("Altair", 296.0, 29.3, 0.77, "#FFFFFF"),
-    ("theta Aql", 301.0, 24.0, 3.23, "#FFFFFF"),      // South wing
+    ("theta Aql", 301.0, 24.0, 3.23, "#FFFFFF"), // South wing
     ("delta Aql", 303.0, 20.0, 3.36, "#FFFFFF"),
 ];
 
 // Lyra - The Lyre (summer, compact, home of Vega)
 const LYRA_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Vega", 285.0, 61.7, 0.03, "#A3CFFF"),           // Alpha - brilliant blue
-    ("epsilon Lyr", 283.0, 58.0, 4.7, "#FFFFFF"),     // Double-double
+    ("Vega", 285.0, 61.7, 0.03, "#A3CFFF"), // Alpha - brilliant blue
+    ("epsilon Lyr", 283.0, 58.0, 4.7, "#FFFFFF"), // Double-double
     ("zeta Lyr", 282.0, 55.0, 4.36, "#FFFFFF"),
-    ("delta Lyr", 284.0, 53.0, 4.22, "#FF8C42"),      // South
-    ("gamma Lyr", 286.0, 54.0, 3.24, "#B4CFFF"),      // Sulafat
-    ("beta Lyr", 285.0, 56.0, 3.45, "#FFFFFF"),       // Sheliak
+    ("delta Lyr", 284.0, 53.0, 4.22, "#FF8C42"), // South
+    ("gamma Lyr", 286.0, 54.0, 3.24, "#B4CFFF"), // Sulafat
+    ("beta Lyr", 285.0, 56.0, 3.45, "#FFFFFF"),  // Sheliak
     ("zeta Lyr", 282.0, 55.0, 4.36, "#FFFFFF"),
 ];
 
@@ -265,51 +265,55 @@ const ADDITIONAL_BRIGHT_STARS: &[(&str, f64, f64, f64, &str)] = &[
     // Vega, Altair, Deneb already included
 
     // Winter Hexagon / Winter Circle
-    ("Capella", 79.0, 23.0, 0.08, "#FFFBCC"),       // Already included
-    ("Rigel", 78.0, -31.0, 0.13, "#B4CFFF"),        // Already included
-    ("Aldebaran", 69.0, -5.5, 0.85, "#FF8C42"),     // Already included
-    ("Procyon", 116.0, -16.0, 0.34, "#FFEFD5"),     // Already included
-    ("Sirius", 104.0, -39.6, -1.46, "#A3CFFF"),     // Already included
-
+    ("Capella", 79.0, 23.0, 0.08, "#FFFBCC"), // Already included
+    ("Rigel", 78.0, -31.0, 0.13, "#B4CFFF"),  // Already included
+    ("Aldebaran", 69.0, -5.5, 0.85, "#FF8C42"), // Already included
+    ("Procyon", 116.0, -16.0, 0.34, "#FFEFD5"), // Already included
+    ("Sirius", 104.0, -39.6, -1.46, "#A3CFFF"), // Already included
     // Southern prominent stars
-    ("Achernar", 335.0, -59.0, 0.46, "#B4CFFF"),    // Alpha Eri - very south
-    ("Hadar", 232.0, -44.0, 0.61, "#B4CFFF"),       // Beta Cen
-    ("Acrux", 217.0, -53.0, 0.76, "#B4CFFF"),       // Alpha Cru (Southern Cross)
-    ("Mimosa", 223.0, -50.0, 1.25, "#B4CFFF"),      // Beta Cru
-
+    ("Achernar", 335.0, -59.0, 0.46, "#B4CFFF"), // Alpha Eri - very south
+    ("Hadar", 232.0, -44.0, 0.61, "#B4CFFF"),    // Beta Cen
+    ("Acrux", 217.0, -53.0, 0.76, "#B4CFFF"),    // Alpha Cru (Southern Cross)
+    ("Mimosa", 223.0, -50.0, 1.25, "#B4CFFF"),   // Beta Cru
     // More zodiac stars
     ("Zubenelgenubi", 225.0, 0.0, 2.75, "#FFFFFF"), // Alpha Lib (Libra)
     ("Zubeneschamali", 229.0, 9.0, 2.61, "#B4FFB4"), // Beta Lib (greenish)
-
     // More northern stars
-    ("Mirfak", 64.0, 30.0, 1.79, "#FFFBCC"),        // Alpha Per
-    ("Algol", 55.0, 22.0, 2.12, "#B4CFFF"),         // Beta Per (eclipsing binary)
-    ("Hamal", 37.0, 10.0, 2.00, "#FFD27F"),         // Alpha Ari (Aries)
-    ("Alpheratz", 14.0, 26.0, 2.06, "#B4CFFF"),     // Alpha And
-    ("Mirach", 24.0, 26.0, 2.05, "#FF8C42"),        // Beta And
-    ("Almach", 36.0, 28.0, 2.26, "#FFD27F"),        // Gamma And
-
+    ("Mirfak", 64.0, 30.0, 1.79, "#FFFBCC"),    // Alpha Per
+    ("Algol", 55.0, 22.0, 2.12, "#B4CFFF"),     // Beta Per (eclipsing binary)
+    ("Hamal", 37.0, 10.0, 2.00, "#FFD27F"),     // Alpha Ari (Aries)
+    ("Alpheratz", 14.0, 26.0, 2.06, "#B4CFFF"), // Alpha And
+    ("Mirach", 24.0, 26.0, 2.05, "#FF8C42"),    // Beta And
+    ("Almach", 36.0, 28.0, 2.26, "#FFD27F"),    // Gamma And
     // Pegasus Square
-    ("Scheat", 9.0, 20.0, 2.42, "#FF8C42"),         // Beta Peg
-    ("Markab", 3.0, 12.0, 2.49, "#B4CFFF"),         // Alpha Peg
-    ("Algenib", 8.0, 7.0, 2.83, "#B4CFFF"),         // Gamma Peg
-
+    ("Scheat", 9.0, 20.0, 2.42, "#FF8C42"), // Beta Peg
+    ("Markab", 3.0, 12.0, 2.49, "#B4CFFF"), // Alpha Peg
+    ("Algenib", 8.0, 7.0, 2.83, "#B4CFFF"), // Gamma Peg
     // Misc bright stars
-    ("Enif", 341.0, 18.0, 2.39, "#FFD27F"),         // Epsilon Peg (Pegasus nose)
-    ("Rasalhague", 266.0, 36.0, 2.07, "#FFFFFF"),   // Alpha Oph (Ophiuchus)
-    ("Eltanin", 268.0, 75.0, 2.23, "#FFD27F"),      // Gamma Dra (Draco)
-    ("Thuban", 234.0, 66.0, 3.67, "#FFFFFF"),       // Alpha Dra (ancient pole star)
-    ("Menkent", 218.0, -25.0, 2.06, "#FFD27F"),     // Theta Cen
+    ("Enif", 341.0, 18.0, 2.39, "#FFD27F"), // Epsilon Peg (Pegasus nose)
+    ("Rasalhague", 266.0, 36.0, 2.07, "#FFFFFF"), // Alpha Oph (Ophiuchus)
+    ("Eltanin", 268.0, 75.0, 2.23, "#FFD27F"), // Gamma Dra (Draco)
+    ("Thuban", 234.0, 66.0, 3.67, "#FFFFFF"), // Alpha Dra (ancient pole star)
+    ("Menkent", 218.0, -25.0, 2.06, "#FFD27F"), // Theta Cen
 ];
 
 // Galactic plane passes through these ecliptic longitudes with varying latitudes
 // The Milky Way band crosses the ecliptic at roughly 90° and 270° longitude
 const GALACTIC_PLANE: &[(f64, f64)] = &[
     // (ecliptic_lon, ecliptic_lat) - approximate galactic plane in ecliptic coords
-    (0.0, 60.0), (30.0, 45.0), (60.0, 30.0), (90.0, 0.0),  // Galactic plane dips to ecliptic
-    (120.0, -30.0), (150.0, -50.0), (180.0, -60.0),        // Below ecliptic
-    (210.0, -50.0), (240.0, -30.0), (270.0, 0.0),          // Rises back through ecliptic
-    (300.0, 30.0), (330.0, 50.0), (360.0, 60.0),           // Above ecliptic
+    (0.0, 60.0),
+    (30.0, 45.0),
+    (60.0, 30.0),
+    (90.0, 0.0), // Galactic plane dips to ecliptic
+    (120.0, -30.0),
+    (150.0, -50.0),
+    (180.0, -60.0), // Below ecliptic
+    (210.0, -50.0),
+    (240.0, -30.0),
+    (270.0, 0.0), // Rises back through ecliptic
+    (300.0, 30.0),
+    (330.0, 50.0),
+    (360.0, 60.0), // Above ecliptic
 ];
 
 // Solar apex direction (where the Sun is moving through the local interstellar medium)
@@ -357,7 +361,9 @@ fn draw_milky_way(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
 
     // Milky Way is most prominent at heliosphere scale
     let alpha = if view.zoom > 0.5 { 0.15 } else { 0.05 };
-    if alpha < 0.01 { return; }
+    if alpha < 0.01 {
+        return;
+    }
 
     ctx.set_global_alpha(alpha);
 
@@ -369,7 +375,8 @@ fn draw_milky_way(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
         let lat = interpolate_galactic_lat(lon);
 
         // Band width (wider near galactic center at ~270°)
-        let dist_to_center = ((lon - 270.0).abs()).min((lon - 270.0 + 360.0).abs().min((lon - 270.0 - 360.0).abs()));
+        let dist_to_center =
+            ((lon - 270.0).abs()).min((lon - 270.0 + 360.0).abs().min((lon - 270.0 - 360.0).abs()));
         let band_width = 15.0 + (1.0 - dist_to_center / 180.0) * 25.0;
 
         // Convert celestial coords to screen position
@@ -377,14 +384,19 @@ fn draw_milky_way(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
             // Brightness varies - brighter near galactic center
             let brightness = 0.3 + (1.0 - dist_to_center / 180.0) * 0.7;
 
-            let gradient = ctx.create_radial_gradient(sx, sy, 0.0, sx, sy, band_width * 3.0).ok();
+            let gradient = ctx
+                .create_radial_gradient(sx, sy, 0.0, sx, sy, band_width * 3.0)
+                .ok();
             if let Some(grad) = gradient {
-                grad.add_color_stop(0.0, &format!("rgba(200, 180, 255, {})", brightness * 0.4)).ok();
-                grad.add_color_stop(0.5, &format!("rgba(150, 140, 180, {})", brightness * 0.2)).ok();
+                grad.add_color_stop(0.0, &format!("rgba(200, 180, 255, {})", brightness * 0.4))
+                    .ok();
+                grad.add_color_stop(0.5, &format!("rgba(150, 140, 180, {})", brightness * 0.2))
+                    .ok();
                 grad.add_color_stop(1.0, "rgba(100, 100, 150, 0)").ok();
                 ctx.set_fill_style(&grad);
                 ctx.begin_path();
-                ctx.arc(sx, sy, band_width * 3.0, 0.0, 2.0 * PI).unwrap_or(());
+                ctx.arc(sx, sy, band_width * 3.0, 0.0, 2.0 * PI)
+                    .unwrap_or(());
                 ctx.fill();
             }
         }
@@ -461,9 +473,9 @@ fn draw_background_stars(ctx: &CanvasRenderingContext2d, state: &SimulationState
 
     // Subtle drift for NASA Eyes effect - stars slowly move to give sense of motion
     let drift_speed = if state.view.zoom < 0.001 {
-        0.5  // Slow drift when zoomed in close
+        0.5 // Slow drift when zoomed in close
     } else {
-        0.1  // Very subtle at normal zoom
+        0.1 // Very subtle at normal zoom
     };
 
     let time_drift = time * drift_speed;
@@ -546,7 +558,9 @@ fn draw_bright_stars(ctx: &CanvasRenderingContext2d, state: &SimulationState, ti
 
             // Draw star glow
             ctx.set_global_alpha(0.3 * twinkle);
-            let glow = ctx.create_radial_gradient(sx, sy, 0.0, sx, sy, size * 3.0).ok();
+            let glow = ctx
+                .create_radial_gradient(sx, sy, 0.0, sx, sy, size * 3.0)
+                .ok();
             if let Some(g) = glow {
                 g.add_color_stop(0.0, color).ok();
                 g.add_color_stop(1.0, &format!("{}00", &color[..7])).ok();
@@ -590,7 +604,9 @@ fn draw_additional_stars(ctx: &CanvasRenderingContext2d, state: &SimulationState
 
             // Draw star glow (subtle for fainter stars)
             ctx.set_global_alpha(0.2 * twinkle);
-            let glow = ctx.create_radial_gradient(sx, sy, 0.0, sx, sy, size * 2.5).ok();
+            let glow = ctx
+                .create_radial_gradient(sx, sy, 0.0, sx, sy, size * 2.5)
+                .ok();
             if let Some(g) = glow {
                 g.add_color_stop(0.0, color).ok();
                 g.add_color_stop(1.0, &format!("{}00", &color[..7])).ok();
@@ -646,8 +662,12 @@ fn draw_constellations(ctx: &CanvasRenderingContext2d, state: &SimulationState) 
 }
 
 /// Draw lines connecting stars in a constellation
-fn draw_constellation_lines(ctx: &CanvasRenderingContext2d, state: &SimulationState,
-                            stars: &[(&str, f64, f64, f64, &str)], color: &str) {
+fn draw_constellation_lines(
+    ctx: &CanvasRenderingContext2d,
+    state: &SimulationState,
+    stars: &[(&str, f64, f64, f64, &str)],
+    color: &str,
+) {
     ctx.set_stroke_style(&JsValue::from_str(color));
     ctx.set_line_width(1.0);
 
@@ -697,12 +717,14 @@ fn draw_constellation_labels(ctx: &CanvasRenderingContext2d, state: &SimulationS
 /// Draw famous asterisms (star patterns)
 fn draw_asterisms(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
     // Summer Triangle: Vega, Altair, Deneb
-    draw_asterism_triangle(ctx, state,
-        (285.0, 61.7),  // Vega
-        (296.0, 29.3),  // Altair
-        (310.0, 60.0),  // Deneb
+    draw_asterism_triangle(
+        ctx,
+        state,
+        (285.0, 61.7), // Vega
+        (296.0, 29.3), // Altair
+        (310.0, 60.0), // Deneb
         "rgba(150, 200, 255, 0.2)",
-        "Summer Triangle"
+        "Summer Triangle",
     );
 
     // Winter Hexagon/Circle connecting major winter stars
@@ -713,9 +735,15 @@ fn draw_asterisms(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
 }
 
 /// Draw a triangle asterism
-fn draw_asterism_triangle(ctx: &CanvasRenderingContext2d, state: &SimulationState,
-                          star1: (f64, f64), star2: (f64, f64), star3: (f64, f64),
-                          color: &str, _name: &str) {
+fn draw_asterism_triangle(
+    ctx: &CanvasRenderingContext2d,
+    state: &SimulationState,
+    star1: (f64, f64),
+    star2: (f64, f64),
+    star3: (f64, f64),
+    color: &str,
+    _name: &str,
+) {
     let pos1 = celestial_to_screen(star1.0, star1.1, state);
     let pos2 = celestial_to_screen(star2.0, star2.1, state);
     let pos3 = celestial_to_screen(star3.0, star3.1, state);
@@ -741,12 +769,21 @@ fn draw_asterism_triangle(ctx: &CanvasRenderingContext2d, state: &SimulationStat
 }
 
 /// Draw a dashed line manually
-fn draw_dashed_line(ctx: &CanvasRenderingContext2d, x1: f64, y1: f64, x2: f64, y2: f64,
-                    dash_len: f64, gap_len: f64) {
+fn draw_dashed_line(
+    ctx: &CanvasRenderingContext2d,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
+    dash_len: f64,
+    gap_len: f64,
+) {
     let dx = x2 - x1;
     let dy = y2 - y1;
     let dist = (dx * dx + dy * dy).sqrt();
-    if dist < 1.0 { return; }
+    if dist < 1.0 {
+        return;
+    }
 
     let ux = dx / dist;
     let uy = dy / dist;
@@ -829,7 +866,8 @@ fn draw_celestial_directions(ctx: &CanvasRenderingContext2d, state: &SimulationS
         ctx.set_fill_style(&JsValue::from_str("rgba(100, 200, 255, 0.6)"));
         ctx.fill_text("Solar Apex", sx + 10.0, sy).unwrap_or(());
         ctx.set_font("300 8px 'Just Sans', monospace");
-        ctx.fill_text("(Sun's motion)", sx + 10.0, sy + 10.0).unwrap_or(());
+        ctx.fill_text("(Sun's motion)", sx + 10.0, sy + 10.0)
+            .unwrap_or(());
     }
 
     // Galactic center direction
@@ -856,9 +894,11 @@ fn draw_celestial_directions(ctx: &CanvasRenderingContext2d, state: &SimulationS
         // Label
         ctx.set_font("400 9px 'Just Sans', monospace");
         ctx.set_fill_style(&JsValue::from_str("rgba(255, 200, 100, 0.6)"));
-        ctx.fill_text("Galactic Center", sx + 15.0, sy).unwrap_or(());
+        ctx.fill_text("Galactic Center", sx + 15.0, sy)
+            .unwrap_or(());
         ctx.set_font("300 8px 'Just Sans', monospace");
-        ctx.fill_text("(26,000 ly)", sx + 15.0, sy + 10.0).unwrap_or(());
+        ctx.fill_text("(26,000 ly)", sx + 15.0, sy + 10.0)
+            .unwrap_or(());
     }
 }
 
@@ -890,28 +930,80 @@ fn draw_heliosphere_boundaries(ctx: &CanvasRenderingContext2d, state: &Simulatio
 
     // Draw boundaries from outermost to innermost
     // Bow shock - may not exist (debated), drawn faintly
-    draw_comet_boundary(ctx, state, state.bow_shock_au, 0.5, 3.0,
-                        "rgba(231, 76, 60, 0.08)", "rgba(231, 76, 60, 0.15)", 1.0);
+    draw_comet_boundary(
+        ctx,
+        state,
+        state.bow_shock_au,
+        0.5,
+        3.0,
+        "rgba(231, 76, 60, 0.08)",
+        "rgba(231, 76, 60, 0.15)",
+        1.0,
+    );
 
     // Heliopause - the boundary between solar wind and interstellar medium
-    draw_comet_boundary(ctx, state, state.heliopause_au, 0.6, 2.5,
-                        "rgba(155, 89, 182, 0.1)", "rgba(155, 89, 182, 0.2)", 1.5);
+    draw_comet_boundary(
+        ctx,
+        state,
+        state.heliopause_au,
+        0.6,
+        2.5,
+        "rgba(155, 89, 182, 0.1)",
+        "rgba(155, 89, 182, 0.2)",
+        1.5,
+    );
 
     // Termination shock - where solar wind slows to subsonic speeds
-    draw_comet_boundary(ctx, state, state.termination_shock_au, 0.7, 2.0,
-                        "rgba(52, 152, 219, 0.12)", "rgba(52, 152, 219, 0.25)", 2.0);
+    draw_comet_boundary(
+        ctx,
+        state,
+        state.termination_shock_au,
+        0.7,
+        2.0,
+        "rgba(52, 152, 219, 0.12)",
+        "rgba(52, 152, 219, 0.25)",
+        2.0,
+    );
 
     // Labels with better positioning
     if view.zoom > 0.8 {
         let lod = view.lod_level();
         if lod == 0 {
             // Label positions - on the nose side
-            draw_helio_label(ctx, state, state.termination_shock_au * 0.75, -0.3, "Termination Shock", "rgba(52, 152, 219, 0.8)");
-            draw_helio_label(ctx, state, state.heliopause_au * 0.75, -0.15, "Heliopause", "rgba(155, 89, 182, 0.8)");
-            draw_helio_label(ctx, state, state.bow_shock_au * 0.6, 0.0, "Bow Shock (?)", "rgba(231, 76, 60, 0.7)");
+            draw_helio_label(
+                ctx,
+                state,
+                state.termination_shock_au * 0.75,
+                -0.3,
+                "Termination Shock",
+                "rgba(52, 152, 219, 0.8)",
+            );
+            draw_helio_label(
+                ctx,
+                state,
+                state.heliopause_au * 0.75,
+                -0.15,
+                "Heliopause",
+                "rgba(155, 89, 182, 0.8)",
+            );
+            draw_helio_label(
+                ctx,
+                state,
+                state.bow_shock_au * 0.6,
+                0.0,
+                "Bow Shock (?)",
+                "rgba(231, 76, 60, 0.7)",
+            );
 
             // Tail label
-            draw_helio_label(ctx, state, -state.heliopause_au * 1.5, 0.0, "Heliotail", "rgba(100, 150, 200, 0.6)");
+            draw_helio_label(
+                ctx,
+                state,
+                -state.heliopause_au * 1.5,
+                0.0,
+                "Heliotail",
+                "rgba(100, 150, 200, 0.6)",
+            );
         }
     }
 
@@ -982,12 +1074,17 @@ fn draw_interstellar_wind(ctx: &CanvasRenderingContext2d, state: &SimulationStat
         let dist_to_sun = ((x - sun_x).powi(2) + (y - sun_y).powi(2)).sqrt();
 
         // Skip particles inside heliosphere
-        if dist_to_sun < heliopause_r { continue; }
+        if dist_to_sun < heliopause_r {
+            continue;
+        }
 
         let size = 1.5 + (seed * 1.1).sin().abs();
         let alpha = 0.4 - (x_phase * 0.3);
 
-        ctx.set_fill_style(&JsValue::from_str(&format!("rgba(150, 180, 220, {})", alpha)));
+        ctx.set_fill_style(&JsValue::from_str(&format!(
+            "rgba(150, 180, 220, {})",
+            alpha
+        )));
         ctx.begin_path();
         ctx.arc(x, y, size, 0.0, 2.0 * PI).unwrap_or(());
         ctx.fill();
@@ -1024,31 +1121,59 @@ fn draw_interstellar_wind_indicator(ctx: &CanvasRenderingContext2d, state: &Simu
     // Arrow head
     ctx.begin_path();
     ctx.move_to(indicator_x - arrow_len, indicator_y);
-    ctx.line_to(indicator_x - arrow_len + arrow_head, indicator_y - arrow_head * 0.5);
-    ctx.line_to(indicator_x - arrow_len + arrow_head, indicator_y + arrow_head * 0.5);
+    ctx.line_to(
+        indicator_x - arrow_len + arrow_head,
+        indicator_y - arrow_head * 0.5,
+    );
+    ctx.line_to(
+        indicator_x - arrow_len + arrow_head,
+        indicator_y + arrow_head * 0.5,
+    );
     ctx.close_path();
     ctx.fill();
 
     // Labels
     ctx.set_font("600 11px 'Just Sans', sans-serif");
     ctx.set_fill_style(&JsValue::from_str("rgba(150, 200, 255, 0.8)"));
-    ctx.fill_text("Interstellar Wind", indicator_x - arrow_len - 5.0, indicator_y - 15.0).unwrap_or(());
+    ctx.fill_text(
+        "Interstellar Wind",
+        indicator_x - arrow_len - 5.0,
+        indicator_y - 15.0,
+    )
+    .unwrap_or(());
 
     ctx.set_font("400 9px 'Just Sans', sans-serif");
     ctx.set_fill_style(&JsValue::from_str("rgba(150, 200, 255, 0.6)"));
-    ctx.fill_text("~26 km/s from Ophiuchus", indicator_x - arrow_len - 5.0, indicator_y + 18.0).unwrap_or(());
+    ctx.fill_text(
+        "~26 km/s from Ophiuchus",
+        indicator_x - arrow_len - 5.0,
+        indicator_y + 18.0,
+    )
+    .unwrap_or(());
 
     // Small info about hydrogen wall
     ctx.set_font("300 8px 'Just Sans', sans-serif");
-    ctx.fill_text("(Local Interstellar Cloud)", indicator_x - arrow_len - 5.0, indicator_y + 30.0).unwrap_or(());
+    ctx.fill_text(
+        "(Local Interstellar Cloud)",
+        indicator_x - arrow_len - 5.0,
+        indicator_y + 30.0,
+    )
+    .unwrap_or(());
 }
 
 /// Draw a comet-shaped heliosphere boundary
 /// nose_factor: how close to Sun the nose is (0.5 = 50% of radius)
 /// tail_factor: how far the tail extends (2.0 = 2x radius)
-fn draw_comet_boundary(ctx: &CanvasRenderingContext2d, state: &SimulationState,
-                        radius_au: f64, nose_factor: f64, tail_factor: f64,
-                        fill_color: &str, stroke_color: &str, line_width: f64) {
+fn draw_comet_boundary(
+    ctx: &CanvasRenderingContext2d,
+    state: &SimulationState,
+    radius_au: f64,
+    nose_factor: f64,
+    tail_factor: f64,
+    fill_color: &str,
+    stroke_color: &str,
+    line_width: f64,
+) {
     let view = &state.view;
     let (cx, cy) = view.au_to_screen(0.0, 0.0);
     let r_pixels = radius_au / view.zoom;
@@ -1086,7 +1211,8 @@ fn draw_comet_boundary(ctx: &CanvasRenderingContext2d, state: &SimulationState,
 
     // Curve to tail (upper)
     let tail_upper_x = cx - tail_dist * cos_rot + side_dist * 0.3 * (rot + PI * 0.5).cos();
-    let tail_upper_y = cy - tail_dist * sin_rot * view.tilt.cos() + side_dist * 0.3 * (rot + PI * 0.5).sin() * view.tilt.cos();
+    let tail_upper_y = cy - tail_dist * sin_rot * view.tilt.cos()
+        + side_dist * 0.3 * (rot + PI * 0.5).sin() * view.tilt.cos();
     let ctrl2_x = upper_side_x - side_dist * 0.5 * cos_rot;
     let ctrl2_y = upper_side_y - side_dist * 0.3 * sin_rot * view.tilt.cos();
     ctx.quadratic_curve_to(ctrl2_x, ctrl2_y, tail_upper_x, tail_upper_y);
@@ -1098,7 +1224,8 @@ fn draw_comet_boundary(ctx: &CanvasRenderingContext2d, state: &SimulationState,
 
     // Curve back to tail (lower)
     let tail_lower_x = cx - tail_dist * cos_rot + side_dist * 0.3 * (rot - PI * 0.5).cos();
-    let tail_lower_y = cy - tail_dist * sin_rot * view.tilt.cos() + side_dist * 0.3 * (rot - PI * 0.5).sin() * view.tilt.cos();
+    let tail_lower_y = cy - tail_dist * sin_rot * view.tilt.cos()
+        + side_dist * 0.3 * (rot - PI * 0.5).sin() * view.tilt.cos();
     ctx.line_to(tail_lower_x, tail_lower_y);
 
     // Curve to lower side
@@ -1126,8 +1253,14 @@ fn draw_comet_boundary(ctx: &CanvasRenderingContext2d, state: &SimulationState,
 }
 
 /// Draw label for heliosphere boundaries
-fn draw_helio_label(ctx: &CanvasRenderingContext2d, state: &SimulationState,
-                     x_au: f64, y_au: f64, label: &str, color: &str) {
+fn draw_helio_label(
+    ctx: &CanvasRenderingContext2d,
+    state: &SimulationState,
+    x_au: f64,
+    y_au: f64,
+    label: &str,
+    color: &str,
+) {
     let (sx, sy) = state.view.au_to_screen(x_au, y_au);
 
     ctx.set_font("500 11px 'Just Sans', monospace");
@@ -1138,12 +1271,16 @@ fn draw_helio_label(ctx: &CanvasRenderingContext2d, state: &SimulationState,
 /// Draw context for Voyager spacecraft relative to heliosphere boundaries
 fn draw_voyager_boundary_context(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
     let view = &state.view;
-    if view.zoom < 0.8 { return; }
+    if view.zoom < 0.8 {
+        return;
+    }
 
     // Check if Voyagers are past the termination shock or heliopause
     for m in 0..state.mission_count {
         let name = state.mission_names[m];
-        if !name.contains("Voyager") { continue; }
+        if !name.contains("Voyager") {
+            continue;
+        }
 
         let x = state.mission_x[m];
         let y = state.mission_y[m];
@@ -1231,11 +1368,21 @@ fn draw_sun(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) 
     }
 
     // Outer corona glow
-    let gradient = ctx.create_radial_gradient(cx, cy, base_radius, cx, cy, corona_radius).unwrap();
-    gradient.add_color_stop(0.0, "rgba(255, 220, 100, 0.9)").unwrap();
-    gradient.add_color_stop(0.2, "rgba(255, 180, 80, 0.6)").unwrap();
-    gradient.add_color_stop(0.4, "rgba(255, 140, 60, 0.3)").unwrap();
-    gradient.add_color_stop(0.7, "rgba(255, 100, 40, 0.1)").unwrap();
+    let gradient = ctx
+        .create_radial_gradient(cx, cy, base_radius, cx, cy, corona_radius)
+        .unwrap();
+    gradient
+        .add_color_stop(0.0, "rgba(255, 220, 100, 0.9)")
+        .unwrap();
+    gradient
+        .add_color_stop(0.2, "rgba(255, 180, 80, 0.6)")
+        .unwrap();
+    gradient
+        .add_color_stop(0.4, "rgba(255, 140, 60, 0.3)")
+        .unwrap();
+    gradient
+        .add_color_stop(0.7, "rgba(255, 100, 40, 0.1)")
+        .unwrap();
     gradient.add_color_stop(1.0, "rgba(255, 50, 0, 0)").unwrap();
 
     ctx.set_fill_style(&gradient);
@@ -1252,10 +1399,16 @@ fn draw_sun(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) 
     }
 
     // Sun body with limb darkening
-    let body_gradient = ctx.create_radial_gradient(
-        cx - base_radius * 0.2, cy - base_radius * 0.2, 0.0,
-        cx, cy, base_radius
-    ).unwrap();
+    let body_gradient = ctx
+        .create_radial_gradient(
+            cx - base_radius * 0.2,
+            cy - base_radius * 0.2,
+            0.0,
+            cx,
+            cy,
+            base_radius,
+        )
+        .unwrap();
     body_gradient.add_color_stop(0.0, "#FFFEF0").unwrap();
     body_gradient.add_color_stop(0.3, "#FFF8DC").unwrap();
     body_gradient.add_color_stop(0.6, "#FFE87C").unwrap();
@@ -1288,12 +1441,20 @@ fn draw_sun(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) 
     if view.zoom < 0.05 {
         ctx.set_font("700 14px 'Just Sans', sans-serif");
         ctx.set_fill_style(&JsValue::from_str("#FFD700"));
-        ctx.fill_text("Sun", cx + base_radius + 5.0, cy + 5.0).unwrap_or(());
+        ctx.fill_text("Sun", cx + base_radius + 5.0, cy + 5.0)
+            .unwrap_or(());
     }
 }
 
 /// Draw solar wind streamers emanating from the sun
-fn draw_solar_wind(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time: f64, activity: f64) {
+fn draw_solar_wind(
+    ctx: &CanvasRenderingContext2d,
+    cx: f64,
+    cy: f64,
+    radius: f64,
+    time: f64,
+    activity: f64,
+) {
     // Draw multiple layers of solar wind for depth
 
     // Layer 1: Wide coronal streamers (equatorial)
@@ -1306,7 +1467,8 @@ fn draw_solar_wind(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64
         let angle = base_angle + wobble;
 
         // Streamers longer during solar minimum (equatorial), shorter during maximum
-        let length_factor = 4.0 + (1.0 - activity) * 2.0 + (time * 0.15 + i as f64 * 0.3).sin() * 0.8;
+        let length_factor =
+            4.0 + (1.0 - activity) * 2.0 + (time * 0.15 + i as f64 * 0.3).sin() * 0.8;
         let length = radius * length_factor;
 
         // Create tapered streamer
@@ -1317,11 +1479,14 @@ fn draw_solar_wind(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64
             cx + angle.cos() * radius,
             cy + angle.sin() * radius,
             cx + angle.cos() * length,
-            cy + angle.sin() * length
+            cy + angle.sin() * length,
         );
-        grad.add_color_stop(0.0, "rgba(255, 220, 150, 0.6)").unwrap();
-        grad.add_color_stop(0.3, "rgba(255, 180, 100, 0.3)").unwrap();
-        grad.add_color_stop(0.6, "rgba(255, 140, 60, 0.15)").unwrap();
+        grad.add_color_stop(0.0, "rgba(255, 220, 150, 0.6)")
+            .unwrap();
+        grad.add_color_stop(0.3, "rgba(255, 180, 100, 0.3)")
+            .unwrap();
+        grad.add_color_stop(0.6, "rgba(255, 140, 60, 0.15)")
+            .unwrap();
         grad.add_color_stop(1.0, "rgba(255, 100, 30, 0)").unwrap();
 
         ctx.set_stroke_style(&grad);
@@ -1359,7 +1524,9 @@ fn draw_solar_wind(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64
         let dist = radius * (1.2 + time_offset * 1.5);
         let max_dist = radius * 5.5;
 
-        if dist > max_dist { continue; }
+        if dist > max_dist {
+            continue;
+        }
 
         let x = cx + base_angle.cos() * dist;
         let y = cy + base_angle.sin() * dist;
@@ -1386,11 +1553,17 @@ fn draw_solar_wind(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64
         // Draw small tail for faster particles
         if is_fast && fade > 0.5 {
             let tail_len = size * 3.0;
-            ctx.set_stroke_style(&JsValue::from_str(&format!("rgba(255, 180, 80, {})", particle_alpha * 0.3)));
+            ctx.set_stroke_style(&JsValue::from_str(&format!(
+                "rgba(255, 180, 80, {})",
+                particle_alpha * 0.3
+            )));
             ctx.set_line_width(size * 0.5);
             ctx.begin_path();
             ctx.move_to(x, y);
-            ctx.line_to(x - base_angle.cos() * tail_len, y - base_angle.sin() * tail_len);
+            ctx.line_to(
+                x - base_angle.cos() * tail_len,
+                y - base_angle.sin() * tail_len,
+            );
             ctx.stroke();
         }
     }
@@ -1404,13 +1577,22 @@ fn draw_solar_wind(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64
 }
 
 /// Draw a Coronal Mass Ejection (CME) - bubble of plasma erupting from Sun
-fn draw_cme(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time: f64, activity: f64) {
+fn draw_cme(
+    ctx: &CanvasRenderingContext2d,
+    cx: f64,
+    cy: f64,
+    radius: f64,
+    time: f64,
+    activity: f64,
+) {
     // CME direction and timing
     let cme_cycle = 8.0; // seconds per CME cycle
     let cme_phase = (time % cme_cycle) / cme_cycle;
 
     // Only show CME during expansion phase
-    if cme_phase > 0.7 { return; }
+    if cme_phase > 0.7 {
+        return;
+    }
 
     let cme_angle = ((time * 0.05).floor() * 2.7) % (2.0 * PI); // Different angle each cycle
     let cme_size = radius * (0.3 + cme_phase * 2.5);
@@ -1422,11 +1604,16 @@ fn draw_cme(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time:
     let alpha = (1.0 - cme_phase) * activity * 0.4;
 
     // CME bubble with gradient
-    let cme_grad = ctx.create_radial_gradient(cme_x, cme_y, 0.0, cme_x, cme_y, cme_size).ok();
+    let cme_grad = ctx
+        .create_radial_gradient(cme_x, cme_y, 0.0, cme_x, cme_y, cme_size)
+        .ok();
     if let Some(grad) = cme_grad {
-        grad.add_color_stop(0.0, &format!("rgba(255, 100, 50, {})", alpha * 0.8)).unwrap();
-        grad.add_color_stop(0.4, &format!("rgba(255, 150, 80, {})", alpha * 0.4)).unwrap();
-        grad.add_color_stop(0.7, &format!("rgba(255, 180, 100, {})", alpha * 0.2)).unwrap();
+        grad.add_color_stop(0.0, &format!("rgba(255, 100, 50, {})", alpha * 0.8))
+            .unwrap();
+        grad.add_color_stop(0.4, &format!("rgba(255, 150, 80, {})", alpha * 0.4))
+            .unwrap();
+        grad.add_color_stop(0.7, &format!("rgba(255, 180, 100, {})", alpha * 0.2))
+            .unwrap();
         grad.add_color_stop(1.0, "rgba(255, 200, 150, 0)").unwrap();
 
         ctx.set_fill_style(&grad);
@@ -1436,22 +1623,35 @@ fn draw_cme(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time:
     }
 
     // CME shock front (leading edge)
-    ctx.set_stroke_style(&JsValue::from_str(&format!("rgba(255, 220, 180, {})", alpha * 0.5)));
+    ctx.set_stroke_style(&JsValue::from_str(&format!(
+        "rgba(255, 220, 180, {})",
+        alpha * 0.5
+    )));
     ctx.set_line_width(2.0);
     ctx.begin_path();
-    ctx.arc(cme_x, cme_y, cme_size, cme_angle - 0.8, cme_angle + 0.8).unwrap_or(());
+    ctx.arc(cme_x, cme_y, cme_size, cme_angle - 0.8, cme_angle + 0.8)
+        .unwrap_or(());
     ctx.stroke();
 }
 
 /// Draw solar prominences (plasma arcs)
-fn draw_solar_prominence(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64,
-                          time: f64, idx: f64, activity: f64) {
+fn draw_solar_prominence(
+    ctx: &CanvasRenderingContext2d,
+    cx: f64,
+    cy: f64,
+    radius: f64,
+    time: f64,
+    idx: f64,
+    activity: f64,
+) {
     let seed = idx * 3.14159 + time * 0.01;
     let base_angle = (seed * 2.7) % (2.0 * PI);
 
     // Only draw if on visible portion
     let vis = (seed * 1.3).sin();
-    if vis < 0.0 { return; }
+    if vis < 0.0 {
+        return;
+    }
 
     let height = radius * (0.3 + (seed * 1.7).sin().abs() * 0.4) * activity;
     let width = radius * 0.15;
@@ -1461,11 +1661,18 @@ fn draw_solar_prominence(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radiu
     ctx.rotate(base_angle).unwrap_or(());
 
     // Prominence arc
-    let prom_grad = ctx.create_radial_gradient(0.0, -radius - height * 0.5, 0.0,
-                                                0.0, -radius, height).unwrap();
-    prom_grad.add_color_stop(0.0, "rgba(255, 100, 50, 0.8)").unwrap();
-    prom_grad.add_color_stop(0.5, "rgba(255, 80, 30, 0.5)").unwrap();
-    prom_grad.add_color_stop(1.0, "rgba(255, 50, 0, 0)").unwrap();
+    let prom_grad = ctx
+        .create_radial_gradient(0.0, -radius - height * 0.5, 0.0, 0.0, -radius, height)
+        .unwrap();
+    prom_grad
+        .add_color_stop(0.0, "rgba(255, 100, 50, 0.8)")
+        .unwrap();
+    prom_grad
+        .add_color_stop(0.5, "rgba(255, 80, 30, 0.5)")
+        .unwrap();
+    prom_grad
+        .add_color_stop(1.0, "rgba(255, 50, 0, 0)")
+        .unwrap();
 
     ctx.set_fill_style(&prom_grad);
     ctx.begin_path();
@@ -1481,7 +1688,13 @@ fn draw_solar_prominence(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radiu
 }
 
 /// Draw solar granulation pattern
-fn draw_solar_granulation(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time: f64) {
+fn draw_solar_granulation(
+    ctx: &CanvasRenderingContext2d,
+    cx: f64,
+    cy: f64,
+    radius: f64,
+    time: f64,
+) {
     ctx.save();
     ctx.begin_path();
     ctx.arc(cx, cy, radius * 0.95, 0.0, 2.0 * PI).unwrap_or(());
@@ -1517,15 +1730,24 @@ fn draw_solar_granulation(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radi
 }
 
 /// Draw sunspots with umbra and penumbra
-fn draw_sunspots(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64,
-                  time: f64, num_spots: i32, activity: f64) {
+fn draw_sunspots(
+    ctx: &CanvasRenderingContext2d,
+    cx: f64,
+    cy: f64,
+    radius: f64,
+    time: f64,
+    num_spots: i32,
+    activity: f64,
+) {
     for i in 0..num_spots {
         let seed = i as f64 * 2.71;
         let angle = (time * 0.02 + seed * 2.0) % (2.0 * PI);
         let dist = radius * (0.2 + (seed * 1.5).sin().abs() * 0.5);
 
         // Only draw spots on visible hemisphere
-        if angle.cos() < -0.3 { continue; }
+        if angle.cos() < -0.3 {
+            continue;
+        }
 
         let spot_x = cx + angle.cos() * dist;
         let spot_y = cy + angle.sin() * dist * 0.8; // Foreshortening
@@ -1538,19 +1760,28 @@ fn draw_sunspots(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64,
         // Penumbra (outer, lighter)
         ctx.set_fill_style(&JsValue::from_str("rgba(140, 80, 20, 0.5)"));
         ctx.begin_path();
-        ctx.arc(spot_x, spot_y, drawn_r * 1.5, 0.0, 2.0 * PI).unwrap_or(());
+        ctx.arc(spot_x, spot_y, drawn_r * 1.5, 0.0, 2.0 * PI)
+            .unwrap_or(());
         ctx.fill();
 
         // Umbra (inner, darker)
         ctx.set_fill_style(&JsValue::from_str("rgba(60, 30, 10, 0.7)"));
         ctx.begin_path();
-        ctx.arc(spot_x, spot_y, drawn_r, 0.0, 2.0 * PI).unwrap_or(());
+        ctx.arc(spot_x, spot_y, drawn_r, 0.0, 2.0 * PI)
+            .unwrap_or(());
         ctx.fill();
     }
 }
 
 /// Draw bright faculae (active regions near sunspots)
-fn draw_faculae(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time: f64, activity: f64) {
+fn draw_faculae(
+    ctx: &CanvasRenderingContext2d,
+    cx: f64,
+    cy: f64,
+    radius: f64,
+    time: f64,
+    activity: f64,
+) {
     ctx.set_fill_style(&JsValue::from_str("rgba(255, 255, 220, 0.2)"));
 
     for i in 0..4 {
@@ -1559,14 +1790,17 @@ fn draw_faculae(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, t
         let dist = radius * (0.6 + (seed * 1.2).sin().abs() * 0.3);
 
         // Faculae are more visible near the limb
-        if angle.cos().abs() > 0.5 { continue; }
+        if angle.cos().abs() > 0.5 {
+            continue;
+        }
 
         let fac_x = cx + angle.cos() * dist;
         let fac_y = cy + angle.sin() * dist * 0.9;
         let fac_r = radius * 0.08 * activity;
 
         ctx.begin_path();
-        ctx.ellipse(fac_x, fac_y, fac_r, fac_r * 0.6, angle, 0.0, 2.0 * PI).unwrap_or(());
+        ctx.ellipse(fac_x, fac_y, fac_r, fac_r * 0.6, angle, 0.0, 2.0 * PI)
+            .unwrap_or(());
         ctx.fill();
     }
 }
@@ -1600,24 +1834,41 @@ fn draw_planets(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f
         let color = state.planet_colors[p];
 
         // Always draw detailed 3D planets (no simple circles)
-        draw_planet_detailed(ctx, sx, sy, base_radius, color, state.planet_has_rings[p], time, p);
+        draw_planet_detailed(
+            ctx,
+            sx,
+            sy,
+            base_radius,
+            color,
+            state.planet_has_rings[p],
+            time,
+            p,
+        );
     }
 }
 
-fn draw_planet_detailed(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64,
-                         radius: f64, _color: &str, _has_rings: bool, time: f64, idx: usize) {
+fn draw_planet_detailed(
+    ctx: &CanvasRenderingContext2d,
+    cx: f64,
+    cy: f64,
+    radius: f64,
+    _color: &str,
+    _has_rings: bool,
+    time: f64,
+    idx: usize,
+) {
     // Planet-specific rendering based on index
     // 0=Mercury, 1=Venus, 2=Earth, 3=Mars, 4=Jupiter, 5=Saturn, 6=Uranus, 7=Neptune
 
     match idx {
-        0 => draw_mercury(ctx, cx, cy, radius, time),    // Mercury with craters
-        1 => draw_venus(ctx, cx, cy, radius, time),      // Venus with thick atmosphere
-        2 => draw_earth(ctx, cx, cy, radius, time),      // Earth with continents
-        3 => draw_mars(ctx, cx, cy, radius, time),       // Mars with polar caps
-        4 => draw_jupiter(ctx, cx, cy, radius, time),    // Jupiter with bands and GRS
-        5 => draw_saturn(ctx, cx, cy, radius, time),     // Saturn with detailed rings
-        6 => draw_uranus(ctx, cx, cy, radius, time),     // Uranus with tilted rings
-        7 => draw_neptune(ctx, cx, cy, radius, time),    // Neptune with dark spot
+        0 => draw_mercury(ctx, cx, cy, radius, time), // Mercury with craters
+        1 => draw_venus(ctx, cx, cy, radius, time),   // Venus with thick atmosphere
+        2 => draw_earth(ctx, cx, cy, radius, time),   // Earth with continents
+        3 => draw_mars(ctx, cx, cy, radius, time),    // Mars with polar caps
+        4 => draw_jupiter(ctx, cx, cy, radius, time), // Jupiter with bands and GRS
+        5 => draw_saturn(ctx, cx, cy, radius, time),  // Saturn with detailed rings
+        6 => draw_uranus(ctx, cx, cy, radius, time),  // Uranus with tilted rings
+        7 => draw_neptune(ctx, cx, cy, radius, time), // Neptune with dark spot
         _ => {}
     }
 }
@@ -1625,10 +1876,9 @@ fn draw_planet_detailed(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64,
 /// Earth with blue oceans, green/brown continents, polar ice caps
 fn draw_earth(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time: f64) {
     // Ocean base
-    let gradient = ctx.create_radial_gradient(
-        cx - radius * 0.3, cy - radius * 0.3, 0.0,
-        cx, cy, radius
-    ).unwrap();
+    let gradient = ctx
+        .create_radial_gradient(cx - radius * 0.3, cy - radius * 0.3, 0.0, cx, cy, radius)
+        .unwrap();
     gradient.add_color_stop(0.0, "#8BC4E8").unwrap();
     gradient.add_color_stop(0.5, "#4A90C2").unwrap();
     gradient.add_color_stop(1.0, "#1A4A6E").unwrap();
@@ -1662,10 +1912,12 @@ fn draw_earth(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, tim
     // Polar ice caps
     ctx.set_fill_style(&JsValue::from_str("rgba(240, 250, 255, 0.85)"));
     ctx.begin_path();
-    ctx.arc(cx, cy - radius * 0.85, radius * 0.25, 0.0, 2.0 * PI).unwrap_or(());
+    ctx.arc(cx, cy - radius * 0.85, radius * 0.25, 0.0, 2.0 * PI)
+        .unwrap_or(());
     ctx.fill();
     ctx.begin_path();
-    ctx.arc(cx, cy + radius * 0.88, radius * 0.2, 0.0, 2.0 * PI).unwrap_or(());
+    ctx.arc(cx, cy + radius * 0.88, radius * 0.2, 0.0, 2.0 * PI)
+        .unwrap_or(());
     ctx.fill();
 
     // Cloud layer
@@ -1678,16 +1930,28 @@ fn draw_earth(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, tim
         let cloud_y = cy + lat * radius * 0.9;
         let cloud_r = radius * (0.15 + (seed * 1.3).sin().abs() * 0.1);
         ctx.begin_path();
-        ctx.ellipse(cloud_x, cloud_y, cloud_r, cloud_r * 0.4, angle * 0.5, 0.0, 2.0 * PI).unwrap_or(());
+        ctx.ellipse(
+            cloud_x,
+            cloud_y,
+            cloud_r,
+            cloud_r * 0.4,
+            angle * 0.5,
+            0.0,
+            2.0 * PI,
+        )
+        .unwrap_or(());
         ctx.fill();
     }
 
     ctx.restore();
 
     // Atmosphere glow
-    let atmo = ctx.create_radial_gradient(cx, cy, radius * 0.95, cx, cy, radius * 1.15).unwrap();
+    let atmo = ctx
+        .create_radial_gradient(cx, cy, radius * 0.95, cx, cy, radius * 1.15)
+        .unwrap();
     atmo.add_color_stop(0.0, "rgba(100, 180, 255, 0)").unwrap();
-    atmo.add_color_stop(0.5, "rgba(100, 180, 255, 0.15)").unwrap();
+    atmo.add_color_stop(0.5, "rgba(100, 180, 255, 0.15)")
+        .unwrap();
     atmo.add_color_stop(1.0, "rgba(100, 180, 255, 0)").unwrap();
     ctx.set_fill_style(&atmo);
     ctx.begin_path();
@@ -1696,8 +1960,16 @@ fn draw_earth(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, tim
 }
 
 /// Draw a blob-shaped continent
-fn draw_continent_blob(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64,
-                        longitude: f64, latitude: f64, width: f64, height: f64) {
+fn draw_continent_blob(
+    ctx: &CanvasRenderingContext2d,
+    cx: f64,
+    cy: f64,
+    radius: f64,
+    longitude: f64,
+    latitude: f64,
+    width: f64,
+    height: f64,
+) {
     // Only draw if on visible side (longitude between -PI/2 and PI/2 from view)
     let vis_angle = longitude % (2.0 * PI);
     if vis_angle > PI * 0.5 && vis_angle < PI * 1.5 {
@@ -1710,17 +1982,17 @@ fn draw_continent_blob(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius:
     let h = radius * height;
 
     ctx.begin_path();
-    ctx.ellipse(x, y, w, h, longitude * 0.2, 0.0, 2.0 * PI).unwrap_or(());
+    ctx.ellipse(x, y, w, h, longitude * 0.2, 0.0, 2.0 * PI)
+        .unwrap_or(());
     ctx.fill();
 }
 
 /// Jupiter with cloud bands and Great Red Spot
 fn draw_jupiter(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time: f64) {
     // Base color
-    let gradient = ctx.create_radial_gradient(
-        cx - radius * 0.3, cy - radius * 0.3, 0.0,
-        cx, cy, radius
-    ).unwrap();
+    let gradient = ctx
+        .create_radial_gradient(cx - radius * 0.3, cy - radius * 0.3, 0.0, cx, cy, radius)
+        .unwrap();
     gradient.add_color_stop(0.0, "#F5E6D3").unwrap();
     gradient.add_color_stop(0.5, "#D4A574").unwrap();
     gradient.add_color_stop(1.0, "#8B6914").unwrap();
@@ -1738,8 +2010,8 @@ fn draw_jupiter(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, t
 
     // Cloud bands (alternating light/dark)
     let band_colors = [
-        "rgba(230, 200, 170, 0.5)",  // Light zone
-        "rgba(160, 110, 70, 0.5)",   // Dark belt
+        "rgba(230, 200, 170, 0.5)", // Light zone
+        "rgba(160, 110, 70, 0.5)",  // Dark belt
         "rgba(220, 190, 160, 0.5)",
         "rgba(140, 90, 50, 0.6)",
         "rgba(210, 180, 150, 0.5)",
@@ -1753,7 +2025,12 @@ fn draw_jupiter(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, t
         // Wavy bands
         let wave = (time * 0.1 + i as f64 * 0.5).sin() * radius * 0.02;
         ctx.set_fill_style(&JsValue::from_str(color));
-        ctx.fill_rect(cx - radius * 1.1, y_offset + wave, radius * 2.2, band_height * 1.1);
+        ctx.fill_rect(
+            cx - radius * 1.1,
+            y_offset + wave,
+            radius * 2.2,
+            band_height * 1.1,
+        );
     }
 
     // Great Red Spot
@@ -1763,26 +2040,43 @@ fn draw_jupiter(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, t
 
     // Only draw if on visible side
     if grs_rotation.cos() > -0.3 {
-        let grs_gradient = ctx.create_radial_gradient(
-            grs_x, grs_y, 0.0,
-            grs_x, grs_y, radius * 0.2
-        ).unwrap();
-        grs_gradient.add_color_stop(0.0, "rgba(200, 80, 60, 0.9)").unwrap();
-        grs_gradient.add_color_stop(0.5, "rgba(180, 70, 50, 0.7)").unwrap();
-        grs_gradient.add_color_stop(1.0, "rgba(160, 100, 80, 0)").unwrap();
+        let grs_gradient = ctx
+            .create_radial_gradient(grs_x, grs_y, 0.0, grs_x, grs_y, radius * 0.2)
+            .unwrap();
+        grs_gradient
+            .add_color_stop(0.0, "rgba(200, 80, 60, 0.9)")
+            .unwrap();
+        grs_gradient
+            .add_color_stop(0.5, "rgba(180, 70, 50, 0.7)")
+            .unwrap();
+        grs_gradient
+            .add_color_stop(1.0, "rgba(160, 100, 80, 0)")
+            .unwrap();
 
         ctx.set_fill_style(&grs_gradient);
         ctx.begin_path();
-        ctx.ellipse(grs_x, grs_y, radius * 0.18, radius * 0.1, 0.0, 0.0, 2.0 * PI).unwrap_or(());
+        ctx.ellipse(
+            grs_x,
+            grs_y,
+            radius * 0.18,
+            radius * 0.1,
+            0.0,
+            0.0,
+            2.0 * PI,
+        )
+        .unwrap_or(());
         ctx.fill();
     }
 
     ctx.restore();
 
     // Subtle atmosphere
-    let atmo = ctx.create_radial_gradient(cx, cy, radius * 0.95, cx, cy, radius * 1.08).unwrap();
+    let atmo = ctx
+        .create_radial_gradient(cx, cy, radius * 0.95, cx, cy, radius * 1.08)
+        .unwrap();
     atmo.add_color_stop(0.0, "rgba(255, 220, 180, 0)").unwrap();
-    atmo.add_color_stop(0.6, "rgba(255, 220, 180, 0.1)").unwrap();
+    atmo.add_color_stop(0.6, "rgba(255, 220, 180, 0.1)")
+        .unwrap();
     atmo.add_color_stop(1.0, "rgba(255, 200, 150, 0)").unwrap();
     ctx.set_fill_style(&atmo);
     ctx.begin_path();
@@ -1796,10 +2090,9 @@ fn draw_saturn(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, _t
     draw_saturn_rings(ctx, cx, cy, radius, true);
 
     // Planet body
-    let gradient = ctx.create_radial_gradient(
-        cx - radius * 0.3, cy - radius * 0.3, 0.0,
-        cx, cy, radius
-    ).unwrap();
+    let gradient = ctx
+        .create_radial_gradient(cx - radius * 0.3, cy - radius * 0.3, 0.0, cx, cy, radius)
+        .unwrap();
     gradient.add_color_stop(0.0, "#F5E8C8").unwrap();
     gradient.add_color_stop(0.5, "#E3D4AD").unwrap();
     gradient.add_color_stop(1.0, "#A08050").unwrap();
@@ -1815,7 +2108,11 @@ fn draw_saturn(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, _t
     ctx.arc(cx, cy, radius * 0.98, 0.0, 2.0 * PI).unwrap_or(());
     ctx.clip();
 
-    let bands = ["rgba(200, 180, 140, 0.3)", "rgba(180, 160, 120, 0.2)", "rgba(190, 170, 130, 0.25)"];
+    let bands = [
+        "rgba(200, 180, 140, 0.3)",
+        "rgba(180, 160, 120, 0.2)",
+        "rgba(190, 170, 130, 0.25)",
+    ];
     for (i, color) in bands.iter().enumerate() {
         let y = cy - radius * 0.6 + (i as f64 * radius * 0.4);
         ctx.set_fill_style(&JsValue::from_str(color));
@@ -1829,7 +2126,9 @@ fn draw_saturn(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, _t
 
 /// Draw Saturn's ring system
 fn draw_saturn_rings(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, behind: bool) {
-    if radius < 15.0 { return; }
+    if radius < 15.0 {
+        return;
+    }
 
     ctx.save();
     ctx.translate(cx, cy).unwrap_or(());
@@ -1848,7 +2147,9 @@ fn draw_saturn_rings(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f
     ];
 
     for (inner, outer, color, opacity) in rings.iter() {
-        if *opacity < 0.1 { continue; }
+        if *opacity < 0.1 {
+            continue;
+        }
 
         let inner_r = radius * inner;
         let outer_r = radius * outer;
@@ -1858,23 +2159,33 @@ fn draw_saturn_rings(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f
 
         // Create gradient for ring
         let ring_grad = ctx.create_linear_gradient(-outer_r, 0.0, outer_r, 0.0);
-        ring_grad.add_color_stop(0.0, &format!("{}60", color)).unwrap();
+        ring_grad
+            .add_color_stop(0.0, &format!("{}60", color))
+            .unwrap();
         ring_grad.add_color_stop(0.3, color).unwrap();
-        ring_grad.add_color_stop(0.5, &lighten_color(color, 0.2)).unwrap();
+        ring_grad
+            .add_color_stop(0.5, &lighten_color(color, 0.2))
+            .unwrap();
         ring_grad.add_color_stop(0.7, color).unwrap();
-        ring_grad.add_color_stop(1.0, &format!("{}60", color)).unwrap();
+        ring_grad
+            .add_color_stop(1.0, &format!("{}60", color))
+            .unwrap();
 
         ctx.set_fill_style(&ring_grad);
         ctx.begin_path();
 
         if behind {
             // Draw top arc (behind planet)
-            ctx.ellipse(0.0, 0.0, outer_r, outer_r * tilt, 0.0, PI, 2.0 * PI).unwrap_or(());
-            ctx.ellipse(0.0, 0.0, inner_r, inner_r * tilt, 0.0, 2.0 * PI, PI).unwrap_or(());
+            ctx.ellipse(0.0, 0.0, outer_r, outer_r * tilt, 0.0, PI, 2.0 * PI)
+                .unwrap_or(());
+            ctx.ellipse(0.0, 0.0, inner_r, inner_r * tilt, 0.0, 2.0 * PI, PI)
+                .unwrap_or(());
         } else {
             // Draw bottom arc (in front of planet)
-            ctx.ellipse(0.0, 0.0, outer_r, outer_r * tilt, 0.0, 0.0, PI).unwrap_or(());
-            ctx.ellipse(0.0, 0.0, inner_r, inner_r * tilt, 0.0, PI, 0.0).unwrap_or(());
+            ctx.ellipse(0.0, 0.0, outer_r, outer_r * tilt, 0.0, 0.0, PI)
+                .unwrap_or(());
+            ctx.ellipse(0.0, 0.0, inner_r, inner_r * tilt, 0.0, PI, 0.0)
+                .unwrap_or(());
         }
         ctx.close_path();
         ctx.fill();
@@ -1887,10 +2198,9 @@ fn draw_saturn_rings(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f
 /// Mars with red surface and polar ice caps
 fn draw_mars(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time: f64) {
     // Red surface base
-    let gradient = ctx.create_radial_gradient(
-        cx - radius * 0.3, cy - radius * 0.3, 0.0,
-        cx, cy, radius
-    ).unwrap();
+    let gradient = ctx
+        .create_radial_gradient(cx - radius * 0.3, cy - radius * 0.3, 0.0, cx, cy, radius)
+        .unwrap();
     gradient.add_color_stop(0.0, "#E8A080").unwrap();
     gradient.add_color_stop(0.5, "#C1440E").unwrap();
     gradient.add_color_stop(1.0, "#6E2800").unwrap();
@@ -1913,28 +2223,42 @@ fn draw_mars(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time
     let dark_x = cx + rotation.cos() * radius * 0.3;
     if rotation.cos() > 0.0 {
         ctx.begin_path();
-        ctx.ellipse(dark_x, cy + radius * 0.1, radius * 0.25, radius * 0.4, 0.3, 0.0, 2.0 * PI).unwrap_or(());
+        ctx.ellipse(
+            dark_x,
+            cy + radius * 0.1,
+            radius * 0.25,
+            radius * 0.4,
+            0.3,
+            0.0,
+            2.0 * PI,
+        )
+        .unwrap_or(());
         ctx.fill();
     }
 
     // Polar ice caps (white)
     ctx.set_fill_style(&JsValue::from_str("rgba(255, 250, 245, 0.9)"));
     ctx.begin_path();
-    ctx.arc(cx, cy - radius * 0.85, radius * 0.2, 0.0, 2.0 * PI).unwrap_or(());
+    ctx.arc(cx, cy - radius * 0.85, radius * 0.2, 0.0, 2.0 * PI)
+        .unwrap_or(());
     ctx.fill();
 
     // Southern cap (smaller)
     ctx.set_fill_style(&JsValue::from_str("rgba(255, 250, 245, 0.7)"));
     ctx.begin_path();
-    ctx.arc(cx, cy + radius * 0.9, radius * 0.12, 0.0, 2.0 * PI).unwrap_or(());
+    ctx.arc(cx, cy + radius * 0.9, radius * 0.12, 0.0, 2.0 * PI)
+        .unwrap_or(());
     ctx.fill();
 
     ctx.restore();
 
     // Thin atmosphere
-    let atmo = ctx.create_radial_gradient(cx, cy, radius * 0.95, cx, cy, radius * 1.05).unwrap();
+    let atmo = ctx
+        .create_radial_gradient(cx, cy, radius * 0.95, cx, cy, radius * 1.05)
+        .unwrap();
     atmo.add_color_stop(0.0, "rgba(255, 200, 180, 0)").unwrap();
-    atmo.add_color_stop(0.7, "rgba(255, 180, 150, 0.08)").unwrap();
+    atmo.add_color_stop(0.7, "rgba(255, 180, 150, 0.08)")
+        .unwrap();
     atmo.add_color_stop(1.0, "rgba(255, 150, 120, 0)").unwrap();
     ctx.set_fill_style(&atmo);
     ctx.begin_path();
@@ -1945,14 +2269,13 @@ fn draw_mars(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time
 /// Mercury - heavily cratered gray surface like our Moon
 fn draw_mercury(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time: f64) {
     // Base gray surface with 3D sphere shading
-    let gradient = ctx.create_radial_gradient(
-        cx - radius * 0.3, cy - radius * 0.3, 0.0,
-        cx, cy, radius
-    ).unwrap();
-    gradient.add_color_stop(0.0, "#E0E0E0").unwrap();  // Light gray highlight
-    gradient.add_color_stop(0.4, "#A0A0A0").unwrap();  // Medium gray
-    gradient.add_color_stop(0.8, "#606060").unwrap();  // Dark gray terminator
-    gradient.add_color_stop(1.0, "#303030").unwrap();  // Very dark limb
+    let gradient = ctx
+        .create_radial_gradient(cx - radius * 0.3, cy - radius * 0.3, 0.0, cx, cy, radius)
+        .unwrap();
+    gradient.add_color_stop(0.0, "#E0E0E0").unwrap(); // Light gray highlight
+    gradient.add_color_stop(0.4, "#A0A0A0").unwrap(); // Medium gray
+    gradient.add_color_stop(0.8, "#606060").unwrap(); // Dark gray terminator
+    gradient.add_color_stop(1.0, "#303030").unwrap(); // Very dark limb
 
     ctx.set_fill_style(&gradient);
     ctx.begin_path();
@@ -1973,7 +2296,8 @@ fn draw_mercury(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, t
     let basin_x = cx + (rotation + 0.5).cos() * radius * 0.3;
     if (rotation + 0.5).cos() > 0.0 {
         ctx.begin_path();
-        ctx.arc(basin_x, cy - radius * 0.2, radius * 0.25, 0.0, 2.0 * PI).unwrap_or(());
+        ctx.arc(basin_x, cy - radius * 0.2, radius * 0.25, 0.0, 2.0 * PI)
+            .unwrap_or(());
         ctx.fill();
         // Bright ray pattern
         ctx.set_fill_style(&JsValue::from_str("rgba(180, 180, 180, 0.2)"));
@@ -1982,7 +2306,16 @@ fn draw_mercury(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, t
             let ray_x = basin_x + angle.cos() * radius * 0.35;
             let ray_y = cy - radius * 0.2 + angle.sin() * radius * 0.35;
             ctx.begin_path();
-            ctx.ellipse(ray_x, ray_y, radius * 0.08, radius * 0.02, angle, 0.0, 2.0 * PI).unwrap_or(());
+            ctx.ellipse(
+                ray_x,
+                ray_y,
+                radius * 0.08,
+                radius * 0.02,
+                angle,
+                0.0,
+                2.0 * PI,
+            )
+            .unwrap_or(());
             ctx.fill();
         }
     }
@@ -1997,7 +2330,8 @@ fn draw_mercury(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, t
             let crater_y = cy + (seed * 2.1).sin() * radius * 0.7;
             let crater_r = radius * (0.03 + (seed * 0.5).sin().abs() * 0.06);
             ctx.begin_path();
-            ctx.arc(crater_x, crater_y, crater_r, 0.0, 2.0 * PI).unwrap_or(());
+            ctx.arc(crater_x, crater_y, crater_r, 0.0, 2.0 * PI)
+                .unwrap_or(());
             ctx.fill();
         }
     }
@@ -2008,14 +2342,13 @@ fn draw_mercury(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, t
 /// Venus - thick yellowish atmosphere with swirling clouds
 fn draw_venus(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time: f64) {
     // Base yellowish-white atmosphere
-    let gradient = ctx.create_radial_gradient(
-        cx - radius * 0.25, cy - radius * 0.25, 0.0,
-        cx, cy, radius
-    ).unwrap();
-    gradient.add_color_stop(0.0, "#FFFDE8").unwrap();  // Bright cream
-    gradient.add_color_stop(0.3, "#F5E6C8").unwrap();  // Light tan
-    gradient.add_color_stop(0.6, "#E6C87A").unwrap();  // Yellow-tan
-    gradient.add_color_stop(1.0, "#8B7355").unwrap();  // Darker limb
+    let gradient = ctx
+        .create_radial_gradient(cx - radius * 0.25, cy - radius * 0.25, 0.0, cx, cy, radius)
+        .unwrap();
+    gradient.add_color_stop(0.0, "#FFFDE8").unwrap(); // Bright cream
+    gradient.add_color_stop(0.3, "#F5E6C8").unwrap(); // Light tan
+    gradient.add_color_stop(0.6, "#E6C87A").unwrap(); // Yellow-tan
+    gradient.add_color_stop(1.0, "#8B7355").unwrap(); // Darker limb
 
     ctx.set_fill_style(&gradient);
     ctx.begin_path();
@@ -2037,7 +2370,10 @@ fn draw_venus(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, tim
         let wave = (rot * 2.0 + i as f64 * 1.2).sin() * radius * 0.08;
         let alpha = 0.15 + (i as f64 * 0.5).sin().abs() * 0.1;
 
-        ctx.set_fill_style(&JsValue::from_str(&format!("rgba(200, 180, 140, {})", alpha)));
+        ctx.set_fill_style(&JsValue::from_str(&format!(
+            "rgba(200, 180, 140, {})",
+            alpha
+        )));
         ctx.fill_rect(cx - radius + wave, band_y, radius * 2.0, radius * 0.2);
     }
 
@@ -2053,10 +2389,14 @@ fn draw_venus(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, tim
     ctx.restore();
 
     // Thick hazy atmosphere glow
-    let atmo = ctx.create_radial_gradient(cx, cy, radius * 0.9, cx, cy, radius * 1.15).unwrap();
+    let atmo = ctx
+        .create_radial_gradient(cx, cy, radius * 0.9, cx, cy, radius * 1.15)
+        .unwrap();
     atmo.add_color_stop(0.0, "rgba(255, 240, 200, 0)").unwrap();
-    atmo.add_color_stop(0.5, "rgba(255, 240, 200, 0.15)").unwrap();
-    atmo.add_color_stop(0.8, "rgba(255, 220, 180, 0.1)").unwrap();
+    atmo.add_color_stop(0.5, "rgba(255, 240, 200, 0.15)")
+        .unwrap();
+    atmo.add_color_stop(0.8, "rgba(255, 220, 180, 0.1)")
+        .unwrap();
     atmo.add_color_stop(1.0, "rgba(255, 200, 150, 0)").unwrap();
     ctx.set_fill_style(&atmo);
     ctx.begin_path();
@@ -2072,14 +2412,13 @@ fn draw_uranus(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, ti
     }
 
     // Base pale cyan-green color (methane atmosphere)
-    let gradient = ctx.create_radial_gradient(
-        cx - radius * 0.3, cy - radius * 0.3, 0.0,
-        cx, cy, radius
-    ).unwrap();
-    gradient.add_color_stop(0.0, "#E8FFFF").unwrap();  // Bright cyan-white
-    gradient.add_color_stop(0.3, "#C5E8E8").unwrap();  // Light cyan
-    gradient.add_color_stop(0.6, "#80C8C8").unwrap();  // Medium cyan-green
-    gradient.add_color_stop(1.0, "#4A8080").unwrap();  // Dark teal limb
+    let gradient = ctx
+        .create_radial_gradient(cx - radius * 0.3, cy - radius * 0.3, 0.0, cx, cy, radius)
+        .unwrap();
+    gradient.add_color_stop(0.0, "#E8FFFF").unwrap(); // Bright cyan-white
+    gradient.add_color_stop(0.3, "#C5E8E8").unwrap(); // Light cyan
+    gradient.add_color_stop(0.6, "#80C8C8").unwrap(); // Medium cyan-green
+    gradient.add_color_stop(1.0, "#4A8080").unwrap(); // Dark teal limb
 
     ctx.set_fill_style(&gradient);
     ctx.begin_path();
@@ -2115,9 +2454,12 @@ fn draw_uranus(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, ti
     }
 
     // Faint methane atmosphere haze
-    let atmo = ctx.create_radial_gradient(cx, cy, radius * 0.95, cx, cy, radius * 1.08).unwrap();
+    let atmo = ctx
+        .create_radial_gradient(cx, cy, radius * 0.95, cx, cy, radius * 1.08)
+        .unwrap();
     atmo.add_color_stop(0.0, "rgba(200, 255, 255, 0)").unwrap();
-    atmo.add_color_stop(0.6, "rgba(180, 230, 230, 0.08)").unwrap();
+    atmo.add_color_stop(0.6, "rgba(180, 230, 230, 0.08)")
+        .unwrap();
     atmo.add_color_stop(1.0, "rgba(150, 200, 200, 0)").unwrap();
     ctx.set_fill_style(&atmo);
     ctx.begin_path();
@@ -2135,11 +2477,11 @@ fn draw_uranus_rings(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f
 
     // Ring definitions (inner_mult, outer_mult, opacity)
     let rings = [
-        (1.6, 1.65, 0.15),   // Zeta ring
-        (1.7, 1.75, 0.2),    // 6, 5, 4 rings
-        (1.8, 1.85, 0.25),   // Alpha, Beta rings
-        (1.9, 1.95, 0.3),    // Eta, Gamma, Delta rings
-        (2.0, 2.05, 0.35),   // Epsilon ring (brightest)
+        (1.6, 1.65, 0.15), // Zeta ring
+        (1.7, 1.75, 0.2),  // 6, 5, 4 rings
+        (1.8, 1.85, 0.25), // Alpha, Beta rings
+        (1.9, 1.95, 0.3),  // Eta, Gamma, Delta rings
+        (2.0, 2.05, 0.35), // Epsilon ring (brightest)
     ];
 
     for (inner, outer, opacity) in rings.iter() {
@@ -2151,11 +2493,15 @@ fn draw_uranus_rings(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f
 
         ctx.begin_path();
         if behind {
-            ctx.ellipse(0.0, 0.0, outer_r, outer_r * tilt, 0.0, PI, 2.0 * PI).unwrap_or(());
-            ctx.ellipse(0.0, 0.0, inner_r, inner_r * tilt, 0.0, 2.0 * PI, PI).unwrap_or(());
+            ctx.ellipse(0.0, 0.0, outer_r, outer_r * tilt, 0.0, PI, 2.0 * PI)
+                .unwrap_or(());
+            ctx.ellipse(0.0, 0.0, inner_r, inner_r * tilt, 0.0, 2.0 * PI, PI)
+                .unwrap_or(());
         } else {
-            ctx.ellipse(0.0, 0.0, outer_r, outer_r * tilt, 0.0, 0.0, PI).unwrap_or(());
-            ctx.ellipse(0.0, 0.0, inner_r, inner_r * tilt, 0.0, PI, 0.0).unwrap_or(());
+            ctx.ellipse(0.0, 0.0, outer_r, outer_r * tilt, 0.0, 0.0, PI)
+                .unwrap_or(());
+            ctx.ellipse(0.0, 0.0, inner_r, inner_r * tilt, 0.0, PI, 0.0)
+                .unwrap_or(());
         }
         ctx.close_path();
         ctx.fill();
@@ -2168,14 +2514,13 @@ fn draw_uranus_rings(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f
 /// Neptune - vivid blue ice giant with Great Dark Spot and fast winds
 fn draw_neptune(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, time: f64) {
     // Base vivid blue (methane atmosphere absorbs red)
-    let gradient = ctx.create_radial_gradient(
-        cx - radius * 0.3, cy - radius * 0.3, 0.0,
-        cx, cy, radius
-    ).unwrap();
-    gradient.add_color_stop(0.0, "#B0D4FF").unwrap();  // Light blue highlight
-    gradient.add_color_stop(0.3, "#6B9FDE").unwrap();  // Medium blue
-    gradient.add_color_stop(0.6, "#3A6098").unwrap();  // Deeper blue
-    gradient.add_color_stop(1.0, "#1A3050").unwrap();  // Very dark blue limb
+    let gradient = ctx
+        .create_radial_gradient(cx - radius * 0.3, cy - radius * 0.3, 0.0, cx, cy, radius)
+        .unwrap();
+    gradient.add_color_stop(0.0, "#B0D4FF").unwrap(); // Light blue highlight
+    gradient.add_color_stop(0.3, "#6B9FDE").unwrap(); // Medium blue
+    gradient.add_color_stop(0.6, "#3A6098").unwrap(); // Deeper blue
+    gradient.add_color_stop(1.0, "#1A3050").unwrap(); // Very dark blue limb
 
     ctx.set_fill_style(&gradient);
     ctx.begin_path();
@@ -2198,7 +2543,10 @@ fn draw_neptune(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, t
         let wave = (rot * wind_speed + i as f64 * 0.8).sin() * radius * 0.15;
         let alpha = 0.08 + (i as f64 * 0.3).sin().abs() * 0.08;
 
-        ctx.set_fill_style(&JsValue::from_str(&format!("rgba(60, 100, 160, {})", alpha)));
+        ctx.set_fill_style(&JsValue::from_str(&format!(
+            "rgba(60, 100, 160, {})",
+            alpha
+        )));
         ctx.fill_rect(cx - radius + wave, band_y, radius * 2.0, radius * 0.15);
     }
 
@@ -2209,14 +2557,31 @@ fn draw_neptune(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, t
         let spot_y = cy - radius * 0.2;
 
         // Dark oval storm
-        let spot_grad = ctx.create_radial_gradient(spot_x, spot_y, 0.0, spot_x, spot_y, radius * 0.2).unwrap();
-        spot_grad.add_color_stop(0.0, "rgba(20, 40, 80, 0.6)").unwrap();
-        spot_grad.add_color_stop(0.7, "rgba(30, 60, 100, 0.3)").unwrap();
-        spot_grad.add_color_stop(1.0, "rgba(40, 80, 140, 0)").unwrap();
+        let spot_grad = ctx
+            .create_radial_gradient(spot_x, spot_y, 0.0, spot_x, spot_y, radius * 0.2)
+            .unwrap();
+        spot_grad
+            .add_color_stop(0.0, "rgba(20, 40, 80, 0.6)")
+            .unwrap();
+        spot_grad
+            .add_color_stop(0.7, "rgba(30, 60, 100, 0.3)")
+            .unwrap();
+        spot_grad
+            .add_color_stop(1.0, "rgba(40, 80, 140, 0)")
+            .unwrap();
 
         ctx.set_fill_style(&spot_grad);
         ctx.begin_path();
-        ctx.ellipse(spot_x, spot_y, radius * 0.18, radius * 0.1, 0.1, 0.0, 2.0 * PI).unwrap_or(());
+        ctx.ellipse(
+            spot_x,
+            spot_y,
+            radius * 0.18,
+            radius * 0.1,
+            0.1,
+            0.0,
+            2.0 * PI,
+        )
+        .unwrap_or(());
         ctx.fill();
 
         // Small companion (Scooter - fast-moving white cloud)
@@ -2224,7 +2589,8 @@ fn draw_neptune(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, t
             ctx.set_fill_style(&JsValue::from_str("rgba(200, 220, 255, 0.4)"));
             ctx.begin_path();
             let scooter_x = cx + (spot_rot + 0.5).cos() * radius * 0.4;
-            ctx.arc(scooter_x, cy + radius * 0.1, radius * 0.06, 0.0, 2.0 * PI).unwrap_or(());
+            ctx.arc(scooter_x, cy + radius * 0.1, radius * 0.06, 0.0, 2.0 * PI)
+                .unwrap_or(());
             ctx.fill();
         }
     }
@@ -2238,7 +2604,16 @@ fn draw_neptune(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, t
             let cloud_x = cx + cloud_rot.cos() * radius * 0.5;
             let cloud_y = cy + (seed * 1.7).sin() * radius * 0.5;
             ctx.begin_path();
-            ctx.ellipse(cloud_x, cloud_y, radius * 0.08, radius * 0.03, cloud_rot * 0.3, 0.0, 2.0 * PI).unwrap_or(());
+            ctx.ellipse(
+                cloud_x,
+                cloud_y,
+                radius * 0.08,
+                radius * 0.03,
+                cloud_rot * 0.3,
+                0.0,
+                2.0 * PI,
+            )
+            .unwrap_or(());
             ctx.fill();
         }
     }
@@ -2246,10 +2621,14 @@ fn draw_neptune(ctx: &CanvasRenderingContext2d, cx: f64, cy: f64, radius: f64, t
     ctx.restore();
 
     // Blue atmosphere glow
-    let atmo = ctx.create_radial_gradient(cx, cy, radius * 0.95, cx, cy, radius * 1.12).unwrap();
+    let atmo = ctx
+        .create_radial_gradient(cx, cy, radius * 0.95, cx, cy, radius * 1.12)
+        .unwrap();
     atmo.add_color_stop(0.0, "rgba(100, 150, 255, 0)").unwrap();
-    atmo.add_color_stop(0.5, "rgba(100, 150, 255, 0.12)").unwrap();
-    atmo.add_color_stop(0.8, "rgba(80, 120, 200, 0.06)").unwrap();
+    atmo.add_color_stop(0.5, "rgba(100, 150, 255, 0.12)")
+        .unwrap();
+    atmo.add_color_stop(0.8, "rgba(80, 120, 200, 0.06)")
+        .unwrap();
     atmo.add_color_stop(1.0, "rgba(60, 100, 180, 0)").unwrap();
     ctx.set_fill_style(&atmo);
     ctx.begin_path();
@@ -2265,7 +2644,9 @@ fn draw_missions(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: 
     let view = &state.view;
 
     for m in 0..state.mission_count {
-        if !state.mission_active[m] { continue; }
+        if !state.mission_active[m] {
+            continue;
+        }
 
         let x = state.mission_x[m];
         let y = state.mission_y[m];
@@ -2317,7 +2698,8 @@ fn draw_missions(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: 
         // Distance from sun
         let dist = (x * x + y * y).sqrt();
         ctx.set_fill_style(&JsValue::from_str("rgba(255, 255, 255, 0.5)"));
-        ctx.fill_text(&format!("{:.1} AU", dist), sx + 12.0, sy + 8.0).unwrap_or(());
+        ctx.fill_text(&format!("{:.1} AU", dist), sx + 12.0, sy + 8.0)
+            .unwrap_or(());
     }
 }
 
@@ -2461,7 +2843,9 @@ fn draw_generic_spacecraft(ctx: &CanvasRenderingContext2d, color: &str) {
 /// Communication beam pulsing towards Earth direction
 fn draw_comm_beam(ctx: &CanvasRenderingContext2d, color: &str, time: f64, idx: f64) {
     let pulse = ((time * 5.0 + idx * 2.0).sin() * 0.5 + 0.5).powi(3);
-    if pulse < 0.1 { return; }
+    if pulse < 0.1 {
+        return;
+    }
 
     ctx.set_global_alpha(pulse * 0.3);
     ctx.set_stroke_style(&JsValue::from_str(color));
@@ -2478,7 +2862,9 @@ fn draw_comm_beam(ctx: &CanvasRenderingContext2d, color: &str, time: f64, idx: f
 
 fn draw_mission_trail(ctx: &CanvasRenderingContext2d, state: &SimulationState, idx: usize) {
     let count = state.mission_waypoint_counts[idx];
-    if count < 2 { return; }
+    if count < 2 {
+        return;
+    }
 
     let wps = &state.mission_waypoints[idx];
     let color = state.mission_colors[idx];
@@ -2510,7 +2896,8 @@ fn draw_ui_overlay(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
     let (year, month, day) = state.get_date();
     ctx.set_font("700 16px 'Just Sans', monospace");
     ctx.set_fill_style(&JsValue::from_str("rgba(255, 255, 255, 0.9)"));
-    ctx.fill_text(&format!("{:04}-{:02}-{:02}", year, month, day), 20.0, 30.0).unwrap_or(());
+    ctx.fill_text(&format!("{:04}-{:02}-{:02}", year, month, day), 20.0, 30.0)
+        .unwrap_or(());
 
     // Time scale indicator
     ctx.set_font("500 12px 'Just Sans', monospace");
@@ -2540,7 +2927,8 @@ fn draw_ui_overlay(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
     // FPS (bottom-left, only if debugging)
     #[cfg(debug_assertions)]
     {
-        ctx.fill_text(&format!("FPS: {:.0}", state.fps), 20.0, h - 20.0).unwrap_or(());
+        ctx.fill_text(&format!("FPS: {:.0}", state.fps), 20.0, h - 20.0)
+            .unwrap_or(());
     }
 
     // Controls hint (bottom)
@@ -2549,8 +2937,10 @@ fn draw_ui_overlay(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
     ctx.set_text_align("center");
     ctx.fill_text(
         "Scroll: zoom | Drag: pan | 1-8: planets | Space: pause | +/-: time scale",
-        w / 2.0, h - 15.0
-    ).unwrap_or(());
+        w / 2.0,
+        h - 15.0,
+    )
+    .unwrap_or(());
     ctx.set_text_align("start");
 }
 
@@ -2582,7 +2972,9 @@ fn darken_color(hex: &str, amount: f64) -> String {
 
 fn parse_hex(hex: &str) -> Option<(u8, u8, u8)> {
     let hex = hex.trim_start_matches('#');
-    if hex.len() != 6 { return None; }
+    if hex.len() != 6 {
+        return None;
+    }
 
     let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
     let g = u8::from_str_radix(&hex[2..4], 16).ok()?;

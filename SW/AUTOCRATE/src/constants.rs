@@ -78,9 +78,13 @@ pub mod skid {
 
     /// Get recommended skid count based on weight
     pub fn recommended_count(weight: f32) -> u8 {
-        if weight <= TWO_SKIDS_MAX_WEIGHT { 2 }
-        else if weight <= THREE_SKIDS_MAX_WEIGHT { 3 }
-        else { 4 }
+        if weight <= TWO_SKIDS_MAX_WEIGHT {
+            2
+        } else if weight <= THREE_SKIDS_MAX_WEIGHT {
+            3
+        } else {
+            4
+        }
     }
 
     /// Check if weight qualifies for lightweight lumber
@@ -135,11 +139,21 @@ pub mod validation {
 pub fn to_fractional_inches(inches: f32) -> String {
     const TOLERANCE: f32 = 0.0001;
     const FRACTIONS: [(f32, &str); 15] = [
-        (1.0/16.0, "1/16"), (1.0/8.0, "1/8"), (3.0/16.0, "3/16"),
-        (1.0/4.0, "1/4"), (5.0/16.0, "5/16"), (3.0/8.0, "3/8"),
-        (7.0/16.0, "7/16"), (1.0/2.0, "1/2"), (9.0/16.0, "9/16"),
-        (5.0/8.0, "5/8"), (11.0/16.0, "11/16"), (3.0/4.0, "3/4"),
-        (13.0/16.0, "13/16"), (7.0/8.0, "7/8"), (15.0/16.0, "15/16"),
+        (1.0 / 16.0, "1/16"),
+        (1.0 / 8.0, "1/8"),
+        (3.0 / 16.0, "3/16"),
+        (1.0 / 4.0, "1/4"),
+        (5.0 / 16.0, "5/16"),
+        (3.0 / 8.0, "3/8"),
+        (7.0 / 16.0, "7/16"),
+        (1.0 / 2.0, "1/2"),
+        (9.0 / 16.0, "9/16"),
+        (5.0 / 8.0, "5/8"),
+        (11.0 / 16.0, "11/16"),
+        (3.0 / 4.0, "3/4"),
+        (13.0 / 16.0, "13/16"),
+        (7.0 / 8.0, "7/8"),
+        (15.0 / 16.0, "15/16"),
     ];
 
     // Whole number

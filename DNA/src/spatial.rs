@@ -1,8 +1,8 @@
 use glam::Vec3;
-use std::f32::consts::PI;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::f32::consts::PI;
 use std::sync::Arc;
-use serde::{Serialize, Deserialize};
 
 /// Represents a position in spherical coordinates (physics convention)
 /// r: radial distance
@@ -23,7 +23,11 @@ impl SphericalPos {
     pub fn from_cartesian(v: Vec3) -> Self {
         let r = v.length();
         if r < 1e-6 {
-            return Self { r: 0.0, theta: 0.0, phi: 0.0 };
+            return Self {
+                r: 0.0,
+                theta: 0.0,
+                phi: 0.0,
+            };
         }
         let theta = (v.z / r).acos();
         let phi = v.y.atan2(v.x);
@@ -51,7 +55,7 @@ pub struct SpatialKey(pub u64); // Pub so simple wrappers can access raw value
 impl SpatialKey {
     const FACE_MASK: u64 = 0b111;
     const LEVEL_MASK: u64 = 0b11111;
-    
+
     // Cube faces
     pub const FACE_POS_X: u8 = 0;
     pub const FACE_NEG_X: u8 = 1;
@@ -65,7 +69,7 @@ impl SpatialKey {
         let l = (level as u64) & Self::LEVEL_MASK;
         let x = (x as u64) & 0xFFFFFFF; // 28 bits
         let y = (y as u64) & 0xFFFFFFF; // 28 bits
-        
+
         // Pack: Face(63-61) | Level(60-56) | X(55-28) | Y(27-0)
         let id = (f << 61) | (l << 56) | (x << 28) | y;
         Self(id)
@@ -82,21 +86,27 @@ impl SpatialKey {
         };
 
         let (face, u, v) = match max_dim {
-            0 => if p.x >= 0.0 {
-                (Self::FACE_POS_X, -p.z / p.x, -p.y / p.x)
-            } else {
-                (Self::FACE_NEG_X, -p.z / p.x, -p.y / p.x)
-            },
-            1 => if p.y >= 0.0 {
-                (Self::FACE_POS_Y, p.x / p.y, p.z / p.y)
-            } else {
-                (Self::FACE_NEG_Y, p.x / p.y, p.z / p.y)
-            },
-            2 => if p.z >= 0.0 {
-                (Self::FACE_POS_Z, p.x / p.z, -p.y / p.z)
-            } else {
-                (Self::FACE_NEG_Z, p.x / p.z, -p.y / p.z)
-            },
+            0 => {
+                if p.x >= 0.0 {
+                    (Self::FACE_POS_X, -p.z / p.x, -p.y / p.x)
+                } else {
+                    (Self::FACE_NEG_X, -p.z / p.x, -p.y / p.x)
+                }
+            }
+            1 => {
+                if p.y >= 0.0 {
+                    (Self::FACE_POS_Y, p.x / p.y, p.z / p.y)
+                } else {
+                    (Self::FACE_NEG_Y, p.x / p.y, p.z / p.y)
+                }
+            }
+            2 => {
+                if p.z >= 0.0 {
+                    (Self::FACE_POS_Z, p.x / p.z, -p.y / p.z)
+                } else {
+                    (Self::FACE_NEG_Z, p.x / p.z, -p.y / p.z)
+                }
+            }
             _ => unreachable!(),
         };
 
@@ -125,11 +135,13 @@ impl SpatialKey {
         let y = self.0 & 0xFFFFFFF;
         (x as u32, y as u32)
     }
-    
+
     pub fn parent(&self) -> Option<Self> {
         let l = self.level();
-        if l == 0 { return None; }
-        
+        if l == 0 {
+            return None;
+        }
+
         let (x, y) = self.coords();
         Some(Self::new(self.face(), l - 1, x >> 1, y >> 1))
     }
@@ -141,7 +153,7 @@ impl SpatialKey {
         let next_x = x << 1;
         let next_y = y << 1;
         let f = self.face();
-        
+
         [
             Self::new(f, next_l, next_x, next_y),
             Self::new(f, next_l, next_x + 1, next_y),
@@ -155,12 +167,12 @@ impl SpatialKey {
         let (x, y) = self.coords();
         let level = self.level();
         let dim = 1u32 << level;
-        
+
         // Map integer coords back to [-1, 1]
         // Add 0.5 to get center of cell
         let u = ((x as f32 + 0.5) / dim as f32) * 2.0 - 1.0;
         let v = ((y as f32 + 0.5) / dim as f32) * 2.0 - 1.0;
-        
+
         match self.face() {
             Self::FACE_POS_X => Vec3::new(1.0, -v, -u).normalize(),
             Self::FACE_NEG_X => Vec3::new(-1.0, -v, u).normalize(),
@@ -168,7 +180,7 @@ impl SpatialKey {
             Self::FACE_NEG_Y => Vec3::new(u, -1.0, -v).normalize(), // Check sign
             Self::FACE_POS_Z => Vec3::new(u, -v, 1.0).normalize(),
             Self::FACE_NEG_Z => Vec3::new(u, -v, -1.0).normalize(), // Check sign
-            _ => Vec3::Y, // Fallback
+            _ => Vec3::Y,                                           // Fallback
         }
     }
 }
@@ -221,7 +233,10 @@ impl<T> Default for SpatialStore<T> {
     }
 }
 
-impl<T> SpatialStore<T> where T: Clone {
+impl<T> SpatialStore<T>
+where
+    T: Clone,
+{
     pub fn new(max_level: u8) -> Self {
         Self {
             chunks: HashMap::new(),
@@ -249,11 +264,18 @@ impl<T> SpatialStore<T> where T: Clone {
     /// Query logic for Frustum/Field of View
     /// Returns keys that are visible. If they are missing, it triggers a fetch (conceptually).
     /// Returns: (Visible & Loaded Keys, Missing Keys to Fetch)
-    pub fn query_visible_keys(&mut self, view_pos: Vec3, view_dir: Vec3, fov_rad: f32, detail_bias: f32, layer: DataLayer) -> (Vec<SpatialKey>, Vec<SpatialKey>) {
+    pub fn query_visible_keys(
+        &mut self,
+        view_pos: Vec3,
+        view_dir: Vec3,
+        fov_rad: f32,
+        detail_bias: f32,
+        layer: DataLayer,
+    ) -> (Vec<SpatialKey>, Vec<SpatialKey>) {
         let mut loaded_keys = Vec::new();
         let mut missing_keys = Vec::new();
         let mut stack = Vec::new();
-        
+
         // Start with 6 root faces
         for face in 0..6 {
             stack.push(SpatialKey::new(face, 0, 0, 0));
@@ -265,21 +287,21 @@ impl<T> SpatialStore<T> where T: Clone {
             }
 
             let desired_level = self.calculate_desired_level(key, view_pos, detail_bias);
-            
+
             // If we are at the desired level or max level, check status
             if key.level() >= desired_level || key.level() >= self.max_level {
                 match self.chunks.get(&key) {
                     Some(ChunkState::Loaded(_)) => loaded_keys.push(key),
-                    Some(ChunkState::Pending) => {}, // Already fetching
+                    Some(ChunkState::Pending) => {} // Already fetching
                     _ => {
                         // Missing or Evicted
                         missing_keys.push(key);
                         if let Some(backend) = &self.backend {
-                             // Trigger fetch
-                             let _ = backend.fetch(key, layer);
-                             // For now we just mark as Pending to avoid re-queueing immediately
-                             // In a real system, the backend.fetch would handle the async dispatch
-                             self.chunks.insert(key, ChunkState::Pending);
+                            // Trigger fetch
+                            let _ = backend.fetch(key, layer);
+                            // For now we just mark as Pending to avoid re-queueing immediately
+                            // In a real system, the backend.fetch would handle the async dispatch
+                            self.chunks.insert(key, ChunkState::Pending);
                         }
                     }
                 }
@@ -291,7 +313,7 @@ impl<T> SpatialStore<T> where T: Clone {
                 }
             }
         }
-        
+
         (loaded_keys, missing_keys)
     }
 
@@ -301,11 +323,11 @@ impl<T> SpatialStore<T> where T: Clone {
         let dot = view_dir.dot(cell_dir);
         // Angle between view_dir and cell_dir
         let angle = dot.acos();
-        
+
         // Approximate cell angular size based on level
         // Level 0 covers ~90 deg, Level 1 ~45 deg, etc.
         let cell_angular_radius = (PI / 2.0) / (1u32 << key.level()) as f32;
-        
+
         // Check if cone overlaps with cell
         angle - cell_angular_radius < fov_rad / 2.0
     }
@@ -315,7 +337,7 @@ impl<T> SpatialStore<T> where T: Clone {
         // Higher detail_bias -> Higher resolution (deeper level)
         // Real implementation would project the cell bounding box to screen space.
         // For now, we just use the bias.
-        
+
         // E.g. if bias is 1.0, we go to level 3. If 2.0, level 5.
         let base_level = 3;
         (base_level as f32 * detail_bias) as u8
@@ -331,7 +353,7 @@ mod tests {
         let original = SphericalPos::new(10.0, PI / 4.0, PI / 3.0);
         let cart = original.to_cartesian();
         let roundtrip = SphericalPos::from_cartesian(cart);
-        
+
         assert!((original.r - roundtrip.r).abs() < 1e-5);
         assert!((original.theta - roundtrip.theta).abs() < 1e-5);
         assert!((original.phi - roundtrip.phi).abs() < 1e-5);
@@ -342,23 +364,26 @@ mod tests {
         // Point on +Z axis
         let p = Vec3::new(0.0, 0.0, 1.0);
         let key = SpatialKey::from_point(p, 2);
-        
+
         assert_eq!(key.face(), SpatialKey::FACE_POS_Z);
         assert_eq!(key.level(), 2);
-        
+
         let (x, y) = key.coords();
         assert_eq!(x, 2);
         assert_eq!(y, 2);
     }
-    
+
     #[test]
     fn test_spatial_key_hierarchy() {
         let p = Vec3::new(0.5, 0.5, 0.5).normalize();
         let level3 = SpatialKey::from_point(p, 3);
         let level2 = SpatialKey::from_point(p, 2);
-        
+
         let parent = level3.parent().unwrap();
-        assert_eq!(parent, level2, "Parent of Level 3 key should match Level 2 key for same point");
+        assert_eq!(
+            parent, level2,
+            "Parent of Level 3 key should match Level 2 key for same point"
+        );
     }
 
     #[test]
@@ -379,20 +404,31 @@ mod tests {
         // Insert some data
         let key = SpatialKey::from_point(Vec3::X, 3);
         store.insert(key, vec![42]);
-        
+
         let view_pos = Vec3::ZERO;
         let view_dir = Vec3::X;
-        
+
         // Should see the key in front
-        let (keys, missing) = store.query_visible_keys(view_pos, view_dir, PI / 2.0, 1.0, DataLayer::Stars);
-        
+        let (keys, missing) =
+            store.query_visible_keys(view_pos, view_dir, PI / 2.0, 1.0, DataLayer::Stars);
+
         // The key we inserted is at Level 3.
         // Our simple heuristic with bias 1.0 wants Level 3.
         // So we should find it.
-        
-        assert!(keys.contains(&key), "Expected to find key {:?} in loaded keys", key);
+
+        assert!(
+            keys.contains(&key),
+            "Expected to find key {:?} in loaded keys",
+            key
+        );
         // In a sparse world, we expect many missing keys for the empty space we haven't populated
-        assert!(!missing.contains(&key), "The loaded key should not be reported as missing");
-        assert!(missing.len() > 0, "Should report missing keys for the rest of the visible area");
+        assert!(
+            !missing.contains(&key),
+            "The loaded key should not be reported as missing"
+        );
+        assert!(
+            missing.len() > 0,
+            "Should report missing keys for the rest of the visible area"
+        );
     }
 }

@@ -2,15 +2,15 @@
 // Handles URL changes without full page reloads
 
 use wasm_bindgen::prelude::*;
-use web_sys::{Window, History, Location};
+use web_sys::{History, Location, Window};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Route {
     Home,
-    Post(String),      // /post/{slug}
-    Tag(String),       // /tag/{tag}
-    Archive,           // /archive
-    About,             // /about
+    Post(String), // /post/{slug}
+    Tag(String),  // /tag/{tag}
+    Archive,      // /archive
+    About,        // /about
     NotFound,
 }
 
@@ -67,7 +67,8 @@ impl Router {
     /// Navigate to a new route
     pub fn navigate(&mut self, route: Route) -> Result<(), JsValue> {
         let path = route.to_path();
-        self.history.push_state_with_url(&JsValue::NULL, "", Some(&path))?;
+        self.history
+            .push_state_with_url(&JsValue::NULL, "", Some(&path))?;
         self.current = route;
         Ok(())
     }
