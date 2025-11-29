@@ -2,6 +2,7 @@
 name = "autocrate"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
 description = "ASTM standard shipping crate generator"
 
 [lib]

@@ -2,6 +2,7 @@
 name = "dna"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
 description = "The genetic code of antimony-labs - shared simulation engine, algorithms, and foundations"
 
 [dependencies]

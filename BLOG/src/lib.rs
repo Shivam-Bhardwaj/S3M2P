@@ -2,7 +2,7 @@
 // AI-assisted content, rendered in Rust/WASM
 #![allow(unexpected_cfgs)]
 
-use pulldown_cmark::{html, Options, Parser};
+use pulldown_cmark::{Options, Parser, html};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
