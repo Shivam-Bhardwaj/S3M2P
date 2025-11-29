@@ -5,6 +5,8 @@
 //! - Theme management
 //! - Color interpolation for visualizations
 //!
+
+#![allow(clippy::excessive_precision)]
 //! ## Traceability
 //! - Used by: too.foo (boid rendering, fungal colors), helios (star colors), future CV projects
 //! - Tests: test_hsl_rgb_conversion, test_color_interpolation, test_theme_palette

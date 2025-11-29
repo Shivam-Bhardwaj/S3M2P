@@ -1,9 +1,12 @@
 // Crate geometry calculator
 // Computes all dimensions and component positions
+#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_mut)]
+#![allow(clippy::let_and_return)]
 
-use crate::constants;
 use crate::geometry::*;
-use crate::{CrateGeometry, CrateSpec, LumberSize};
+use crate::{CrateGeometry, CrateSpec};
 
 /// Calculate complete crate geometry from specification
 pub fn calculate_crate(spec: &CrateSpec) -> CrateGeometry {

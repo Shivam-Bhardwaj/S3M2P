@@ -1,7 +1,8 @@
 // Blog - Markdown-based blog engine
 // AI-assisted content, rendered in Rust/WASM
+#![allow(unexpected_cfgs)]
 
-use pulldown_cmark::{Options, Parser, html};
+use pulldown_cmark::{html, Options, Parser};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -53,14 +54,14 @@ impl Post {
 }
 
 /// Blog index (list of all posts)
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct BlogIndex {
     pub posts: Vec<PostMeta>,
 }
 
 impl BlogIndex {
     pub fn new() -> Self {
-        Self { posts: Vec::new() }
+        Self::default()
     }
 
     /// Filter posts by tag
@@ -90,6 +91,7 @@ impl BlogIndex {
 }
 
 /// Blog state
+#[derive(Default)]
 pub struct Blog {
     pub index: BlogIndex,
     pub current_post: Option<Post>,
@@ -97,10 +99,7 @@ pub struct Blog {
 
 impl Blog {
     pub fn new() -> Self {
-        Self {
-            index: BlogIndex::new(),
-            current_post: None,
-        }
+        Self::default()
     }
 }
 

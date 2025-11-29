@@ -2,7 +2,7 @@
 // Generates HTML elements from blog data
 
 use wasm_bindgen::prelude::*;
-use web_sys::{Document, Element, HtmlElement};
+use web_sys::{Document, Element};
 
 use crate::{BlogIndex, Post, PostMeta};
 

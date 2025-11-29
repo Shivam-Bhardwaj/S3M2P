@@ -37,7 +37,7 @@ impl WaveSimulation {
     }
 
     /// Update wave field for one timestep
-    pub fn update(&mut self, dt: f32, mode: PlateMode, wave_speed: f32) {
+    pub fn update(&mut self, _dt: f32, mode: PlateMode, _wave_speed: f32) {
         let w = self.width;
         let h = self.height;
 
@@ -106,7 +106,7 @@ impl WaveSimulation {
         let ay_neg = self.amplitude_at(x, y - eps);
 
         // Gradient of amplitude squared (particles move to minima)
-        let a_center = self.amplitude_at(x, y);
+        let _a_center = self.amplitude_at(x, y);
         let dx = (ax_pos.powi(2) - ax_neg.powi(2)) / (2.0 * eps);
         let dy = (ay_pos.powi(2) - ay_neg.powi(2)) / (2.0 * eps);
 

@@ -1,5 +1,6 @@
 // Portfolio - Interactive robotics visualization
 // Demonstrates: Boid flocking, EKF filtering, A* pathfinding
+#![allow(unexpected_cfgs)]
 
 use wasm_bindgen::prelude::*;
 

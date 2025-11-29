@@ -1,3 +1,5 @@
+#![allow(unexpected_cfgs)]
+
 use dna::{
     apply_predator_zones, compute_diversity, compute_flocking_forces, feed_from_sources,
     get_boid_color, simulation_step, trigger_mass_extinction, BoidArena, BoidRole, BoidState,

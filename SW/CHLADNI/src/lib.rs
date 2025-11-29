@@ -1,9 +1,9 @@
 // Chladni - Wave Pattern Visualization
 // Rust/WASM port of realistic Chladni plate simulation
+#![allow(unexpected_cfgs)]
 
 use glam::Vec2;
 use wasm_bindgen::prelude::*;
-use web_sys::{HtmlCanvasElement, WebGl2RenderingContext as GL};
 
 pub mod renderer;
 pub mod wave;

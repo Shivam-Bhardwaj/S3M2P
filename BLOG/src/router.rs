@@ -2,7 +2,7 @@
 // Handles URL changes without full page reloads
 
 use wasm_bindgen::prelude::*;
-use web_sys::{History, Location, Window};
+use web_sys::{History, Window};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Route {

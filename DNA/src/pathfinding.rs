@@ -332,18 +332,18 @@ mod tests {
     #[test]
     fn test_obstacle_avoidance() {
         let mut map = GridMap::new(5, 5);
-        // Wall in the middle
+        // Wall in the middle at x=2, from y=0 to y=3
         for y in 0..4 {
             map.set_obstacle(2, y, true);
         }
 
         let result = astar(&map, (0, 2), (4, 2), Heuristic::Manhattan, false);
         assert!(!result.path.is_empty());
-        // Path should go around the wall
-        assert!(result
-            .path
-            .iter()
-            .all(|&(x, _)| x != 2 || map.is_passable(x, 0)));
+        // Path should only go through passable cells
+        assert!(result.path.iter().all(|&(x, y)| map.is_passable(x, y)));
+        // Path should start and end at correct positions
+        assert_eq!(result.path[0], (0, 2));
+        assert_eq!(*result.path.last().unwrap(), (4, 2));
     }
 
     #[test]

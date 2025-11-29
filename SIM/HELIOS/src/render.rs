@@ -1,5 +1,11 @@
 // Canvas 2D Renderer - Following too.foo patterns
 // No GPU required, efficient CPU rendering
+#![allow(dead_code)]
+#![allow(clippy::too_many_arguments)]
+#![allow(clippy::manual_clamp)]
+#![allow(clippy::approx_constant)]
+#![allow(clippy::needless_range_loop)]
+#![allow(clippy::unnecessary_min_or_max)]
 
 use crate::simulation::{SimulationState, AU_KM, ORBIT_SEGMENTS, SOLAR_RADIUS_KM};
 use std::f64::consts::PI;
@@ -1811,7 +1817,7 @@ fn draw_faculae(
 
 fn draw_planets(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) {
     let view = &state.view;
-    let lod = view.lod_level();
+    let _lod = view.lod_level();
 
     for p in 0..state.planet_count {
         let x = state.planet_x[p];

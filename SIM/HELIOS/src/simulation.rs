@@ -1,5 +1,9 @@
 // Heliosphere Simulation State - SoA Layout following too.foo patterns
 // All computation in Rust, minimal JS interop
+#![allow(dead_code)]
+#![allow(clippy::manual_memcpy)]
+#![allow(clippy::manual_range_contains)]
+#![allow(clippy::manual_clamp)]
 
 use std::f64::consts::PI;
 

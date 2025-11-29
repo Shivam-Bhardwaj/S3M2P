@@ -4,7 +4,7 @@
 use wasm_bindgen::prelude::*;
 use web_sys::{WebGl2RenderingContext as GL, WebGlBuffer, WebGlProgram, WebGlShader};
 
-use crate::{ChladniSimulation, Particle};
+use crate::ChladniSimulation;
 
 pub struct WaveRenderer {
     gl: GL,

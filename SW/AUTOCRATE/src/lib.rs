@@ -1,5 +1,6 @@
 // AutoCrate - ASTM Standard Shipping Crate Generator
 // Rust/WASM port of the original TypeScript application
+#![allow(unexpected_cfgs)]
 
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;

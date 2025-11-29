@@ -1,12 +1,13 @@
+#![allow(unexpected_cfgs)]
+
 use wasm_bindgen::prelude::*;
-use web_sys::{Document, Window};
+use web_sys::Window;
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
     console_error_panic_hook::set_once();
 
-    let window: Window = web_sys::window().expect("no global window");
-    let document: Document = window.document().expect("no document");
+    let _window: Window = web_sys::window().expect("no global window");
 
     // CRM initialization will go here
     web_sys::console::log_1(&"CRM initialized".into());

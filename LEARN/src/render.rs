@@ -5,6 +5,7 @@ use wasm_bindgen::prelude::*;
 use web_sys::{Document, Element};
 
 pub struct LessonRenderer {
+    #[allow(dead_code)]
     document: Document,
     root: Element,
 }
