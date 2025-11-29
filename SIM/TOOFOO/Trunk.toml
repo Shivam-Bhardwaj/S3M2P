@@ -6,7 +6,7 @@ public_url = "/"
 filehash = true
 
 [watch]
-watch = ["src", "index.html", "../core/src"]
+watch = ["src", "index.html", "../../DNA/src"]
 
 [serve]
 addresses = ["127.0.0.1"]
