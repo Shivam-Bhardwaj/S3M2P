@@ -1,0 +1,53 @@
+[daemon]
+# Adaptive polling - increases rate when user is active
+poll_interval_idle_secs = 60      # When no recent activity
+poll_interval_active_secs = 15    # When user commented in last 10 min
+poll_interval_very_active_secs = 5  # When rapid back-and-forth (< 2 min)
+activity_timeout_minutes = 10     # Time before dropping to idle
+max_concurrent_automations = 3
+session_timeout_hours = 2
+
+[github]
+owner = "Shivam-Bhardwaj"
+repo = "S3M2P"
+trigger_pattern = "CLAUDE_TRIGGER"
+auto_label = "claude-auto"
+
+[worktree]
+base_path = "/home/curious/worktrees/auto"
+cleanup_after_hours = 24
+branch_prefix = "preview"
+
+[agents]
+# Two-phase system: Opus for planning, Sonnet for execution
+planner_agent = "planner"
+planner_model = "opus"
+executor_agent = "executor"
+executor_model = "sonnet"
+bypass_permissions = true
+
+[limits]
+# Cost per issue (Opus + Sonnet combined)
+max_cost_per_issue_usd = 5.00
+
+# Per-agent limits
+max_planner_cost_usd = 2.00  # Opus is expensive
+max_executor_cost_usd = 3.00  # Sonnet is cheaper, more iterations
+
+# Token limits
+max_tokens_planner = 200000  # Planning is thorough
+max_tokens_executor = 500000  # Execution has many iterations
+
+# Daily limits
+daily_automation_limit = 20
+max_concurrent = 3
+
+[brain]
+enabled = true
+sync_on_pr_merge = true
+architecture_regeneration_interval_days = 30
+max_recent_changes = 10
+
+[logging]
+level = "info"
+file = "/home/curious/.claude/automation.log"

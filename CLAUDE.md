@@ -10,38 +10,74 @@ Deployed to **too.foo**
 | `cargo check --workspace` | Type check all crates |
 | `cargo test --workspace` | Run all tests |
 | `trunk build SIM/HELIOS/index.html` | Build helios WASM |
-| `trunk build SIM/TOOFOO/index.html` | Build too.foo WASM |
+| `trunk build WELCOME/index.html` | Build WELCOME (too.foo) WASM |
 | `trunk serve SIM/HELIOS/index.html` | Dev server for helios |
-| `./SCRIPTS/deploy.sh toofoo --publish` | Deploy too.foo |
+| `./SCRIPTS/deploy.sh welcome --publish` | Deploy too.foo (WELCOME) |
 | `./SCRIPTS/worktree.sh create <issue>` | Create worktree for issue |
 | `./SCRIPTS/audit.sh` | Security audit |
 
 ## Directory Structure
 
+### L1: Main Bubbles (too.foo landing page)
 ```
 S3M2P/
-├── DNA/                    # Shared foundation (simulation engine)
-├── SIM/                    # Simulations
-│   ├── HELIOS/             # Solar system visualization
-│   └── TOOFOO/             # Landing page + boid ecosystem
-├── SW/                     # Software projects
-│   ├── AUTOCRATE/          # ASTM crate generator
-│   ├── CHLADNI/            # Wave patterns
-│   └── PORTFOLIO/          # Interactive demos
-├── HW/                     # Hardware/Embedded [FUTURE]
+├── DNA/                    # Core engine (shared foundation)
+├── MCAD/                   # Mechanical CAD + CAM (open-source NX)
+├── ECAD/                   # Electronics CAD (open-source Altium)
+├── HELIOS/                 # Solar system (own bubble)
+├── SIMULATIONS/            # Other simulations
+├── SHIVAM/                 # About Me → shivambhardwaj.com
 ├── BLOG/                   # Blog platform
-├── LEARN/                  # Learning platform
-│   └── ML/                 # Machine learning lessons
-├── TOOLS/                  # Internal tools
-│   ├── SIMULATION_CLI/     # CLI tools
-│   └── STORAGE_SERVER/     # Backend persistence
-├── DOCS/                   # Documentation
-├── SCRIPTS/                # Automation scripts
-├── DATA/                   # External data scripts
-├── CAD/                    # Mechanical CAD [FUTURE]
-├── ECAD/                   # Electronic CAD [FUTURE]
-└── MFG/                    # Manufacturing [FUTURE]
+├── LEARN/                  # Interactive learning
+└── TOOLS/                  # Internal tools
 ```
+
+### L2: Projects within each bubble
+```
+MCAD/
+├── CORE/                   # B-rep kernel (from scratch)
+├── AUTOCRATE/              # Shipping crate generator
+├── GEARS/                  # Gear designer
+├── CFD/                    # Computational Fluid Dynamics (GPU)
+├── STRESS/                 # FEA stress analysis (GPU)
+├── THERMAL/                # Thermal analysis (GPU)
+├── CAM/                    # Toolpath generation
+├── EXPORT/                 # STEP writer (ISO 10303-21)
+├── CLI/                    # sbl-mcad command
+└── WEB/                    # WASM viewer → too.foo/mcad
+
+ECAD/
+├── CORE/                   # Schematic + PCB (from scratch)
+├── POWER_SUPPLY/           # Power circuit designer
+├── AMPLIFIERS/             # Amplifier designer
+├── EXPORT/                 # Gerber X2 writer (from scratch)
+├── DRC/                    # Design rule checker
+├── CLI/                    # sbl-ecad command
+└── WEB/                    # WASM editor → too.foo/ecad
+
+DNA/
+├── src/
+│   ├── lib.rs              # Core types
+│   ├── schema/             # DNA code schemas (TOML)
+│   ├── sim/                # Simulation algorithms
+│   ├── compute/            # GPU compute abstraction
+│   ├── responsive.rs       # Mobile-first rules
+│   └── export/             # STEP/Gerber serializers
+```
+
+### Philosophy: Build From Scratch
+
+**Minimize external dependencies** - write our own:
+- B-rep kernel for MCAD
+- Gerber X2 generator for ECAD
+- STEP file writer (ISO 10303-21)
+- G-code generator
+
+**Only use external crates for**:
+- GPU access (wgpu)
+- Math primitives (glam)
+- WASM bindings (wasm-bindgen)
+- Serialization (serde)
 
 ## Naming Convention
 

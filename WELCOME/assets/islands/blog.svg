@@ -1,0 +1,56 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow-blog">
+      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Outer rings -->
+  <circle cx="100" cy="100" r="85" fill="none" stroke="#66ccff" stroke-width="0.5" stroke-opacity="0.15" />
+  <circle cx="100" cy="100" r="75" fill="none" stroke="#66ccff" stroke-width="0.5" stroke-opacity="0.1" stroke-dasharray="8,4" />
+  
+  <g transform="translate(100, 100) scale(1.25) translate(-100, -100)">
+  <!-- Document/page shape -->
+  <g filter="url(#glow-blog)">
+    <path d="M 60 45 L 60 155 L 140 155 L 140 65 L 120 45 Z" 
+          fill="none" stroke="#66ccff" stroke-width="2" stroke-linejoin="round" />
+    <!-- Corner fold -->
+    <path d="M 120 45 L 120 65 L 140 65" 
+          fill="none" stroke="#66ccff" stroke-width="1.5" stroke-opacity="0.6" />
+  </g>
+  
+  <!-- Text lines -->
+  <g stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.6" stroke-linecap="round">
+    <line x1="72" y1="80" x2="115" y2="80" />
+    <line x1="72" y1="95" x2="128" y2="95" />
+    <line x1="72" y1="110" x2="120" y2="110" />
+    <line x1="72" y1="125" x2="105" y2="125" />
+  </g>
+  
+  <!-- Accent marker/highlight -->
+  <rect x="68" y="77" width="3" height="12" fill="#66ccff" fill-opacity="0.5" />
+  
+  <!-- Cursor blink indicator -->
+  <rect x="108" y="122" width="2" height="8" fill="#ffffff" fill-opacity="0.7">
+    <animate attributeName="opacity" values="0.7;0.2;0.7" dur="1s" repeatCount="indefinite" />
+  </rect>
+  
+  <!-- Connection dots (sharing/network) -->
+  <g fill="#66ccff" fill-opacity="0.5">
+    <circle cx="150" cy="50" r="4" />
+    <circle cx="165" cy="70" r="3" />
+    <circle cx="155" cy="90" r="2" />
+  </g>
+  
+  <!-- Connection lines -->
+  <g stroke="#66ccff" stroke-width="0.5" stroke-opacity="0.3">
+    <line x1="140" y1="55" x2="150" y2="50" />
+    <line x1="150" y1="50" x2="165" y2="70" />
+    <line x1="165" y1="70" x2="155" y2="90" />
+  </g>
+  </g>
+</svg>

@@ -19,7 +19,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 #[cfg(target_arch = "wasm32")]
 use web_sys::{
-    window, CanvasRenderingContext2d, HtmlButtonElement, HtmlCanvasElement, HtmlInputElement,
+    window, CanvasRenderingContext2d, HtmlCanvasElement, HtmlInputElement,
     InputEvent, KeyboardEvent, MouseEvent, TouchEvent, WheelEvent,
 };
 
@@ -28,6 +28,37 @@ use web_sys::{
 extern "C" {
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
+}
+
+#[cfg(target_arch = "wasm32")]
+/// Update commit info display with build-time git information
+fn update_commit_info(document: &web_sys::Document) {
+    const COMMIT_HASH: &str = env!("GIT_COMMIT_HASH");
+    const COMMIT_TIME: &str = env!("GIT_COMMIT_TIME");
+
+    if let Some(commit_link) = document.get_element_by_id("commit-link") {
+        // Parse timestamp and calculate time ago
+        let commit_timestamp: i64 = COMMIT_TIME.parse().unwrap_or(0);
+        let now = js_sys::Date::now() / 1000.0; // Convert ms to seconds
+        let seconds_ago = (now as i64) - commit_timestamp;
+
+        let time_ago = if seconds_ago < 60 {
+            format!("{}s ago", seconds_ago)
+        } else if seconds_ago < 3600 {
+            format!("{}m ago", seconds_ago / 60)
+        } else if seconds_ago < 86400 {
+            format!("{}h ago", seconds_ago / 3600)
+        } else {
+            format!("{}d ago", seconds_ago / 86400)
+        };
+
+        // GitHub commit URL
+        let commit_url = format!("https://github.com/Shivam-Bhardwaj/S3M2P/commit/{}", COMMIT_HASH);
+
+        // Update link
+        let _ = commit_link.set_attribute("href", &commit_url);
+        commit_link.set_text_content(Some(&format!("{} • {}", COMMIT_HASH, time_ago)));
+    }
 }
 
 fn main() {
@@ -62,6 +93,9 @@ fn run() {
             return;
         }
     };
+
+    // Update commit info display
+    update_commit_info(&document);
 
     log("Helios - Heliosphere Visualization (Canvas 2D)");
     log("Controls: Scroll=zoom, Drag=pan, 1-8=planets, Space=pause, +/-=time");

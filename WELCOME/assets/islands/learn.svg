@@ -1,0 +1,66 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow-soft">
+        <feGaussianBlur stdDeviation="1.5" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <style>
+    @keyframes flow-line {
+      0% { stroke-dashoffset: 100; }
+      100% { stroke-dashoffset: 0; }
+    }
+    @keyframes pulse-node {
+      0%, 100% { r: 5; fill-opacity: 1; }
+      50% { r: 7; fill-opacity: 0.6; }
+    }
+    .connection {
+      stroke-dasharray: 5, 5;
+      animation: flow-line 20s linear infinite;
+    }
+    .active-node {
+      animation: pulse-node 3s infinite ease-in-out;
+      transform-origin: center;
+      transform-box: fill-box;
+    }
+  </style>
+  
+  <!-- Outer ring - Emerald -->
+  <circle cx="100" cy="100" r="88" fill="none" stroke="#50C878" stroke-width="0.5" stroke-opacity="0.2" stroke-dasharray="10,10"/>
+  
+  <!-- Neural Network Structure -->
+  <g transform="translate(100, 100) scale(1.4) translate(-100, -100)">
+  <g filter="url(#glow-soft)">
+      <!-- Connections - White/Silver -->
+      <g stroke="#ffffff" stroke-width="1" stroke-opacity="0.5">
+          <line x1="100" y1="100" x2="100" y2="60" class="connection" />
+          <line x1="100" y1="100" x2="140" y2="100" class="connection" style="animation-delay: 0.5s" />
+          <line x1="100" y1="100" x2="100" y2="140" class="connection" style="animation-delay: 1s" />
+          <line x1="100" y1="100" x2="60" y2="100" class="connection" style="animation-delay: 1.5s" />
+          
+          <line x1="100" y1="60" x2="140" y2="100" />
+          <line x1="140" y1="100" x2="100" y2="140" />
+          <line x1="100" y1="140" x2="60" y2="100" />
+          <line x1="60" y1="100" x2="100" y2="60" />
+      </g>
+      
+      <!-- Nodes -->
+      <!-- Center - Emerald -->
+      <circle cx="100" cy="100" r="12" fill="#50C878" fill-opacity="0.2" stroke="#50C878" stroke-width="1.5" />
+      <circle cx="100" cy="100" r="5" fill="#ffffff" class="active-node" />
+      
+      <!-- Satellites - Dark with Emerald/White accents -->
+      <circle cx="100" cy="60" r="6" fill="#0a0a12" stroke="#ffffff" stroke-width="1.5" />
+      <circle cx="140" cy="100" r="6" fill="#0a0a12" stroke="#ffffff" stroke-width="1.5" />
+      <circle cx="100" cy="140" r="6" fill="#0a0a12" stroke="#ffffff" stroke-width="1.5" />
+      <circle cx="60" cy="100" r="6" fill="#0a0a12" stroke="#ffffff" stroke-width="1.5" />
+      
+      <!-- Data points - Emerald -->
+      <circle cx="100" cy="60" r="2" fill="#50C878" />
+      <circle cx="140" cy="100" r="2" fill="#50C878" />
+      <circle cx="100" cy="140" r="2" fill="#50C878" />
+      <circle cx="60" cy="100" r="2" fill="#50C878" />
+  </g>
+  </g>
+</svg>

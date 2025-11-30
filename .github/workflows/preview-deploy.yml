@@ -1,0 +1,96 @@
+name: Preview Deployment
+
+on:
+  push:
+    branches:
+      - 'preview/issue-*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract issue number
+        id: issue
+        run: |
+          BRANCH=${{ github.ref_name }}
+          ISSUE=$(echo $BRANCH | grep -oP 'issue-\K\d+')
+          echo "number=$ISSUE" >> $GITHUB_OUTPUT
+
+      - name: Get project from issue labels
+        id: project
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PROJECT=$(gh issue view ${{ steps.issue.outputs.number }} \
+            --json labels \
+            --jq '.labels[] | select(.name | startswith("project:")) | .name | sub("project:"; "")')
+          echo "name=$PROJECT" >> $GITHUB_OUTPUT
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install Trunk
+        run: |
+          wget -qO- https://github.com/trunk-rs/trunk/releases/download/v0.21.14/trunk-x86_64-unknown-linux-gnu.tar.gz | tar -xzf-
+          sudo mv trunk /usr/local/bin/
+
+      - name: Determine build path
+        id: build
+        run: |
+          PROJECT=${{ steps.project.outputs.name }}
+          case $PROJECT in
+            helios) echo "path=SIM/HELIOS/index.html" >> $GITHUB_OUTPUT ;;
+            welcome) echo "path=WELCOME/index.html" >> $GITHUB_OUTPUT ;;
+            mcad) echo "path=MCAD/WEB/index.html" >> $GITHUB_OUTPUT ;;
+            ecad) echo "path=ECAD/WEB/index.html" >> $GITHUB_OUTPUT ;;
+            chladni) echo "path=SW/CHLADNI/index.html" >> $GITHUB_OUTPUT ;;
+            autocrate) echo "path=MCAD/AUTOCRATE/index.html" >> $GITHUB_OUTPUT ;;
+            portfolio) echo "path=SW/PORTFOLIO/index.html" >> $GITHUB_OUTPUT ;;
+            blog) echo "path=BLOG/index.html" >> $GITHUB_OUTPUT ;;
+            *)
+              echo "❌ Unknown project: $PROJECT"
+              echo "Valid: helios, welcome, mcad, ecad, chladni, autocrate, portfolio, blog"
+              exit 1
+              ;;
+          esac
+
+      - name: Build WASM
+        run: trunk build ${{ steps.build.outputs.path }} --release
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: s3m2p-previews
+          directory: dist
+          deploymentName: issue-${{ steps.issue.outputs.number }}-${{ steps.project.outputs.name }}
+
+      - name: Post preview URL to issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PROJECT=${{ steps.project.outputs.name }}
+          PREVIEW_URL="https://issue-${{ steps.issue.outputs.number }}-${PROJECT}.too.foo"
+          COMMIT_SHORT=$(git rev-parse --short HEAD)
+          COMMIT_MSG=$(git log -1 --pretty=%s)
+
+          gh issue comment ${{ steps.issue.outputs.number }} --body "$(cat <<EOF
+🌐 **Preview Deployed**
+
+**URL:** $PREVIEW_URL
+**Project:** ${PROJECT}
+**Commit:** \`$COMMIT_SHORT\` - $COMMIT_MSG
+**Time:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
+---
+*Auto-deployed from \`preview/issue-${{ steps.issue.outputs.number }}\`*
+*Actual URL: ${{ steps.deploy.outputs.url }}*
+EOF
+)"

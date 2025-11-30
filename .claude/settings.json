@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "github-automation": {
+      "command": "node",
+      "args": ["TOOLS/CLAUDE_AUTOMATION/mcp-server/dist/index.js"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}",
+        "GITHUB_OWNER": "Shivam-Bhardwaj",
+        "GITHUB_REPO": "S3M2P"
+      }
+    }
+  }
+}

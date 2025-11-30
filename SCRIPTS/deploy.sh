@@ -2,7 +2,7 @@
 # Deploy script for too.foo projects
 # Usage: ./scripts/deploy.sh [project] [--publish]
 #
-# Projects: all, toofoo, helios, chladni, blog, autocrate, portfolio
+# Projects: all, welcome, helios, chladni, blog, autocrate, portfolio
 # --publish: Actually deploy to Cloudflare (otherwise just builds)
 
 set -e
@@ -19,7 +19,7 @@ NC='\033[0m'
 
 # Project configurations - format: "path:domain"
 declare -A PROJECTS=(
-    ["toofoo"]="SIM/TOOFOO:too.foo"
+    ["welcome"]="WELCOME:too.foo"
     ["helios"]="SIM/HELIOS:helios.too.foo"
     ["chladni"]="SW/CHLADNI:chladni.too.foo"
     ["blog"]="BLOG:blog.too.foo"
@@ -149,7 +149,7 @@ else
     echo ""
     echo "Projects:"
     echo "  all        - Build/deploy all projects"
-    echo "  toofoo     - Main landing page -> SIM/TOOFOO (too.foo)"
+    echo "  welcome    - Main landing page -> WELCOME (too.foo)"
     echo "  helios     - Solar system sim  -> SIM/HELIOS (helios.too.foo)"
     echo "  chladni    - Wave patterns     -> SW/CHLADNI (chladni.too.foo)"
     echo "  blog       - Blog engine       -> BLOG (blog.too.foo)"

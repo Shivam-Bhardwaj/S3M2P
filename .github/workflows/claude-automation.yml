@@ -1,0 +1,28 @@
+name: Claude Automation Trigger
+
+on:
+  issues:
+    types: [labeled, opened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    if: |
+      (github.event.label.name == 'claude-auto') ||
+      (github.event.action == 'opened' && contains(github.event.issue.labels.*.name, 'claude-auto'))
+
+    steps:
+      - name: Post trigger signal
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ github.event.issue.number }} \
+            --repo ${{ github.repository }} \
+            --body "🤖 **CLAUDE_TRIGGER** [${{ github.sha }}]
+
+            Automation triggered. Local daemon will respond within 60 seconds.
+
+            ---
+            *Powered by Claude Code Automation*"

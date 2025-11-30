@@ -1,0 +1,131 @@
+use anyhow::Result;
+use octocrab::Octocrab;
+use serde::{Deserialize, Serialize};
+use crate::config::Config;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Issue {
+    pub number: u64,
+    pub title: String,
+    pub body: Option<String>,
+    pub labels: Vec<String>,
+    pub state: String,
+    pub created_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Comment {
+    pub id: u64,
+    pub issue_number: u64,
+    pub user: String,
+    pub body: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+pub struct GitHubClient {
+    client: Octocrab,
+    owner: String,
+    repo: String,
+    auto_label: String,
+    trigger_pattern: String,
+}
+
+impl GitHubClient {
+    pub fn new(config: &Config) -> Result<Self> {
+        let token = std::env::var("GITHUB_TOKEN")?;
+        let client = Octocrab::builder()
+            .personal_token(token)
+            .build()?;
+
+        Ok(Self {
+            client,
+            owner: config.github.owner.clone(),
+            repo: config.github.repo.clone(),
+            auto_label: config.github.auto_label.clone(),
+            trigger_pattern: config.github.trigger_pattern.clone(),
+        })
+    }
+
+    /// Poll for issues labeled with claude-auto that need automation
+    pub async fn poll_triggers(&self) -> Result<Vec<Issue>> {
+        let issues = self.client
+            .issues(&self.owner, &self.repo)
+            .list()
+            .state(octocrab::params::State::Open)
+            .labels(&[self.auto_label.clone()])
+            .per_page(20)
+            .send()
+            .await?;
+
+        let mut result = Vec::new();
+        for issue in issues.items {
+            // Check if there's a CLAUDE_TRIGGER comment
+            let comments = self.client
+                .issues(&self.owner, &self.repo)
+                .list_comments(issue.number)
+                .per_page(100)
+                .send()
+                .await?;
+
+            let has_trigger = comments.items.iter().any(|c| {
+                c.body.as_ref().map_or(false, |b| b.contains(&self.trigger_pattern))
+            });
+
+            if has_trigger {
+                result.push(Issue {
+                    number: issue.number,
+                    title: issue.title.clone(),
+                    body: issue.body.clone(),
+                    labels: issue.labels.iter().map(|l| l.name.clone()).collect(),
+                    state: format!("{:?}", issue.state),
+                    created_at: issue.created_at.to_string(),
+                });
+            }
+        }
+
+        Ok(result)
+    }
+
+    /// Get new comments on an issue since a given timestamp
+    pub async fn get_new_comments(&self, issue_number: u64, since: Option<String>) -> Result<Vec<Comment>> {
+        let comments = self.client
+            .issues(&self.owner, &self.repo)
+            .list_comments(issue_number)
+            .per_page(100)
+            .send()
+            .await?;
+
+        let mut result = Vec::new();
+        for comment in comments.items {
+            // Filter by timestamp if provided
+            if let Some(ref since_time) = since {
+                if comment.created_at.to_string() <= *since_time {
+                    continue;
+                }
+            }
+
+            // Skip bot comments (CLAUDE_TRIGGER, agent responses)
+            if let Some(ref body) = comment.body {
+                if body.contains(&self.trigger_pattern) {
+                    continue;
+                }
+                // Skip agent responses (they start with emoji indicators)
+                if body.starts_with("🔍") || body.starts_with("🔧") || body.starts_with("✅") {
+                    continue;
+                }
+            }
+
+            result.push(Comment {
+                id: comment.id.0,
+                issue_number,
+                user: comment.user.login.clone(),
+                body: comment.body.clone().unwrap_or_default(),
+                created_at: comment.created_at.to_string(),
+                updated_at: comment.updated_at.map(|t| t.to_string()).unwrap_or_else(|| comment.created_at.to_string()),
+            });
+        }
+
+        Ok(result)
+    }
+}

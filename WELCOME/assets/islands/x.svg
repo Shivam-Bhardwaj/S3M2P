@@ -1,0 +1,85 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="chromatic-aberration">
+      <feOffset in="SourceGraphic" dx="2" dy="0" result="red"/>
+      <feOffset in="SourceGraphic" dx="-2" dy="0" result="blue"/>
+      <feMerge>
+        <feMergeNode in="red"/>
+        <feMergeNode in="blue"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes glitch-anim {
+      0% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(-2px, -2px); }
+      60% { transform: translate(2px, 2px); }
+      80% { transform: translate(2px, -2px); }
+      100% { transform: translate(0); }
+    }
+    @keyframes flash {
+      0%, 95% { opacity: 1; }
+      96% { opacity: 0.3; }
+      97% { opacity: 1; }
+      98% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+    
+    .x-container {
+      animation: flash 5s infinite;
+    }
+    
+    .x-layer {
+      transform-origin: center;
+    }
+    
+    .glitch-1 {
+      animation: glitch-anim 2.5s infinite linear alternate-reverse;
+      fill: #FF4500; /* Orange Red - Warm glitch */
+      opacity: 0.5;
+      mix-blend-mode: screen;
+    }
+    .glitch-2 {
+      animation: glitch-anim 3s infinite linear alternate;
+      fill: #FFD700; /* Gold - Warm glitch */
+      opacity: 0.5;
+      mix-blend-mode: screen;
+    }
+  </style>
+
+  <!-- Background guides (optional, keeping consistent with others) -->
+  <circle cx="100" cy="100" r="85" fill="none" stroke="#ffffff" stroke-width="0.5" stroke-opacity="0.15" />
+
+  <g class="x-container" transform="translate(100, 100) scale(1.3) translate(-100, -100)">
+      <!-- Glitch Layers (Behind) -->
+      <g class="x-layer glitch-1" transform="translate(2, 0)">
+         <!-- Solid Beam / -->
+         <path d="M145 45 L165 45 L55 155 L35 155 Z" />
+         <!-- Hollow Beam \ (Stroke converted to fill for glitch) -->
+         <path d="M35 45 L55 45 L165 155 L145 155 Z M 45 50 L 155 150 L 150 155 L 40 55 Z" fill-rule="evenodd"/>
+      </g>
+      <g class="x-layer glitch-2" transform="translate(-2, 0)">
+         <path d="M145 45 L165 45 L55 155 L35 155 Z" />
+         <path d="M35 45 L55 45 L165 155 L145 155 Z M 45 50 L 155 150 L 150 155 L 40 55 Z" fill-rule="evenodd"/>
+      </g>
+
+      <!-- Main Logo -->
+      <!-- Solid Beam (Top-Right to Bottom-Left) / -->
+      <path d="M145 45 L165 45 L55 155 L35 155 Z" fill="white" />
+      
+      <!-- Hollow Beam (Top-Left to Bottom-Right) \ -->
+      <!-- Using a path with fill-rule evenodd or just a stroke -->
+      <!-- Let's use a stroke to ensure the transparency is real -->
+      <path d="M45 45 L155 155" stroke="white" stroke-width="14" fill="none" />
+      <path d="M45 45 L155 155" stroke="black" stroke-width="8" fill="none" />
+      
+      <!-- Re-doing Hollow Beam \ as two separate white parallel lines -->
+      <!-- Top edge of \ -->
+      <path d="M35 45 L42 45 L165 155 L158 155 Z" fill="white" />
+      <!-- Bottom edge of \ -->
+      <path d="M58 45 L65 45 L142 155 L135 155 Z" fill="white" />
+  </g>
+</svg>

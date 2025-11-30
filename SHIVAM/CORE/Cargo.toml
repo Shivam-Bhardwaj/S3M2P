@@ -1,0 +1,8 @@
+[package]
+name = "shivam-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dna = { path = "../../DNA" }
+serde.workspace = true
