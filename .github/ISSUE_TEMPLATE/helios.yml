@@ -6,8 +6,21 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## Helios Visualization Issue
-        This issue affects the `helios` project - solar system visualization with WASM canvas.
+        ## Helios Solar System Issue
+        Solar system visualization at **helios.too.foo**
+
+        ### 🤖 AI Automation Available
+        Enable Claude agents to automatically implement this issue.
+        Talk naturally in comments, get live previews, iterate quickly!
+
+  - type: checkboxes
+    id: automation
+    attributes:
+      label: Automation
+      description: Enable Claude AI automation?
+      options:
+        - label: "🤖 Enable automation (adds `claude-auto` label)"
+          required: false
 
   - type: dropdown
     id: type
@@ -72,3 +85,18 @@ body:
         - P3 - Low
     validations:
       required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ### 💬 How Automation Works
+
+        **With `claude-auto` label:**
+        1. Planner (Opus) analyzes issue → posts plan (60s)
+        2. Executor (Sonnet) implements → deploys preview
+        3. You comment naturally: "make it bigger", "change approach", "ship it!"
+        4. Agents respond in 5-60s (adapts to your activity)
+        5. Preview: `issue-{number}-helios.too.foo`
+
+        **Cost:** ~$0.20/issue | **Time:** 5-15 min from idea to preview

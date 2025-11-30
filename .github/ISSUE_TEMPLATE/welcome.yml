@@ -1,0 +1,101 @@
+name: "[welcome] Issue"
+description: Issues for the WELCOME landing page (too.foo)
+title: "[welcome] "
+labels: ["project:welcome"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## WELCOME Landing Page Issue
+        The landing page for antimony-labs at **too.foo** - constellation navigation UI.
+
+        ### 🤖 Want AI Automation?
+        Check the box below to have Claude agents automatically implement this issue!
+        You'll be able to talk naturally in comments and see live previews.
+
+  - type: checkboxes
+    id: automation
+    attributes:
+      label: Automation
+      description: Enable Claude AI automation for this issue?
+      options:
+        - label: "🤖 Enable automation (adds `claude-auto` label)"
+          required: false
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue Type
+      options:
+        - Bug fix
+        - New feature
+        - UI/UX improvement
+        - Performance optimization
+        - Refactor
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What needs to be done? (Talk naturally - if automation is enabled, Claude will read this)
+      placeholder: |
+        Example: "Add a dark mode toggle to the landing page"
+
+        The agents understand natural language, so just describe what you want!
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: What defines "done" for this issue?
+      placeholder: |
+        - [ ] Dark mode toggle visible in UI
+        - [ ] Theme persists in localStorage
+        - [ ] Smooth transitions
+        - [ ] Works on mobile
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical
+    attributes:
+      label: Technical Notes
+      description: Any specific technical requirements or constraints?
+      placeholder: |
+        Optional: Mention specific files, patterns, or DNA features if relevant.
+        Leave empty for agents to decide implementation approach.
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 - Critical
+        - P1 - High
+        - P2 - Medium
+        - P3 - Low
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        ### 📱 After Creating This Issue
+
+        **If automation is enabled:**
+        1. Label the issue with `claude-auto` manually (or it'll be added if you checked the box)
+        2. Within 60 seconds, Planner (Opus) will analyze and post a plan
+        3. Executor (Sonnet) will implement and deploy to preview URL
+        4. You can comment naturally: "make it bigger", "change color", "ship it!"
+        5. Responses in 5-60 seconds depending on activity level
+
+        **Preview URL format:** `issue-{number}-welcome.too.foo`
+
+        **Manual workflow:** Use `/work {issue-number}` command in Claude Code
