@@ -21,7 +21,9 @@ impl Database {
                 completed_at TEXT,
                 cost_usd REAL DEFAULT 0.0,
                 tokens_used INTEGER DEFAULT 0,
-                has_plan INTEGER DEFAULT 0
+                has_plan INTEGER DEFAULT 0,
+                last_agent_comment_at TEXT,
+                waiting_for_user INTEGER DEFAULT 0
             )",
             [],
         )?;
@@ -45,6 +47,16 @@ impl Database {
         )?;
 
         Ok(Self { conn })
+    }
+
+    pub fn automation_exists(&self, issue_number: u64) -> Result<bool> {
+        let exists = self.conn.query_row(
+            "SELECT 1 FROM automations WHERE issue_number = ?1",
+            params![issue_number as i64],
+            |_| Ok(true),
+        ).unwrap_or(false);
+
+        Ok(exists)
     }
 
     pub fn has_plan(&self, issue_number: u64) -> Result<bool> {

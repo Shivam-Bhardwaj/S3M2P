@@ -67,20 +67,33 @@ async fn main() -> Result<()> {
         match github.poll_triggers().await {
             Ok(new_issues) => {
                 if !new_issues.is_empty() {
-                    info!("Found {} new issue(s) with trigger", new_issues.len());
+                    info!("Found {} issue(s) with trigger label", new_issues.len());
                 }
                 for issue in new_issues {
-                    if !db.has_plan(issue.number)? {
-                        info!("New issue #{}: {} - spawning Planner (Opus)", issue.number, issue.title);
+                    // Only spawn if we haven't created automation record yet
+                    // (This prevents re-spawning on same trigger)
+                    if db.automation_exists(issue.number).unwrap_or(false) {
+                        continue; // Skip - already processing this issue
+                    }
 
-                        match session::spawn_planner(&issue, &config, &db).await {
-                            Ok(_) => {
-                                activity_detected = true;
-                                info!("Successfully spawned Planner for issue #{}", issue.number);
+                    info!("New issue #{}: {} - spawning Planner (Opus)", issue.number, issue.title);
+
+                    match session::spawn_planner(&issue, &config, &db).await {
+                        Ok(_) => {
+                            activity_detected = true;
+                            info!("Successfully spawned Planner for issue #{}", issue.number);
+
+                            // Wait for Planner to finish posting plan
+                            tokio::time::sleep(tokio::time::Duration::from_secs(15)).await;
+
+                            // Auto-spawn Executor to implement
+                            info!("Auto-spawning Executor (Sonnet) for issue #{}", issue.number);
+                            if let Err(e) = session::spawn_executor(issue.number, &config, &db).await {
+                                error!("Failed to auto-spawn Executor: {}", e);
                             }
-                            Err(e) => {
-                                error!("Failed to spawn Planner for issue #{}: {}", issue.number, e);
-                            }
+                        }
+                        Err(e) => {
+                            error!("Failed to spawn Planner for issue #{}: {}", issue.number, e);
                         }
                     }
                 }
@@ -156,6 +169,36 @@ async fn main() -> Result<()> {
             } else if idle_time > 120 && activity_state == ActivityState::VeryActive {
                 info!("Slowing down, switching to Active mode");
                 activity_state = ActivityState::Active;
+            }
+        }
+
+        // Monitor PR comments for automation-created PRs
+        match github.get_automation_prs().await {
+            Ok(prs) => {
+                for (pr_number, issue_number) in prs {
+                    match github.get_pr_comments(pr_number, db.last_comment_time(issue_number)?).await {
+                        Ok(new_comments) if !new_comments.is_empty() => {
+                            info!("PR #{} (for issue #{}): {} new comment(s)", pr_number, issue_number, new_comments.len());
+                            activity_detected = true;
+
+                            // Always use Executor for PR feedback (quick fixes)
+                            info!("Spawning Executor (Sonnet) for PR #{} feedback", pr_number);
+                            if let Err(e) = session::spawn_executor(issue_number, &config, &db).await {
+                                error!("Failed to spawn Executor for PR: {}", e);
+                            }
+
+                            // Update conversation history
+                            db.add_comments(issue_number, &new_comments)?;
+                        }
+                        Ok(_) => {}
+                        Err(e) => {
+                            warn!("Failed to get PR comments for #{}: {}", pr_number, e);
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                warn!("Failed to get automation PRs: {}", e);
             }
         }
 

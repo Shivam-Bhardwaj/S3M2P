@@ -16,6 +16,26 @@ pub fn decide(comments: &[Comment], db: &Database) -> Result<Agent> {
     let last_comment = &comments[comments.len() - 1];
     let body = last_comment.body.to_lowercase();
 
+    // Keywords that explicitly request implementation (Executor)
+    let executor_keywords = [
+        "implement",
+        "go ahead",
+        "execute",
+        "looks good",
+        "lgtm",
+        "ship it",
+        "do it",
+        "make it",
+        "build it",
+        "proceed",
+    ];
+
+    // Check for explicit implementation request
+    if executor_keywords.iter().any(|kw| body.contains(kw)) {
+        // Force executor even without plan flag
+        return Ok(Agent::Executor);
+    }
+
     // Keywords that trigger re-planning (Opus)
     let replanning_keywords = [
         "different approach",
@@ -24,7 +44,6 @@ pub fn decide(comments: &[Comment], db: &Database) -> Result<Agent> {
         "change architecture",
         "breaking change",
         "major refactor",
-        "let's try",
         "instead of",
         "better way",
     ];

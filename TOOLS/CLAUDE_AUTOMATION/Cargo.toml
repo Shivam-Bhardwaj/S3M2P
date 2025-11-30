@@ -31,3 +31,6 @@ dirs = "5.0"
 
 # Time handling
 chrono = "0.4"
+
+# Regex for parsing PR bodies
+regex = "1.10"
