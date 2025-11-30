@@ -19,11 +19,26 @@ pub async fn spawn_planner(issue: &Issue, config: &Config, db: &Database) -> Res
 
     tracing::info!("Spawning Planner (Opus) for issue #{} in {:?}", issue.number, worktree_path);
 
-    // Spawn claude with planner agent
+    // Read planner agent prompt from .claude/agents/planner.md
+    let agent_path = "/home/curious/S3M2P/.claude/agents/planner.md";
+    let agent_content = std::fs::read_to_string(agent_path)
+        .context("Failed to read planner agent file")?;
+
+    // Extract prompt after YAML frontmatter
+    let prompt = agent_content
+        .split("---")
+        .nth(2)
+        .unwrap_or(&agent_content)
+        .trim();
+
+    // Spawn claude with planner system prompt
     let output = Command::new("claude")
         .args([
-            "--agent", &config.agents.planner_agent,
             "--model", &config.agents.planner_model,
+            "--system-prompt", prompt,
+            "--permission-mode", "bypassPermissions",
+            "--print",
+            &format!("You are working on GitHub issue #{}. Use github_issue_read({}) to start.", issue.number, issue.number),
         ])
         .env("ISSUE_NUMBER", issue.number.to_string())
         .env("PROJECT", project)
@@ -65,14 +80,21 @@ pub async fn spawn_planner_with_context(issue_number: u64, config: &Config, db: 
 
     tracing::info!("Spawning Planner (Opus) with context for issue #{}", issue_number);
 
+    // Read planner agent prompt
+    let agent_path = "/home/curious/S3M2P/.claude/agents/planner.md";
+    let agent_content = std::fs::read_to_string(agent_path)?;
+    let prompt = agent_content.split("---").nth(2).unwrap_or(&agent_content).trim();
+
     // Spawn claude with context
     Command::new("claude")
         .args([
-            "--agent", &config.agents.planner_agent,
             "--model", &config.agents.planner_model,
+            "--system-prompt", prompt,
+            "--permission-mode", "bypassPermissions",
+            "--print",
+            &format!("Re-planning issue #{}. Previous conversation: {}", issue_number, history_json),
         ])
         .env("ISSUE_NUMBER", issue_number.to_string())
-        .env("CONVERSATION_HISTORY", history_json)
         .current_dir(&worktree_path)
         .spawn()
         .context("Failed to spawn claude process")?;
@@ -91,11 +113,19 @@ pub async fn spawn_executor(issue_number: u64, config: &Config, db: &Database) -
 
     tracing::info!("Spawning Executor (Sonnet) for issue #{}", issue_number);
 
+    // Read executor agent prompt
+    let agent_path = "/home/curious/S3M2P/.claude/agents/executor.md";
+    let agent_content = std::fs::read_to_string(agent_path)?;
+    let prompt = agent_content.split("---").nth(2).unwrap_or(&agent_content).trim();
+
     // Spawn claude with executor agent
     Command::new("claude")
         .args([
-            "--agent", &config.agents.executor_agent,
             "--model", &config.agents.executor_model,
+            "--system-prompt", prompt,
+            "--permission-mode", "bypassPermissions",
+            "--print",
+            &format!("Execute the plan for issue #{}. Use github_issue_read({}) to get details.", issue_number, issue_number),
         ])
         .env("ISSUE_NUMBER", issue_number.to_string())
         .current_dir(&worktree_path)

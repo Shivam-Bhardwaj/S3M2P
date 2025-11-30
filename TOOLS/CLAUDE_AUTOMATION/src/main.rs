@@ -66,6 +66,9 @@ async fn main() -> Result<()> {
         // Poll for new triggers (issues labeled with claude-auto)
         match github.poll_triggers().await {
             Ok(new_issues) => {
+                if !new_issues.is_empty() {
+                    info!("Found {} new issue(s) with trigger", new_issues.len());
+                }
                 for issue in new_issues {
                     if !db.has_plan(issue.number)? {
                         info!("New issue #{}: {} - spawning Planner (Opus)", issue.number, issue.title);
@@ -83,7 +86,7 @@ async fn main() -> Result<()> {
                 }
             }
             Err(e) => {
-                warn!("Failed to poll triggers: {}", e);
+                warn!("Failed to poll triggers: {:?}", e);
             }
         }
 
