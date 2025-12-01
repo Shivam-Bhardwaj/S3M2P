@@ -1,0 +1,123 @@
+name: "Bug Report"
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report
+        Please provide details to help us identify and fix the issue.
+
+  - type: dropdown
+    id: project
+    attributes:
+      label: Project
+      description: Which project is affected?
+      options:
+        - helios
+        - welcome (too.foo)
+        - autocrate
+        - chladni
+        - portfolio
+        - blog
+        - mcad
+        - ecad
+        - infra
+        - core
+        - storage-server
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: automation
+    attributes:
+      label: Enable Claude Automation
+      description: Let Claude agents automatically fix this bug
+      options:
+        - label: "Enable automation (adds `claude-auto` label)"
+          required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: What went wrong?
+      placeholder: Describe the bug clearly
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this bug?
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should have happened?
+      placeholder: Describe the expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what you observed
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Critical (app crashes/unusable)
+        - High (major feature broken)
+        - Medium (feature impaired)
+        - Low (minor inconvenience)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, OS, device info
+      placeholder: |
+        - Browser: Chrome 120
+        - OS: macOS 14.2
+        - Device: Desktop
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots/Logs
+      description: Add any relevant screenshots or error logs
+      placeholder: Paste screenshots or error messages here
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ### How Automation Works
+
+        **With automation enabled:**
+        1. Claude reads your issue (within 60 seconds)
+        2. Investigates code and proposes a fix
+        3. Deploys preview to `p.{project}.too.foo`
+        4. Comment naturally to iterate: "that didn't fix it", "ship it!"
