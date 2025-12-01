@@ -45,14 +45,14 @@ jobs:
         run: |
           PROJECT=${{ steps.project.outputs.name }}
           case $PROJECT in
-            helios) echo "path=SIM/HELIOS/index.html" >> $GITHUB_OUTPUT ;;
-            welcome) echo "path=WELCOME/index.html" >> $GITHUB_OUTPUT ;;
-            mcad) echo "path=MCAD/WEB/index.html" >> $GITHUB_OUTPUT ;;
-            ecad) echo "path=ECAD/WEB/index.html" >> $GITHUB_OUTPUT ;;
-            chladni) echo "path=SW/CHLADNI/index.html" >> $GITHUB_OUTPUT ;;
-            autocrate) echo "path=MCAD/AUTOCRATE/index.html" >> $GITHUB_OUTPUT ;;
-            portfolio) echo "path=SW/PORTFOLIO/index.html" >> $GITHUB_OUTPUT ;;
-            blog) echo "path=BLOG/index.html" >> $GITHUB_OUTPUT ;;
+            helios) echo "dir=SIM/HELIOS" >> $GITHUB_OUTPUT ;;
+            welcome) echo "dir=SIM/TOOFOO" >> $GITHUB_OUTPUT ;;
+            mcad) echo "dir=MCAD/WEB" >> $GITHUB_OUTPUT ;;
+            ecad) echo "dir=ECAD/WEB" >> $GITHUB_OUTPUT ;;
+            chladni) echo "dir=SW/CHLADNI" >> $GITHUB_OUTPUT ;;
+            autocrate) echo "dir=MCAD/AUTOCRATE" >> $GITHUB_OUTPUT ;;
+            portfolio) echo "dir=SW/PORTFOLIO" >> $GITHUB_OUTPUT ;;
+            blog) echo "dir=BLOG" >> $GITHUB_OUTPUT ;;
             *)
               echo "❌ Unknown project: $PROJECT"
               echo "Valid: helios, welcome, mcad, ecad, chladni, autocrate, portfolio, blog"
@@ -61,17 +61,21 @@ jobs:
           esac
 
       - name: Build WASM
-        run: trunk build ${{ steps.build.outputs.path }} --release
+        working-directory: ./${{ steps.build.outputs.dir }}
+        run: trunk build --release
 
       - name: Deploy to Cloudflare Pages
         id: deploy
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: preview-${{ steps.project.outputs.name }}
-          directory: dist
-          branch: preview-${{ steps.issue.outputs.number }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm install -g wrangler
+          npx wrangler pages project create preview-${{ steps.project.outputs.name }} --production-branch=main 2>/dev/null || true
+          DEPLOY_OUTPUT=$(npx wrangler pages deploy ${{ steps.build.outputs.dir }}/dist --project-name=preview-${{ steps.project.outputs.name }} --branch=preview-${{ steps.issue.outputs.number }} --commit-dirty=true 2>&1)
+          echo "$DEPLOY_OUTPUT"
+          URL=$(echo "$DEPLOY_OUTPUT" | grep -oP 'https://[^\s]+\.pages\.dev' | head -1)
+          echo "url=$URL" >> $GITHUB_OUTPUT
 
       - name: Post preview URL to issue
         env:
