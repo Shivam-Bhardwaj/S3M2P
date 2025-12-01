@@ -36,7 +36,7 @@ jobs:
         with:
           filters: |
             src:
-              - 'SIM/TOOFOO/**'
+              - 'WELCOME/**'
               - 'DNA/**'
               - 'Cargo.toml'
               - 'Cargo.lock'
@@ -51,7 +51,7 @@ jobs:
         if: steps.filter.outputs.src == 'true' || github.event_name == 'workflow_dispatch'
         uses: Swatinem/rust-cache@v2
         with:
-          shared-key: "wasm-toofoo"
+          shared-key: "wasm-welcome"
 
       - name: Download and install Trunk
         if: steps.filter.outputs.src == 'true' || github.event_name == 'workflow_dispatch'
@@ -63,7 +63,7 @@ jobs:
 
       - name: Build with Trunk
         if: steps.filter.outputs.src == 'true' || github.event_name == 'workflow_dispatch'
-        working-directory: ./SIM/TOOFOO
+        working-directory: ./WELCOME
         run: trunk build --release
 
       - name: Deploy to Cloudflare Pages
@@ -74,7 +74,7 @@ jobs:
         run: |
           npm install -g wrangler
           npx wrangler pages project create too-foo --production-branch=main 2>/dev/null || true
-          npx wrangler pages deploy SIM/TOOFOO/dist --project-name=too-foo --branch=main --commit-dirty=true
+          npx wrangler pages deploy WELCOME/dist --project-name=too-foo --branch=main --commit-dirty=true
 
   deploy-helios:
     name: Deploy Helios
