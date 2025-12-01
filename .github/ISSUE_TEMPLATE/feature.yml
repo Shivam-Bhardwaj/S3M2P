@@ -1,19 +1,19 @@
-name: "New Issue"
-description: Create an issue for any project with optional Claude automation
-title: ""
-labels: []
+name: "Feature Request"
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
       value: |
-        ## Create an Issue
-        Select your project below and optionally enable Claude AI automation.
+        ## Feature Request
+        Describe the feature you'd like to see implemented.
 
   - type: dropdown
     id: project
     attributes:
       label: Project
-      description: Which project is this issue for?
+      description: Which project is this feature for?
       options:
         - helios
         - welcome (too.foo)
@@ -33,7 +33,7 @@ body:
     id: automation
     attributes:
       label: Enable Claude Automation
-      description: Let Claude agents automatically implement this issue
+      description: Let Claude agents automatically implement this feature
       options:
         - label: "Enable automation (adds `claude-auto` label)"
           required: false
@@ -41,9 +41,8 @@ body:
   - type: dropdown
     id: type
     attributes:
-      label: Issue Type
+      label: Feature Type
       options:
-        - Bug fix
         - New feature
         - UI/UX improvement
         - Performance optimization
@@ -57,9 +56,18 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: Description
-      description: Clear description of the issue or feature
-      placeholder: What needs to be done?
+      label: Feature Description
+      description: What do you want to add or improve?
+      placeholder: Describe the feature clearly
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why is this feature needed? What problem does it solve?
+      placeholder: Explain the use case or pain point
     validations:
       required: true
 
@@ -67,7 +75,7 @@ body:
     id: acceptance
     attributes:
       label: Acceptance Criteria
-      description: What defines "done" for this issue?
+      description: What defines "done" for this feature?
       placeholder: |
         - [ ] Criterion 1
         - [ ] Criterion 2
@@ -79,7 +87,7 @@ body:
     id: affected
     attributes:
       label: Affected Projects
-      description: Check all that apply (for cross-project issues)
+      description: Check all that apply (for cross-project features)
       options:
         - label: core
         - label: helios
@@ -98,6 +106,15 @@ body:
         - P3 - Low
     validations:
       required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds?
+      placeholder: Describe any alternatives you've considered
+    validations:
+      required: false
 
   - type: markdown
     attributes:
