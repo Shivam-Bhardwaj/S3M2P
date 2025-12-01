@@ -86,7 +86,7 @@ impl Default for ViewState {
             zoom: 0.02, // 1 pixel = 0.02 AU, shows inner solar system
             tilt: 0.6,  // ~34 degrees from top-down for stronger 3D effect
             rotation: 0.0,
-            camera_distance: 500.0, // Virtual camera distance for perspective (AU)
+            camera_distance: 6.0, // Virtual camera distance for perspective (AU) - 0.02 zoom * 1920 * 0.15
             fov: PI / 4.0,          // 45 degree field of view
             width: 1920.0,
             height: 1080.0,
