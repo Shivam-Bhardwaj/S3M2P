@@ -143,11 +143,41 @@ Use `/validate` command to run:
 - `trunk build` for WASM crates
 - `playwright test` if UI changed
 
+### Commit Message Guidelines
+
+**Important:** Use `Refs #XX` (not `Closes #XX`) in individual commit messages to link to issues without auto-closing them. GitHub scans ALL commit messages when a PR is merged and will close any issue referenced with closing keywords.
+
+| In Commits | In PR Body |
+|------------|------------|
+| `Refs #XX` | `Closes #XX` |
+| `Related to #XX` | `Fixes #XX` |
+
+**Bad:** `feat(helios): add rotation Closes #22` → Issue closes on any PR merge containing this commit
+**Good:** `feat(helios): add rotation Refs #22` → Issue only closes when explicitly linked in PR body
+
+### Preview Deployments
+
+To get a preview URL for your changes:
+
+1. Create a branch named `preview/issue-XX` (where XX is the issue number)
+2. Ensure the issue has a `project:*` label (e.g., `project:helios`)
+3. Push to the branch
+4. The CI workflow will build, deploy to Cloudflare Pages, and post the preview URL as a comment on the issue
+
+```bash
+git checkout -b preview/issue-27
+# make changes
+git push origin preview/issue-27
+# → Preview URL will be posted to issue #27
+```
+
+Supported projects: helios, welcome, mcad, ecad, chladni, autocrate, portfolio, blog
+
 ### Creating PRs
 
 Use `/pr` command to:
 - Generate PR from current branch
-- Link to issue
+- Link to issue (use `Closes #XX` only in PR body, not commits)
 - Include test plan
 
 ## Code Style
