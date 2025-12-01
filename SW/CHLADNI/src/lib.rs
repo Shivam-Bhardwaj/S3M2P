@@ -82,6 +82,8 @@ pub struct ChladniSimulation {
     pub particles: Vec<Particle>,
     pub current_mode: PlateMode,
     pub time: f32,
+    pub frequency_scale: f32, // Multiplier for mode frequencies
+    pub amplitude: f32,       // Wave amplitude multiplier
 }
 
 impl ChladniSimulation {
@@ -95,7 +97,19 @@ impl ChladniSimulation {
             particles,
             current_mode: PlateMode::new(3, 2), // Default (3,2) mode
             time: 0.0,
+            frequency_scale: 1.0,
+            amplitude: 1.0,
         }
+    }
+
+    /// Set frequency scale (affects pattern complexity)
+    pub fn set_frequency_scale(&mut self, scale: f32) {
+        self.frequency_scale = scale.clamp(0.1, 3.0);
+    }
+
+    /// Set amplitude (affects particle movement strength)
+    pub fn set_amplitude(&mut self, amp: f32) {
+        self.amplitude = amp.clamp(0.1, 2.0);
     }
 
     fn spawn_particles(grid_size: u32, count: usize) -> Vec<Particle> {
@@ -117,9 +131,14 @@ impl ChladniSimulation {
         let dt_scaled = dt * self.config.time_scale;
         self.time += dt_scaled;
 
-        // Update wave field
-        self.wave
-            .update(dt_scaled, self.current_mode, self.config.wave_speed);
+        // Update wave field with frequency scale and amplitude
+        self.wave.update_with_params(
+            dt_scaled,
+            self.current_mode,
+            self.config.wave_speed,
+            self.frequency_scale,
+            self.amplitude,
+        );
 
         // Update particles based on wave gradient
         self.update_particles(dt_scaled);
@@ -127,7 +146,8 @@ impl ChladniSimulation {
 
     fn update_particles(&mut self, dt: f32) {
         let grid_size = self.config.grid_size as f32;
-        let damping = 0.98;
+        let damping = 0.92; // Less damping for faster settling
+        let force_scale = 500.0; // Much stronger force for instant response
 
         for particle in &mut self.particles {
             if !particle.active {
@@ -139,7 +159,7 @@ impl ChladniSimulation {
 
             // Particles move toward nodal lines (low amplitude)
             // Force is proportional to negative gradient of amplitude squared
-            let force = -gradient * 50.0;
+            let force = -gradient * force_scale;
 
             particle.vel += force * dt;
             particle.vel *= damping;
@@ -165,10 +185,10 @@ impl ChladniSimulation {
         }
     }
 
-    /// Set vibration mode
+    /// Set vibration mode (particles migrate to new nodal lines)
     pub fn set_mode(&mut self, m: u32, n: u32) {
         self.current_mode = PlateMode::new(m, n);
-        self.reset_particles();
+        // Don't reset particles - let them flow to new nodal lines
     }
 
     /// Reset particle positions
@@ -254,7 +274,43 @@ pub fn start() -> Result<(), JsValue> {
         &JsValue::from_str("setChladniMode"),
         set_mode_fn.as_ref(),
     )?;
-    set_mode_fn.forget(); // Prevent closure from being dropped
+    set_mode_fn.forget();
+
+    // Export setChladniFrequency to JavaScript
+    let set_freq_fn = Closure::wrap(Box::new(|scale: f32| {
+        set_chladni_frequency(scale);
+    }) as Box<dyn Fn(f32)>);
+
+    js_sys::Reflect::set(
+        &window,
+        &JsValue::from_str("setChladniFrequency"),
+        set_freq_fn.as_ref(),
+    )?;
+    set_freq_fn.forget();
+
+    // Export setChladniAmplitude to JavaScript
+    let set_amp_fn = Closure::wrap(Box::new(|amp: f32| {
+        set_chladni_amplitude(amp);
+    }) as Box<dyn Fn(f32)>);
+
+    js_sys::Reflect::set(
+        &window,
+        &JsValue::from_str("setChladniAmplitude"),
+        set_amp_fn.as_ref(),
+    )?;
+    set_amp_fn.forget();
+
+    // Export resetChladniParticles to JavaScript
+    let reset_fn = Closure::wrap(Box::new(|| {
+        reset_chladni_particles();
+    }) as Box<dyn Fn()>);
+
+    js_sys::Reflect::set(
+        &window,
+        &JsValue::from_str("resetChladniParticles"),
+        reset_fn.as_ref(),
+    )?;
+    reset_fn.forget();
 
     // Start animation loop
     start_animation_loop()?;
@@ -270,6 +326,39 @@ pub fn set_chladni_mode(m: u32, n: u32) {
         if let Some(ref mut app) = *cell.borrow_mut() {
             app.simulation.set_mode(m, n);
             web_sys::console::log_1(&format!("Mode set to ({}, {})", m, n).into());
+        }
+    });
+}
+
+/// Set frequency scale (called from JavaScript)
+#[wasm_bindgen]
+pub fn set_chladni_frequency(scale: f32) {
+    APP.with(|cell| {
+        if let Some(ref mut app) = *cell.borrow_mut() {
+            app.simulation.set_frequency_scale(scale);
+            web_sys::console::log_1(&format!("Frequency scale set to {}", scale).into());
+        }
+    });
+}
+
+/// Set amplitude (called from JavaScript)
+#[wasm_bindgen]
+pub fn set_chladni_amplitude(amp: f32) {
+    APP.with(|cell| {
+        if let Some(ref mut app) = *cell.borrow_mut() {
+            app.simulation.set_amplitude(amp);
+            web_sys::console::log_1(&format!("Amplitude set to {}", amp).into());
+        }
+    });
+}
+
+/// Reset particles (called from JavaScript)
+#[wasm_bindgen]
+pub fn reset_chladni_particles() {
+    APP.with(|cell| {
+        if let Some(ref mut app) = *cell.borrow_mut() {
+            app.simulation.reset_particles();
+            web_sys::console::log_1(&"Particles reset".into());
         }
     });
 }
