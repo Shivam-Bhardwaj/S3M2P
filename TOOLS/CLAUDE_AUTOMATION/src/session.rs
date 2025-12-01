@@ -91,19 +91,30 @@ pub async fn spawn_planner_with_context(issue_number: u64, config: &Config, db: 
     let agent_content = std::fs::read_to_string(agent_path)?;
     let prompt = agent_content.split("---").nth(2).unwrap_or(&agent_content).trim();
 
-    // Spawn claude with context
-    Command::new("claude")
+    // Create prompt file for interactive mode
+    let prompt_file = std::path::PathBuf::from(&worktree_path).join(".claude_prompt_replanning");
+    std::fs::write(&prompt_file, format!(
+        "Re-planning issue #{}. Previous conversation: {}. Use github_issue_read({}) to get current issue state and post your updated plan using github_issue_comment().",
+        issue_number, history_json, issue_number
+    ))?;
+
+    // Spawn claude with context (interactive mode for GitHub posting)
+    let output = Command::new("claude")
         .args([
             "--model", &config.agents.planner_model,
-            "--system-prompt", prompt,
+            "--append-system-prompt", prompt,
             "--permission-mode", "bypassPermissions",
-            "--print",
-            &format!("Re-planning issue #{}. Previous conversation: {}", issue_number, history_json),
         ])
+        .stdin(std::fs::File::open(&prompt_file)?)
         .env("ISSUE_NUMBER", issue_number.to_string())
         .current_dir(&worktree_path)
         .spawn()
         .context("Failed to spawn claude process")?;
+
+    // Mark as running
+    db.update_status(issue_number, "running")?;
+
+    tracing::info!("Re-planner spawned with PID: {:?}", output.id());
 
     Ok(())
 }
