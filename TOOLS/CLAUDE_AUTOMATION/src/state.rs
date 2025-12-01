@@ -1,6 +1,6 @@
-use anyhow::Result;
-use rusqlite::{Connection, params};
 use crate::github::Comment;
+use anyhow::Result;
+use rusqlite::{params, Connection};
 
 pub struct Database {
     pub(crate) conn: Connection,
@@ -50,21 +50,27 @@ impl Database {
     }
 
     pub fn automation_exists(&self, issue_number: u64) -> Result<bool> {
-        let exists = self.conn.query_row(
-            "SELECT 1 FROM automations WHERE issue_number = ?1",
-            params![issue_number as i64],
-            |_| Ok(true),
-        ).unwrap_or(false);
+        let exists = self
+            .conn
+            .query_row(
+                "SELECT 1 FROM automations WHERE issue_number = ?1",
+                params![issue_number as i64],
+                |_| Ok(true),
+            )
+            .unwrap_or(false);
 
         Ok(exists)
     }
 
     pub fn has_plan(&self, issue_number: u64) -> Result<bool> {
-        let count: i32 = self.conn.query_row(
-            "SELECT has_plan FROM automations WHERE issue_number = ?1",
-            params![issue_number as i64],
-            |row| row.get(0),
-        ).unwrap_or(0);
+        let count: i32 = self
+            .conn
+            .query_row(
+                "SELECT has_plan FROM automations WHERE issue_number = ?1",
+                params![issue_number as i64],
+                |row| row.get(0),
+            )
+            .unwrap_or(0);
 
         Ok(count > 0)
     }
@@ -79,27 +85,31 @@ impl Database {
 
     pub fn get_active_issues(&self) -> Result<Vec<u64>> {
         let mut stmt = self.conn.prepare(
-            "SELECT issue_number FROM automations WHERE status IN ('triggered', 'running')"
+            "SELECT issue_number FROM automations WHERE status IN ('triggered', 'running')",
         )?;
 
-        let issues = stmt.query_map([], |row| {
-            let num: i64 = row.get(0)?;
-            Ok(num as u64)
-        })?
-        .filter_map(|r| r.ok())
-        .collect();
+        let issues = stmt
+            .query_map([], |row| {
+                let num: i64 = row.get(0)?;
+                Ok(num as u64)
+            })?
+            .filter_map(|r| r.ok())
+            .collect();
 
         Ok(issues)
     }
 
     pub fn last_comment_time(&self, issue_number: u64) -> Result<Option<String>> {
-        let time: Option<String> = self.conn.query_row(
-            "SELECT created_at FROM conversation_history
+        let time: Option<String> = self
+            .conn
+            .query_row(
+                "SELECT created_at FROM conversation_history
              WHERE issue_number = ?1
              ORDER BY created_at DESC LIMIT 1",
-            params![issue_number as i64],
-            |row| row.get(0),
-        ).ok();
+                params![issue_number as i64],
+                |row| row.get(0),
+            )
+            .ok();
 
         Ok(time)
     }
@@ -143,7 +153,12 @@ impl Database {
         Ok(())
     }
 
-    pub fn complete_automation(&self, issue_number: u64, cost_usd: f64, tokens_used: usize) -> Result<()> {
+    pub fn complete_automation(
+        &self,
+        issue_number: u64,
+        cost_usd: f64,
+        tokens_used: usize,
+    ) -> Result<()> {
         let now = chrono::Utc::now().to_rfc3339();
 
         self.conn.execute(

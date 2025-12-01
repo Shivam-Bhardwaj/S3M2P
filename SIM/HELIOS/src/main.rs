@@ -19,8 +19,8 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 #[cfg(target_arch = "wasm32")]
 use web_sys::{
-    window, CanvasRenderingContext2d, HtmlCanvasElement, HtmlInputElement,
-    InputEvent, KeyboardEvent, MouseEvent, TouchEvent, WheelEvent,
+    window, CanvasRenderingContext2d, HtmlCanvasElement, HtmlInputElement, InputEvent,
+    KeyboardEvent, MouseEvent, TouchEvent, WheelEvent,
 };
 
 #[cfg(target_arch = "wasm32")]
@@ -53,7 +53,10 @@ fn update_commit_info(document: &web_sys::Document) {
         };
 
         // GitHub commit URL
-        let commit_url = format!("https://github.com/Shivam-Bhardwaj/S3M2P/commit/{}", COMMIT_HASH);
+        let commit_url = format!(
+            "https://github.com/Shivam-Bhardwaj/S3M2P/commit/{}",
+            COMMIT_HASH
+        );
 
         // Update link
         let _ = commit_link.set_attribute("href", &commit_url);

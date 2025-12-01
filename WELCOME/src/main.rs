@@ -88,7 +88,10 @@ fn update_commit_info(document: &Document) {
         };
 
         // GitHub commit URL
-        let commit_url = format!("https://github.com/Shivam-Bhardwaj/S3M2P/commit/{}", COMMIT_HASH);
+        let commit_url = format!(
+            "https://github.com/Shivam-Bhardwaj/S3M2P/commit/{}",
+            COMMIT_HASH
+        );
 
         // Update link
         commit_link.set_attribute("href", &commit_url).ok();

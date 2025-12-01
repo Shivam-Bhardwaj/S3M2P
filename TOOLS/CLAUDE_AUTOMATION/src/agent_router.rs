@@ -1,6 +1,6 @@
-use anyhow::Result;
 use crate::github::Comment;
 use crate::state::Database;
+use anyhow::Result;
 
 pub enum Agent {
     Planner,  // Opus - for complex reasoning and architecture

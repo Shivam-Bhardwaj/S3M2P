@@ -1,9 +1,9 @@
+use crate::config::Config;
+use crate::github::Issue;
+use crate::state::Database;
 use anyhow::{Context, Result};
 use std::path::PathBuf;
 use std::process::Command;
-use crate::config::Config;
-use crate::state::Database;
-use crate::github::Issue;
 
 /// Extract project name from issue labels
 pub fn extract_project_from_labels(labels: &[String]) -> Option<String> {
@@ -17,8 +17,8 @@ pub fn extract_project_from_labels(labels: &[String]) -> Option<String> {
 
 /// Create a worktree for an issue
 pub fn create_automation_worktree(issue: &Issue, config: &Config) -> Result<PathBuf> {
-    let project = extract_project_from_labels(&issue.labels)
-        .context("No project: label found on issue")?;
+    let project =
+        extract_project_from_labels(&issue.labels).context("No project: label found on issue")?;
 
     let base = PathBuf::from(&config.worktree.base_path);
     std::fs::create_dir_all(&base)?;
