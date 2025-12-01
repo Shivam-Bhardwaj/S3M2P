@@ -24,9 +24,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Get the first non-infra project label
           PROJECT=$(gh issue view ${{ steps.issue.outputs.number }} \
             --json labels \
-            --jq '.labels[] | select(.name | startswith("project:")) | .name | sub("project:"; "")')
+            --jq '[.labels[] | select(.name | startswith("project:")) | .name | sub("project:"; "") | select(. != "infra")] | first')
           echo "name=$PROJECT" >> $GITHUB_OUTPUT
 
       - name: Setup Rust
