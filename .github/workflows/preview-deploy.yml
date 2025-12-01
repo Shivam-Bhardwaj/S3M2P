@@ -108,16 +108,16 @@ jobs:
           PREVIEW_URL="${{ steps.deploy.outputs.url }}"
           COMMIT_SHORT=$(git rev-parse --short HEAD)
           COMMIT_MSG=$(git log -1 --pretty=%s)
+          TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
 
-          gh issue comment ${{ steps.issue.outputs.number }} --body "$(cat <<EOF
-🌐 **Preview Deployed**
+          BODY="🌐 **Preview Deployed**
 
-**URL:** $PREVIEW_URL
-**Project:** ${PROJECT}
-**Commit:** \`$COMMIT_SHORT\` - $COMMIT_MSG
-**Time:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **URL:** $PREVIEW_URL
+          **Project:** ${PROJECT}
+          **Commit:** \`$COMMIT_SHORT\` - $COMMIT_MSG
+          **Time:** $TIME
 
----
-*Auto-deployed from \`preview/issue-${{ steps.issue.outputs.number }}\`*
-EOF
-)"
+          ---
+          *Auto-deployed from \`preview/issue-${{ steps.issue.outputs.number }}\`*"
+
+          gh issue comment ${{ steps.issue.outputs.number }} --body "$BODY"
