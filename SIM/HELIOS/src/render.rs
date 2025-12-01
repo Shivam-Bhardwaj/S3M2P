@@ -16,6 +16,23 @@ use web_sys::CanvasRenderingContext2d;
 // DRAWING UTILITIES
 // ============================================================================
 
+/// Compute breathing factor for visual elements
+/// Returns value centered at 1.0, oscillating by amplitude
+#[inline]
+fn breath_factor(time: f64, frequency: f64, amplitude: f64, phase: f64) -> f64 {
+    1.0 + (time * frequency + phase).sin() * amplitude
+}
+
+/// Multi-layered breathing for organic feel
+/// Combines slow, medium, and fast oscillations weighted by solar activity
+#[inline]
+fn layered_breath(time: f64, base_amp: f64, activity: f64) -> f64 {
+    let slow = (time * 0.1).sin() * base_amp * 0.5;
+    let medium = (time * 0.35).sin() * base_amp * 0.8;
+    let fast = (time * 0.9).sin() * base_amp * 0.3;
+    1.0 + (slow + medium + fast) * (0.5 + activity * 0.5)
+}
+
 /// Draw the entire scene
 pub fn render(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) {
     let w = state.view.width;
@@ -27,8 +44,8 @@ pub fn render(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64
 
     // Draw layers back to front
     draw_starfield(ctx, state, time);
-    draw_heliosphere_boundaries(ctx, state);
-    draw_orbits(ctx, state);
+    draw_heliosphere_boundaries(ctx, state, time);
+    draw_orbits(ctx, state, time);
     draw_missions(ctx, state, time);
     draw_sun(ctx, state, time);
     draw_planets(ctx, state, time);
@@ -921,7 +938,7 @@ fn draw_celestial_directions(ctx: &CanvasRenderingContext2d, state: &SimulationS
 
 const HELIO_NOSE_DIRECTION: f64 = std::f64::consts::PI; // Nose points in -X direction
 
-fn draw_heliosphere_boundaries(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
+fn draw_heliosphere_boundaries(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) {
     let view = &state.view;
 
     // Only draw if zoomed out enough
@@ -934,12 +951,16 @@ fn draw_heliosphere_boundaries(ctx: &CanvasRenderingContext2d, state: &Simulatio
         draw_interstellar_wind(ctx, state);
     }
 
-    // Draw boundaries from outermost to innermost
+    // Breathing effect linked to solar activity
+    let activity = (state.solar_cycle_phase * 2.0 * PI).sin() * 0.5 + 0.5;
+    let boundary_breath = breath_factor(time, 0.15, 0.02, 0.0) * (0.5 + activity * 0.5);
+
+    // Draw boundaries from outermost to innermost with breathing
     // Bow shock - may not exist (debated), drawn faintly
     draw_comet_boundary(
         ctx,
         state,
-        state.bow_shock_au,
+        state.bow_shock_au * boundary_breath,
         0.5,
         3.0,
         "rgba(231, 76, 60, 0.08)",
@@ -951,7 +972,7 @@ fn draw_heliosphere_boundaries(ctx: &CanvasRenderingContext2d, state: &Simulatio
     draw_comet_boundary(
         ctx,
         state,
-        state.heliopause_au,
+        state.heliopause_au * boundary_breath,
         0.6,
         2.5,
         "rgba(155, 89, 182, 0.1)",
@@ -963,7 +984,7 @@ fn draw_heliosphere_boundaries(ctx: &CanvasRenderingContext2d, state: &Simulatio
     draw_comet_boundary(
         ctx,
         state,
-        state.termination_shock_au,
+        state.termination_shock_au * boundary_breath,
         0.7,
         2.0,
         "rgba(52, 152, 219, 0.12)",
@@ -1313,9 +1334,7 @@ fn draw_voyager_boundary_context(ctx: &CanvasRenderingContext2d, state: &Simulat
 // ORBIT PATHS
 // ============================================================================
 
-fn draw_orbits(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
-    ctx.set_line_width(1.0);
-
+fn draw_orbits(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) {
     for p in 0..state.planet_count {
         // Visibility check - is any part of orbit on screen?
         let orbit = &state.planet_orbits[p];
@@ -1325,8 +1344,19 @@ fn draw_orbits(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
             continue;
         }
 
-        // Orbit color (dimmed version of planet color)
-        let color = format!("{}40", state.planet_colors[p]); // 25% alpha
+        // Breathing glow - phase offset per orbit for cascading effect
+        let orbit_breath = breath_factor(time, 0.2, 0.15, p as f64 * 0.5);
+        let base_alpha = 0.25;
+        let alpha = base_alpha + orbit_breath * 0.15;
+
+        // Breathing line width for subtle emphasis
+        let line_width = 1.0 + orbit_breath * 0.3;
+        ctx.set_line_width(line_width);
+
+        // Orbit color with breathing opacity
+        let hex_color = state.planet_colors[p].trim_start_matches('#');
+        let alpha_hex = format!("{:02X}", (alpha * 255.0) as u8);
+        let color = format!("#{}{}", hex_color, alpha_hex);
         ctx.set_stroke_style(&JsValue::from_str(&color));
 
         ctx.begin_path();
@@ -1364,9 +1394,9 @@ fn draw_sun(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) 
     // Solar activity based on cycle phase (more flares/prominences at solar max)
     let activity = (state.solar_cycle_phase * 2.0 * PI).sin() * 0.5 + 0.5;
 
-    // Pulsing corona - stronger at solar maximum
-    let pulse = 1.0 + (time * 0.5).sin() * 0.1 * (0.5 + activity * 0.5);
-    let corona_radius = base_radius * (2.5 + activity * 1.0) * pulse;
+    // Multi-frequency breathing - organic, living star
+    let breath = layered_breath(time, 0.08, activity);
+    let corona_radius = base_radius * (2.5 + activity * 1.0) * breath;
 
     // Solar wind streamers (coronal streamers)
     if base_radius > 15.0 {
@@ -1404,15 +1434,18 @@ fn draw_sun(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) 
         }
     }
 
-    // Sun body with limb darkening
+    // Sun body with limb darkening and core breathing
+    let sun_breath = breath_factor(time, 0.4, 0.02, 0.0);
+    let breathing_radius = base_radius * sun_breath;
+
     let body_gradient = ctx
         .create_radial_gradient(
-            cx - base_radius * 0.2,
-            cy - base_radius * 0.2,
+            cx - breathing_radius * 0.2,
+            cy - breathing_radius * 0.2,
             0.0,
             cx,
             cy,
-            base_radius,
+            breathing_radius,
         )
         .unwrap();
     body_gradient.add_color_stop(0.0, "#FFFEF0").unwrap();
@@ -1424,30 +1457,30 @@ fn draw_sun(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) 
 
     ctx.set_fill_style(&body_gradient);
     ctx.begin_path();
-    ctx.arc(cx, cy, base_radius, 0.0, 2.0 * PI).unwrap_or(());
+    ctx.arc(cx, cy, breathing_radius, 0.0, 2.0 * PI).unwrap_or(());
     ctx.fill();
 
     // Granulation (convection cells) - only when zoomed in
-    if base_radius > 40.0 {
-        draw_solar_granulation(ctx, cx, cy, base_radius, time);
+    if breathing_radius > 40.0 {
+        draw_solar_granulation(ctx, cx, cy, breathing_radius, time);
     }
 
     // Sunspots - more during solar maximum
-    if base_radius > 20.0 {
+    if breathing_radius > 20.0 {
         let num_spots = (1.0 + activity * 6.0) as i32;
-        draw_sunspots(ctx, cx, cy, base_radius, time, num_spots, activity);
+        draw_sunspots(ctx, cx, cy, breathing_radius, time, num_spots, activity);
     }
 
     // Active regions (bright faculae near sunspots)
-    if base_radius > 30.0 && activity > 0.3 {
-        draw_faculae(ctx, cx, cy, base_radius, time, activity);
+    if breathing_radius > 30.0 && activity > 0.3 {
+        draw_faculae(ctx, cx, cy, breathing_radius, time, activity);
     }
 
     // Label
     if view.zoom < 0.05 {
         ctx.set_font("700 14px 'Just Sans', sans-serif");
         ctx.set_fill_style(&JsValue::from_str("#FFD700"));
-        ctx.fill_text("Sun", cx + base_radius + 5.0, cy + 5.0)
+        ctx.fill_text("Sun", cx + breathing_radius + 5.0, cy + 5.0)
             .unwrap_or(());
     }
 }
@@ -1815,6 +1848,26 @@ fn draw_faculae(
 // PLANETS
 // ============================================================================
 
+/// Apply planet-specific breathing based on physical character
+/// Each planet has unique frequency and amplitude for organic variety
+fn apply_planet_breathing(base_radius: f64, time: f64, planet_idx: usize) -> f64 {
+    // Planet-specific breathing parameters (frequency, amplitude, phase offset)
+    // Gas giants breathe slower/stronger, rocky planets faster/subtler
+    let (frequency, amplitude, phase) = match planet_idx {
+        0 => (1.2, 0.02, 0.0),    // Mercury - small, active
+        1 => (0.6, 0.03, 0.5),    // Venus - thick atmosphere
+        2 => (0.5, 0.025, 1.0),   // Earth - baseline
+        3 => (0.7, 0.02, 1.5),    // Mars - thin atmosphere
+        4 => (0.2, 0.04, 2.0),    // Jupiter - massive, slow rhythm
+        5 => (0.25, 0.035, 2.5),  // Saturn - large gas giant
+        6 => (0.3, 0.03, 3.0),    // Uranus - ice giant
+        7 => (0.35, 0.03, 3.5),   // Neptune - ice giant
+        _ => (0.5, 0.025, 0.0),   // Default
+    };
+
+    base_radius * breath_factor(time, frequency, amplitude, phase)
+}
+
 fn draw_planets(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) {
     let view = &state.view;
     let _lod = view.lod_level();
@@ -1840,11 +1893,13 @@ fn draw_planets(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f
         let color = state.planet_colors[p];
 
         // Always draw detailed 3D planets (no simple circles)
+        // Apply planet-specific breathing
+        let breathing_radius = apply_planet_breathing(base_radius, time, p);
         draw_planet_detailed(
             ctx,
             sx,
             sy,
-            base_radius,
+            breathing_radius,
             color,
             state.planet_has_rings[p],
             time,
