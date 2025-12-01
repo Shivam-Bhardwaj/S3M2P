@@ -61,36 +61,28 @@ jobs:
           PROJECT=${{ steps.project.outputs.name }}
           case $PROJECT in
             helios)
-              echo "path=SIM/HELIOS/index.html" >> $GITHUB_OUTPUT
-              echo "dist=SIM/HELIOS/dist" >> $GITHUB_OUTPUT
+              echo "dir=SIM/HELIOS" >> $GITHUB_OUTPUT
               ;;
             welcome)
-              echo "path=WELCOME/index.html" >> $GITHUB_OUTPUT
-              echo "dist=WELCOME/dist" >> $GITHUB_OUTPUT
+              echo "dir=WELCOME" >> $GITHUB_OUTPUT
               ;;
             mcad)
-              echo "path=MCAD/WEB/index.html" >> $GITHUB_OUTPUT
-              echo "dist=MCAD/WEB/dist" >> $GITHUB_OUTPUT
+              echo "dir=MCAD/WEB" >> $GITHUB_OUTPUT
               ;;
             ecad)
-              echo "path=ECAD/WEB/index.html" >> $GITHUB_OUTPUT
-              echo "dist=ECAD/WEB/dist" >> $GITHUB_OUTPUT
+              echo "dir=ECAD/WEB" >> $GITHUB_OUTPUT
               ;;
             chladni)
-              echo "path=SW/CHLADNI/index.html" >> $GITHUB_OUTPUT
-              echo "dist=SW/CHLADNI/dist" >> $GITHUB_OUTPUT
+              echo "dir=SW/CHLADNI" >> $GITHUB_OUTPUT
               ;;
             autocrate)
-              echo "path=MCAD/AUTOCRATE/index.html" >> $GITHUB_OUTPUT
-              echo "dist=MCAD/AUTOCRATE/dist" >> $GITHUB_OUTPUT
+              echo "dir=MCAD/AUTOCRATE" >> $GITHUB_OUTPUT
               ;;
             portfolio)
-              echo "path=SW/PORTFOLIO/index.html" >> $GITHUB_OUTPUT
-              echo "dist=SW/PORTFOLIO/dist" >> $GITHUB_OUTPUT
+              echo "dir=SW/PORTFOLIO" >> $GITHUB_OUTPUT
               ;;
             blog)
-              echo "path=BLOG/index.html" >> $GITHUB_OUTPUT
-              echo "dist=BLOG/dist" >> $GITHUB_OUTPUT
+              echo "dir=BLOG" >> $GITHUB_OUTPUT
               ;;
             *)
               echo "❌ Unknown project: $PROJECT"
@@ -101,7 +93,8 @@ jobs:
 
       - name: Build WASM
         if: steps.project.outputs.skip != 'true'
-        run: trunk build ${{ steps.build.outputs.path }} --release
+        working-directory: ${{ steps.build.outputs.dir }}
+        run: trunk build --release
 
       - name: Deploy to Cloudflare Pages
         if: steps.project.outputs.skip != 'true'
@@ -111,7 +104,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: s3m2p-previews
-          directory: ${{ steps.build.outputs.dist }}
+          directory: ${{ steps.build.outputs.dir }}/dist
           deploymentName: issue-${{ steps.issue.outputs.number }}-${{ steps.project.outputs.name }}
 
       - name: Post preview URL to issue
