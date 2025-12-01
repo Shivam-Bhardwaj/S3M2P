@@ -45,32 +45,151 @@
         }
         header a:hover { color: #00ffff; }
 
-        #canvas-container {
+        #main-content {
             flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        #simulation-window {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 15, 20, 0.5);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 20px;
+        }
+
+        #canvas-container {
             position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: min(90vh, 800px);
+            max-height: min(90vh, 800px);
+            aspect-ratio: 1;
         }
 
         canvas {
             width: 100%;
             height: 100%;
             display: block;
+            border-radius: 8px;
         }
 
-        #controls {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
+        #controls-panel {
+            width: 280px;
+            flex-shrink: 0;
             background: rgba(10, 15, 20, 0.9);
-            padding: 15px 25px;
-            border-radius: 8px;
+            border-radius: 12px;
             border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
+        }
+
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .control-section h3 {
+            font-size: 0.85rem;
+            color: #00ffff;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .mode-info {
+            font-size: 0.75rem;
+            color: #888;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .about-text {
+            font-size: 0.75rem;
+            color: #777;
+            line-height: 1.5;
+        }
+
+        .about-text a {
+            color: #00ffff;
+            text-decoration: none;
+        }
+
+        .about-text a:hover {
+            text-decoration: underline;
+        }
+
+        .slider-control {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .slider-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: #00ffff;
+            font-size: 0.75rem;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 255, 255, 0.15);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #00ffff;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #00ffff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        #mode-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
         }
 
         .mode-btn {
-            padding: 8px 16px;
+            padding: 10px 12px;
             background: transparent;
             border: 1px solid rgba(0, 255, 255, 0.3);
             color: #00ffff;
@@ -78,6 +197,7 @@
             font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.2s;
+            border-radius: 6px;
         }
 
         .mode-btn:hover {
@@ -90,14 +210,90 @@
             border-color: #00ffff;
         }
 
-        #info {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-family: 'JetBrains Mono', monospace;
+        #info-panel {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 255, 255, 0.1);
+        }
+
+        #info-panel .info-row {
+            display: flex;
+            justify-content: space-between;
             font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        #info-panel .info-value {
+            font-family: 'JetBrains Mono', monospace;
             color: rgba(0, 255, 255, 0.6);
-            text-align: right;
+        }
+
+        .reset-btn {
+            padding: 10px 16px;
+            background: rgba(255, 100, 100, 0.1);
+            border: 1px solid rgba(255, 100, 100, 0.3);
+            color: #ff6464;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 6px;
+        }
+
+        .reset-btn:hover {
+            background: rgba(255, 100, 100, 0.2);
+            border-color: rgba(255, 100, 100, 0.6);
+        }
+
+        @media (max-width: 900px) {
+            #main-content {
+                flex-direction: column;
+                padding: 10px;
+                gap: 10px;
+            }
+            #simulation-window {
+                flex: 1;
+                min-height: 0;
+            }
+            #canvas-container {
+                max-width: 100%;
+                max-height: 100%;
+            }
+            #controls-panel {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 12px;
+                padding: 15px;
+                order: 1;
+            }
+            #simulation-window {
+                order: 0;
+            }
+            .control-section {
+                flex: 1;
+                min-width: 140px;
+            }
+            .control-section h3 {
+                font-size: 0.75rem;
+            }
+            #mode-buttons {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            #info-panel {
+                margin-top: 0;
+                padding-top: 0;
+                border-top: none;
+                display: none;
+            }
+            #about-section {
+                display: none;
+            }
+            .mode-info {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -107,33 +303,105 @@
             <h1>Chladni Patterns</h1>
             <a href="/">← back to too.foo</a>
         </header>
-        <div id="canvas-container">
-            <canvas id="simulation"></canvas>
-            <div id="info">
-                <div>Mode: <span id="mode-display">(3,2)</span></div>
-                <div>Particles: <span id="particle-count">5000</span></div>
+        <div id="main-content">
+            <div id="simulation-window">
+                <div id="canvas-container">
+                    <canvas id="simulation"></canvas>
+                </div>
             </div>
-            <div id="controls">
-                <button class="mode-btn active" data-m="3" data-n="2">(3,2)</button>
-                <button class="mode-btn" data-m="4" data-n="3">(4,3)</button>
-                <button class="mode-btn" data-m="5" data-n="4">(5,4)</button>
-                <button class="mode-btn" data-m="6" data-n="5">(6,5)</button>
-                <button class="mode-btn" data-m="7" data-n="3">(7,3)</button>
+            <div id="controls-panel">
+                <div class="control-section">
+                    <h3>Wave Parameters</h3>
+                    <div class="slider-control">
+                        <div class="slider-label">
+                            <span>Frequency</span>
+                            <span class="slider-value" id="freq-value">1.0x</span>
+                        </div>
+                        <input type="range" id="frequency-slider" min="0.1" max="3.0" step="0.1" value="1.0">
+                    </div>
+                    <div class="slider-control">
+                        <div class="slider-label">
+                            <span>Amplitude</span>
+                            <span class="slider-value" id="amp-value">1.0</span>
+                        </div>
+                        <input type="range" id="amplitude-slider" min="0.1" max="2.0" step="0.1" value="1.0">
+                    </div>
+                </div>
+                <div class="control-section">
+                    <h3>Mode Selection</h3>
+                    <p class="mode-info">Each mode (m,n) creates a unique standing wave pattern. Higher numbers = more complex patterns.</p>
+                    <div id="mode-buttons">
+                        <button class="mode-btn active" data-m="3" data-n="2">(3,2)</button>
+                        <button class="mode-btn" data-m="4" data-n="3">(4,3)</button>
+                        <button class="mode-btn" data-m="5" data-n="4">(5,4)</button>
+                        <button class="mode-btn" data-m="6" data-n="5">(6,5)</button>
+                        <button class="mode-btn" data-m="7" data-n="3">(7,3)</button>
+                        <button class="mode-btn" data-m="8" data-n="5">(8,5)</button>
+                    </div>
+                </div>
+                <div class="control-section">
+                    <h3>Actions</h3>
+                    <button class="reset-btn" id="reset-btn">Reset Particles</button>
+                </div>
+                <div class="control-section" id="about-section">
+                    <h3>About</h3>
+                    <p class="about-text">
+                        Chladni patterns form when a vibrating plate causes particles to collect along nodal lines - regions where the plate doesn't move. Discovered by Ernst Chladni in 1787, these patterns reveal the physics of standing waves.
+                    </p>
+                </div>
+                <div id="info-panel">
+                    <div class="info-row">
+                        <span>Mode</span>
+                        <span class="info-value" id="mode-display">(3,2)</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Particles</span>
+                        <span class="info-value" id="particle-count">5000</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <script>
-        // Mode button handling (Rust will hook into this)
+        // Mode button handling
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 document.getElementById('mode-display').textContent = btn.textContent;
-                // setChladniMode will be exported from Rust
                 if (window.setChladniMode) {
                     window.setChladniMode(parseInt(btn.dataset.m), parseInt(btn.dataset.n));
                 }
             });
+        });
+
+        // Frequency slider
+        const freqSlider = document.getElementById('frequency-slider');
+        const freqValue = document.getElementById('freq-value');
+        freqSlider.addEventListener('input', () => {
+            const val = parseFloat(freqSlider.value);
+            freqValue.textContent = val.toFixed(1) + 'x';
+            if (window.setChladniFrequency) {
+                window.setChladniFrequency(val);
+            }
+        });
+
+        // Amplitude slider
+        const ampSlider = document.getElementById('amplitude-slider');
+        const ampValue = document.getElementById('amp-value');
+        ampSlider.addEventListener('input', () => {
+            const val = parseFloat(ampSlider.value);
+            ampValue.textContent = val.toFixed(1);
+            if (window.setChladniAmplitude) {
+                window.setChladniAmplitude(val);
+            }
+        });
+
+        // Reset button
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            if (window.resetChladniParticles) {
+                window.resetChladniParticles();
+            }
         });
     </script>
 </body>

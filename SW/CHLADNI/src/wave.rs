@@ -37,15 +37,28 @@ impl WaveSimulation {
     }
 
     /// Update wave field for one timestep
-    pub fn update(&mut self, _dt: f32, mode: PlateMode, _wave_speed: f32) {
+    pub fn update(&mut self, dt: f32, mode: PlateMode, wave_speed: f32) {
+        self.update_with_params(dt, mode, wave_speed, 1.0, 1.0);
+    }
+
+    /// Update wave field with frequency scale and amplitude parameters
+    pub fn update_with_params(
+        &mut self,
+        _dt: f32,
+        mode: PlateMode,
+        _wave_speed: f32,
+        frequency_scale: f32,
+        amplitude_scale: f32,
+    ) {
         let w = self.width;
         let h = self.height;
 
         // Calculate Chladni pattern amplitude
         // For a square plate: A_mn(x,y) = sin(m*pi*x/L) * sin(n*pi*y/L)
         let pi = std::f32::consts::PI;
-        let m = mode.m as f32;
-        let n = mode.n as f32;
+        // Apply frequency scale to mode numbers for pattern complexity
+        let m = mode.m as f32 * frequency_scale;
+        let n = mode.n as f32 * frequency_scale;
 
         for y in 0..h {
             for x in 0..w {
@@ -60,8 +73,8 @@ impl WaveSimulation {
                 let mode1 = (m * pi * nx).sin() * (n * pi * ny).sin();
                 let mode2 = (n * pi * nx).sin() * (m * pi * ny).sin();
 
-                // Superposition creates complex Chladni figures
-                self.amplitude[idx] = mode1 + mode2;
+                // Superposition creates complex Chladni figures, scaled by amplitude
+                self.amplitude[idx] = (mode1 + mode2) * amplitude_scale;
 
                 // Energy is proportional to amplitude squared
                 self.energy[idx] = self.amplitude[idx].powi(2);
