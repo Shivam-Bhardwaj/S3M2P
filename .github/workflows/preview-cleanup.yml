@@ -10,6 +10,12 @@ on:
 jobs:
   cleanup:
     runs-on: ubuntu-latest
+    # Only run on issues with project labels
+    if: |
+      github.event_name != 'issues' ||
+      contains(github.event.issue.labels.*.name, 'project:helios') ||
+      contains(github.event.issue.labels.*.name, 'project:too.foo') ||
+      contains(github.event.issue.labels.*.name, 'project:core')
     steps:
       - name: Cleanup preview for closed issue
         if: github.event_name == 'issues'
