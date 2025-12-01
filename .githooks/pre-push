@@ -1,0 +1,17 @@
+#!/bin/bash
+# Pre-push hook: runs tests before pushing
+# Install: git config core.hooksPath .githooks
+
+set -e
+
+echo "=== Pre-push checks ==="
+
+# Run tests
+echo "Running tests..."
+cargo test --workspace
+if [ $? -ne 0 ]; then
+    echo "ERROR: Tests failed. Fix them before pushing."
+    exit 1
+fi
+
+echo "=== Pre-push checks passed ==="

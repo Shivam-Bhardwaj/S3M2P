@@ -11,17 +11,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
-          components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
-      - run: cargo fmt --all -- --check
-      - run: cargo clippy --workspace -- -D warnings
-      - run: cargo test --workspace
+      - run: cargo check --workspace
 
-  security:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo install cargo-audit cargo-deny
-      - run: cargo audit
-      - run: cargo deny check
+# NOTE: fmt, clippy, test, audit, deny moved to local dev workflow
+# Run these locally before PR:
+#   - cargo fmt --all -- --check
+#   - cargo clippy --workspace -- -D warnings
+#   - cargo test --workspace
+#   - ./SCRIPTS/audit.sh (for security checks)

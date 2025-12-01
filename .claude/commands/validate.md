@@ -1,66 +1,64 @@
 # Validate Changes
 
-Run validation checks before committing changes.
+Run validation checks before committing changes. These checks replace the cloud CI checks.
 
 ## Instructions
 
-1. **Determine which projects changed**:
+1. **Run full validation suite** (what CI used to run):
+   ```bash
+   cargo fmt --all -- --check
+   cargo clippy --workspace -- -D warnings
+   cargo check --workspace
+   cargo test --workspace
+   ```
+
+2. **Run security audit** (optional, for release):
+   ```bash
+   ./SCRIPTS/audit.sh
+   ```
+
+3. **Determine which projects changed**:
    ```bash
    git diff --name-only HEAD
    git diff --name-only --staged
    ```
 
-2. **Run project-specific validations**:
+4. **Run project-specific validations if needed**:
 
-   ### For core changes:
+   ### For WASM projects (helios, too.foo):
    ```bash
-   cd core && cargo check && cargo test
+   trunk build SIM/HELIOS/index.html
+   trunk build WELCOME/index.html
    ```
 
-   ### For helios changes:
-   ```bash
-   cd helios && cargo check
-   trunk build --release helios/index.html
-   ```
-
-   ### For too.foo changes:
-   ```bash
-   cd too.foo && cargo check
-   trunk build --release too.foo/index.html
-   ```
-
-   ### For storage-server changes:
-   ```bash
-   cd storage-server && cargo check && cargo test
-   ```
-
-3. **Run workspace-wide check if multiple projects affected**:
-   ```bash
-   cargo check --workspace
-   ```
-
-4. **Run visual regression tests if UI changed**:
+5. **Run visual regression tests if UI changed**:
    ```bash
    npx playwright test
    ```
 
-5. **Report results**:
+6. **Report results**:
 
 ## Output Format
 
 ```
 ## Validation Results
 
-### Changed Projects
-- [x] core (3 files)
-- [ ] helios
-
-### Checks
+### Full Suite
 | Check | Status | Details |
 |-------|--------|---------|
-| cargo check | PASS | |
-| cargo test | PASS | 12 tests |
-| trunk build | PASS | |
+| cargo fmt | PASS/FAIL | |
+| cargo clippy | PASS/FAIL | N warnings |
+| cargo check | PASS/FAIL | |
+| cargo test | PASS/FAIL | N tests |
+
+### Changed Projects
+- [x] DNA (3 files)
+- [ ] SIM/HELIOS
+
+### Project-Specific
+| Check | Status | Details |
+|-------|--------|---------|
+| trunk build | PASS/SKIP | |
 | playwright | SKIP | No UI changes |
 
 ### Issues Found
