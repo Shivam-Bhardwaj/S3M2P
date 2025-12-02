@@ -26,5 +26,41 @@
 </head>
 <body>
     <canvas id="canvas"></canvas>
+
+    <!-- Input panel for crate dimensions -->
+    <div class="input-panel">
+        <h3>AUTOCRATE</h3>
+        <div class="input-group">
+            <label>Length (in)</label>
+            <input type="number" id="length" value="120" min="12" max="130">
+        </div>
+        <div class="input-group">
+            <label>Width (in)</label>
+            <input type="number" id="width" value="120" min="12" max="130">
+        </div>
+        <div class="input-group">
+            <label>Height (in)</label>
+            <input type="number" id="height" value="120" min="12" max="130">
+        </div>
+        <div class="input-group">
+            <label>Weight (lbs)</label>
+            <input type="number" id="weight" value="10000" min="50" max="60000">
+        </div>
+        <div class="input-group">
+            <label>Style</label>
+            <select id="style">
+                <option value="B" selected>Style B (Sheathed)</option>
+                <option value="A">Style A (Open Frame)</option>
+            </select>
+        </div>
+        <button class="generate" id="generate">GENERATE</button>
+        <button class="generate" id="export-step">EXPORT STEP</button>
+    </div>
+
+    <!-- View controls -->
+    <div class="view-controls">
+        <button id="view-3d" class="active">3D</button>
+        <button id="view-2d">2D</button>
+    </div>
 </body>
 </html>

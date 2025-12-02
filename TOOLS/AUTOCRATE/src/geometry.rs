@@ -39,6 +39,15 @@ pub struct BoundingBox {
     pub max: Point3,
 }
 
+impl Default for BoundingBox {
+    fn default() -> Self {
+        Self {
+            min: Point3::new(0.0, 0.0, 0.0),
+            max: Point3::new(0.0, 0.0, 0.0),
+        }
+    }
+}
+
 impl BoundingBox {
     pub fn new(min: Point3, max: Point3) -> Self {
         Self { min, max }
@@ -87,7 +96,7 @@ pub struct CleatGeometry {
 }
 
 /// Panel types
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PanelType {
     Front,
     Back,

@@ -85,3 +85,68 @@ button.generate {
 button.generate:hover {
     background: #2980b9;
 }
+
+button.generate + button.generate {
+    margin-top: 8px;
+    background: #27ae60;
+}
+
+button.generate + button.generate:hover {
+    background: #229954;
+}
+
+.input-panel h3 {
+    color: #3498db;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+}
+
+.input-panel select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #34495e;
+    border-radius: 4px;
+    background: #1a1a2e;
+    color: #ecf0f1;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.input-panel select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+/* View controls */
+.view-controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 8px;
+}
+
+.view-controls button {
+    padding: 8px 16px;
+    background: rgba(20, 20, 30, 0.9);
+    border: 1px solid #2c3e50;
+    border-radius: 4px;
+    color: #95a5a6;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.view-controls button:hover {
+    border-color: #3498db;
+    color: #ecf0f1;
+}
+
+.view-controls button.active {
+    background: #3498db;
+    border-color: #3498db;
+    color: white;
+}

@@ -27,6 +27,10 @@ pub use spatial::*;
 // SHARED UTILITY MODULES (Used by too.foo, helios, future projects)
 // ============================================================================
 
+/// Export utilities (STEP, CAD formats)
+pub mod export;
+pub use export::*;
+
 /// Zone and exclusion area utilities
 pub mod zones;
 pub use zones::*;
