@@ -1,9 +1,0 @@
-[package]
-name = "project_n"
-version = "0.1.0"
-edition = "2021"
-license = "MIT"
-description = "Placeholder for future projects - reserved namespace"
-
-[dependencies]
-# Add dependencies as needed for future projects

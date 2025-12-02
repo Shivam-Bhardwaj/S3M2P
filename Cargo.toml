@@ -1,49 +1,38 @@
 [workspace]
 resolver = "2"
 members = [
-    # DNA - the shared foundation
+    # DNA - Core algorithms + infrastructure
     "DNA",
+    "DNA/SIMULATION_CLI",
+    "DNA/STORAGE_SERVER",
+    "DNA/CLAUDE_AUTOMATION",
 
-    # L1 Bubbles - Main projects (only actual crates)
-    "MCAD/CORE",
-    "MCAD/AUTOCRATE",
-
-    "ECAD/CORE",
-
-    "HELIOS/CORE",
-
-    "SHIVAM/CORE",
-
-    "SIMULATIONS/CORE",
-
-    # Landing page
+    # L1 Bubbles (deployed)
     "WELCOME",
-
-    # Legacy structure (keep for now)
-    "SIM/HELIOS",
-    "SW/CHLADNI",
-    "SW/CRM",
-    "SW/PORTFOLIO",
-    "SW/SENSORS",
-    # Note: SW/AUTOCRATE moved to MCAD/AUTOCRATE
-
-    # Learning platforms
-    "LEARN",
-    # Note: LEARN/ML excluded - separate server app with different deps
-
-    # Blog platform
+    "HELIOS",
     "BLOG",
 
-    # Tools (internal, not deployed)
-    "TOOLS/SIMULATION_CLI",
-    "TOOLS/STORAGE_SERVER",
-    "TOOLS/CLAUDE_AUTOMATION",
+    # Simulations (L2 under Simulations bubble)
+    "SIMULATIONS/CHLADNI",
 
-    # In development
-    "PROJECT_N",
+    # Tools (L2 under Tools bubble)
+    "TOOLS/SENSORS",
+    "TOOLS/AUTOCRATE",
+    "TOOLS/CRM",
+    "TOOLS/PLL",
+    "TOOLS/POWER_CIRCUITS",
+
+    # Learn (L2 under Learn bubble)
+    "LEARN/AI",
+    "LEARN/UBUNTU",
+    "LEARN/OPENCV",
+    "LEARN/ARDUINO",
+    "LEARN/ESP32",
+    "LEARN/SWARM_ROBOTICS",
+    "LEARN/SLAM",
 ]
 # Excluded - different build targets/dependencies
-exclude = ["HW/*", "LEARN/ML"]
+exclude = ["HW/*"]
 
 [workspace.package]
 version = "0.1.0"

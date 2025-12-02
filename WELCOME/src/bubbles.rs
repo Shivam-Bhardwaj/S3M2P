@@ -47,6 +47,7 @@ pub enum BubbleAction {
 pub struct Bubble {
     pub id: &'static str,
     pub label: &'static str,
+    pub description: &'static str,
     pub icon: &'static str,
     pub action: BubbleAction,
 }
@@ -66,6 +67,7 @@ pub const HOME_BUBBLES: &[Bubble] = &[
     Bubble {
         id: "helios",
         label: "Helios",
+        description: "Solar System Visualization",
         icon: "assets/islands/helios.svg",
         action: BubbleAction::DirectProject("https://helios.too.foo"),
     },
@@ -73,6 +75,7 @@ pub const HOME_BUBBLES: &[Bubble] = &[
     Bubble {
         id: "x",
         label: "X",
+        description: "@LazyShivam",
         icon: "assets/islands/x.svg",
         action: BubbleAction::External("https://x.com/LazyShivam"),
     },
@@ -80,6 +83,7 @@ pub const HOME_BUBBLES: &[Bubble] = &[
     Bubble {
         id: "blog",
         label: "Blog",
+        description: "Technical Writing",
         icon: "assets/islands/blog.svg",
         action: BubbleAction::DirectProject("https://blog.too.foo"),
     },
@@ -87,6 +91,7 @@ pub const HOME_BUBBLES: &[Bubble] = &[
     Bubble {
         id: "learn",
         label: "Learn",
+        description: "Tutorials & Courses",
         icon: "assets/islands/learn.svg",
         action: BubbleAction::Category(CategoryId::Learn),
     },
@@ -94,6 +99,7 @@ pub const HOME_BUBBLES: &[Bubble] = &[
     Bubble {
         id: "sims",
         label: "Simulations",
+        description: "Interactive Demos",
         icon: "assets/islands/sims.svg",
         action: BubbleAction::Category(CategoryId::Simulations),
     },
@@ -101,6 +107,7 @@ pub const HOME_BUBBLES: &[Bubble] = &[
     Bubble {
         id: "tools",
         label: "Tools",
+        description: "Engineering Apps",
         icon: "assets/islands/tools.svg",
         action: BubbleAction::Category(CategoryId::Tools),
     },
@@ -108,6 +115,7 @@ pub const HOME_BUBBLES: &[Bubble] = &[
     Bubble {
         id: "about",
         label: "About Me",
+        description: "Coming Soon",
         icon: "assets/islands/about.svg",
         action: BubbleAction::DirectProject("https://portfolio.too.foo"),
     },
@@ -121,14 +129,37 @@ pub const TOOLS_BUBBLES: &[Bubble] = &[
     Bubble {
         id: "sensors",
         label: "Sensors",
+        description: "Mobile Sensor Testing",
         icon: "assets/islands/sensors.svg",
         action: BubbleAction::DirectProject("https://sensors.too.foo"),
     },
     Bubble {
         id: "autocrate",
         label: "AutoCrate",
+        description: "Shipping Crate Generator",
         icon: "assets/islands/automation.svg",
         action: BubbleAction::DirectProject("https://autocrate.too.foo"),
+    },
+    Bubble {
+        id: "crm",
+        label: "CRM",
+        description: "Customer Relations",
+        icon: "assets/islands/tools.svg",
+        action: BubbleAction::DirectProject("https://crm.too.foo"),
+    },
+    Bubble {
+        id: "pll",
+        label: "PLL",
+        description: "Phase Lock Loop Designer",
+        icon: "assets/islands/tools.svg",
+        action: BubbleAction::DirectProject("https://pll.too.foo"),
+    },
+    Bubble {
+        id: "power",
+        label: "Power",
+        description: "Power Circuit Designer",
+        icon: "assets/islands/tools.svg",
+        action: BubbleAction::DirectProject("https://power.too.foo"),
     },
 ];
 
@@ -145,6 +176,7 @@ pub const SIMS_BUBBLES: &[Bubble] = &[
     Bubble {
         id: "chladni",
         label: "Chladni",
+        description: "Wave Pattern Simulation",
         icon: "assets/islands/sims.svg",
         action: BubbleAction::DirectProject("https://chladni.too.foo"),
     },
@@ -162,12 +194,54 @@ pub const SIMS_CATEGORY: Category = Category {
 
 pub const LEARN_BUBBLES: &[Bubble] = &[
     Bubble {
-        id: "ml",
-        label: "ML Curriculum",
-        icon: "assets/islands/ml.svg",
-        action: BubbleAction::DirectProject("https://learn.too.foo"),
+        id: "ai",
+        label: "AI",
+        description: "Machine Learning & Neural Networks",
+        icon: "assets/islands/learn.svg",
+        action: BubbleAction::DirectProject("https://ai.too.foo"),
     },
-    // Future: Rust Course, etc.
+    Bubble {
+        id: "ubuntu",
+        label: "Ubuntu",
+        description: "Linux System Administration",
+        icon: "assets/islands/learn.svg",
+        action: BubbleAction::DirectProject("https://ubuntu.too.foo"),
+    },
+    Bubble {
+        id: "opencv",
+        label: "OpenCV",
+        description: "Computer Vision",
+        icon: "assets/islands/learn.svg",
+        action: BubbleAction::DirectProject("https://opencv.too.foo"),
+    },
+    Bubble {
+        id: "arduino",
+        label: "Arduino",
+        description: "Embedded Systems",
+        icon: "assets/islands/learn.svg",
+        action: BubbleAction::DirectProject("https://arduino.too.foo"),
+    },
+    Bubble {
+        id: "esp32",
+        label: "ESP32",
+        description: "IoT Development",
+        icon: "assets/islands/learn.svg",
+        action: BubbleAction::DirectProject("https://esp32.too.foo"),
+    },
+    Bubble {
+        id: "swarm",
+        label: "Swarm",
+        description: "Multi-Robot Coordination",
+        icon: "assets/islands/learn.svg",
+        action: BubbleAction::DirectProject("https://swarm.too.foo"),
+    },
+    Bubble {
+        id: "slam",
+        label: "SLAM",
+        description: "Localization & Mapping",
+        icon: "assets/islands/learn.svg",
+        action: BubbleAction::DirectProject("https://slam.too.foo"),
+    },
 ];
 
 pub const LEARN_CATEGORY: Category = Category {

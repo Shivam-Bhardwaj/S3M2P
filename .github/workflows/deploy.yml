@@ -94,7 +94,7 @@ jobs:
         with:
           filters: |
             src:
-              - 'SIM/HELIOS/**'
+              - 'HELIOS/**'
               - 'DNA/**'
               - 'Cargo.toml'
               - 'Cargo.lock'
@@ -121,7 +121,7 @@ jobs:
 
       - name: Build with Trunk
         if: steps.filter.outputs.src == 'true' || github.event_name == 'workflow_dispatch'
-        working-directory: ./SIM/HELIOS
+        working-directory: ./HELIOS
         run: trunk build --release
 
       - name: Deploy to Cloudflare Pages
@@ -132,7 +132,7 @@ jobs:
         run: |
           npm install -g wrangler
           npx wrangler pages project create helios-too-foo --production-branch=main 2>/dev/null || true
-          npx wrangler pages deploy SIM/HELIOS/dist --project-name=helios-too-foo --branch=main --commit-dirty=true
+          npx wrangler pages deploy HELIOS/dist --project-name=helios-too-foo --branch=main --commit-dirty=true
 
   deploy-chladni:
     name: Deploy Chladni
@@ -152,7 +152,7 @@ jobs:
         with:
           filters: |
             src:
-              - 'SW/CHLADNI/**'
+              - 'SIMULATIONS/CHLADNI/**'
               - 'DNA/**'
               - 'Cargo.toml'
               - 'Cargo.lock'
@@ -179,7 +179,7 @@ jobs:
 
       - name: Build with Trunk
         if: steps.filter.outputs.src == 'true' || github.event_name == 'workflow_dispatch'
-        working-directory: ./SW/CHLADNI
+        working-directory: ./SIMULATIONS/CHLADNI
         run: trunk build --release
 
       - name: Deploy to Cloudflare Pages
@@ -190,4 +190,4 @@ jobs:
         run: |
           npm install -g wrangler
           npx wrangler pages project create chladni-too-foo --production-branch=main 2>/dev/null || true
-          npx wrangler pages deploy SW/CHLADNI/dist --project-name=chladni-too-foo --branch=main --commit-dirty=true
+          npx wrangler pages deploy SIMULATIONS/CHLADNI/dist --project-name=chladni-too-foo --branch=main --commit-dirty=true

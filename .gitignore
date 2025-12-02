@@ -26,6 +26,10 @@ playwright-report/
 # Logs
 *.log
 
+# Claude automation data (logs, db, pid files)
+TOOLS/CLAUDE_AUTOMATION/.data/
+TOOLS/CLAUDE_AUTOMATION/__pycache__/
+
 # Temp files
 temp/
 

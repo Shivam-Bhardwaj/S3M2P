@@ -264,10 +264,71 @@ fn render_bubbles(document: &Document, bubbles: &[Bubble], show_back: bool) {
         }
     }
 
-    // Calculate positions for circular layout
+    // ============================================
+    // CALCULATE ALL LAYOUT VALUES DYNAMICALLY
+    // ============================================
+
+    let window = web_sys::window().unwrap();
+    let viewport_width = window.inner_width().unwrap().as_f64().unwrap();
+    let viewport_height = window.inner_height().unwrap().as_f64().unwrap();
+
+    // Get telemetry bar height (if exists)
+    let telemetry_height = document
+        .get_element_by_id("telemetry-bar")
+        .and_then(|el| Some(el.get_bounding_client_rect().height()))
+        .unwrap_or(0.0);
+
+    // Available vertical space = viewport - telemetry
+    let available_height = viewport_height - telemetry_height;
+    let available_min = viewport_width.min(available_height);
+
+    // Constellation size = 35% of available space (balanced for mobile/desktop)
+    let constellation_size = available_min * 0.35;
+
+    // Bubble size = 12% of constellation (scales proportionally)
+    let bubble_size = constellation_size * 0.12;
+
+    // Calculate orbit radius based on bubble count
     let bubble_count = bubbles.len();
     let angle_step = std::f64::consts::TAU / bubble_count as f64;
-    let start_angle = -std::f64::consts::FRAC_PI_2; // Start from top (270 degrees)
+    let start_angle = -std::f64::consts::FRAC_PI_2;
+
+    // Minimum radius to prevent overlap: R = W / (2 * sin(π/N)) * padding
+    let min_orbit = if bubble_count > 1 {
+        let half_angle = std::f64::consts::PI / bubble_count as f64;
+        (bubble_size / (2.0 * half_angle.sin())) * 1.4 // 1.4 = spacing factor
+    } else {
+        constellation_size * 0.3 // Single bubble default
+    };
+
+    // Target orbit = 75% of constellation radius (inside circle, near edge)
+    let target_orbit = (constellation_size / 2.0) * 0.75;
+
+    // Use whichever ensures proper spacing
+    let orbit_radius = min_orbit.max(target_orbit);
+
+    // Set ALL CSS variables dynamically
+    constellation
+        .set_attribute(
+            "style",
+            &format!(
+                "--constellation-size: {}px; --bubble-size: {}px; --orbit-radius: {}px;",
+                constellation_size, bubble_size, orbit_radius
+            ),
+        )
+        .ok();
+
+    // Debug log to verify calculations
+    web_sys::console::log_1(&format!(
+        "Layout: viewport={}x{}, available={}, constellation={}, bubble={}, orbit={}",
+        viewport_width as i32,
+        viewport_height as i32,
+        available_min as i32,
+        constellation_size as i32,
+        bubble_size as i32,
+        orbit_radius as i32
+    )
+    .into());
 
     for (i, bubble) in bubbles.iter().enumerate() {
         let angle = start_angle + (i as f64 * angle_step);
@@ -277,9 +338,11 @@ fn render_bubbles(document: &Document, bubbles: &[Bubble], show_back: bool) {
         let link = document.create_element("a").unwrap();
         link.set_class_name("monolith");
 
-        // Set position class with inline transform
+        // Set position with inline transform
+        // Transform chain: rotate to angle → translate outward → rotate back to upright
+        // Also translate by half bubble size to center on orbit point
         let pos_style = format!(
-            "transform: rotate({:.1}deg) translate(var(--orbit-radius)) rotate({:.1}deg);",
+            "transform: translate(-50%, -50%) rotate({:.1}deg) translate(var(--orbit-radius)) rotate({:.1}deg);",
             angle_deg, -angle_deg
         );
         link.set_attribute("style", &pos_style).ok();

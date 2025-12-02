@@ -20,13 +20,18 @@ NC='\033[0m'
 # Project configurations - format: "path:domain:pages-project"
 # pages-project must match the names used in CI (.github/workflows/deploy.yml)
 declare -A PROJECTS=(
+    # L1 Bubbles
     ["welcome"]="WELCOME:too.foo:too-foo"
-    ["helios"]="SIM/HELIOS:helios.too.foo:helios-too-foo"
-    ["chladni"]="SW/CHLADNI:chladni.too.foo:chladni-too-foo"
+    ["helios"]="HELIOS:helios.too.foo:helios-too-foo"
     ["blog"]="BLOG:blog.too.foo:blog-too-foo"
-    ["autocrate"]="SW/AUTOCRATE:autocrate.too.foo:autocrate-too-foo"
-    ["portfolio"]="SW/PORTFOLIO:portfolio.too.foo:portfolio-too-foo"
-    ["crm"]="SW/CRM:crm.too.foo:crm-too-foo"
+
+    # Simulations
+    ["chladni"]="SIMULATIONS/CHLADNI:chladni.too.foo:chladni-too-foo"
+
+    # Tools
+    ["sensors"]="TOOLS/SENSORS:sensors.too.foo:sensors-too-foo"
+    ["autocrate"]="TOOLS/AUTOCRATE:autocrate.too.foo:autocrate-too-foo"
+    ["crm"]="TOOLS/CRM:crm.too.foo:crm-too-foo"
 )
 
 # Parse arguments
@@ -151,12 +156,13 @@ else
     echo ""
     echo "Projects:"
     echo "  all        - Build/deploy all projects"
-    echo "  welcome    - Main landing page -> WELCOME (too.foo)"
-    echo "  helios     - Solar system sim  -> SIM/HELIOS (helios.too.foo)"
-    echo "  chladni    - Wave patterns     -> SW/CHLADNI (chladni.too.foo)"
+    echo "  welcome    - Landing page      -> WELCOME (too.foo)"
+    echo "  helios     - Solar system      -> HELIOS (helios.too.foo)"
+    echo "  chladni    - Wave patterns     -> SIMULATIONS/CHLADNI (chladni.too.foo)"
     echo "  blog       - Blog engine       -> BLOG (blog.too.foo)"
-    echo "  autocrate  - Crate generator   -> SW/AUTOCRATE (autocrate.too.foo)"
-    echo "  portfolio  - Interactive demos -> SW/PORTFOLIO (portfolio.too.foo)"
+    echo "  sensors    - Sensor test       -> TOOLS/SENSORS (sensors.too.foo)"
+    echo "  autocrate  - Crate generator   -> TOOLS/AUTOCRATE (autocrate.too.foo)"
+    echo "  crm        - CRM (coming soon) -> TOOLS/CRM (crm.too.foo)"
     echo ""
     echo "Options:"
     echo "  --publish  - Deploy to Cloudflare Pages after building"

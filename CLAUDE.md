@@ -9,9 +9,9 @@ Deployed to **too.foo**
 |---------|-------------|
 | `cargo check --workspace` | Type check all crates |
 | `cargo test --workspace` | Run all tests |
-| `trunk build SIM/HELIOS/index.html` | Build helios WASM |
+| `trunk build HELIOS/index.html` | Build helios WASM |
 | `trunk build WELCOME/index.html` | Build WELCOME (too.foo) WASM |
-| `trunk serve SIM/HELIOS/index.html` | Dev server for helios |
+| `trunk serve HELIOS/index.html` | Dev server for helios |
 | `./SCRIPTS/deploy.sh welcome --publish` | Deploy too.foo (WELCOME) |
 | `./SCRIPTS/worktree.sh create <issue>` | Create worktree for issue |
 | `./SCRIPTS/audit.sh` | Security audit |
@@ -21,33 +21,33 @@ Deployed to **too.foo**
 ### L1: Main Bubbles (too.foo landing page)
 ```
 S3M2P/
-├── DNA/                    # Core engine (shared foundation)
-├── MCAD/                   # Mechanical CAD + CAM (open-source NX)
-├── ECAD/                   # Electronics CAD (open-source Altium)
-├── HELIOS/                 # Solar system (own bubble)
-├── SIMULATIONS/            # Other simulations
-├── SHIVAM/                 # About Me → shivambhardwaj.com
-├── BLOG/                   # Blog platform
-├── LEARN/                  # Interactive learning
-└── TOOLS/                  # Internal tools
+├── DNA/                    # Core algorithms + infrastructure
+├── WELCOME/                # Landing page (too.foo)
+├── HELIOS/                 # Solar system (helios.too.foo)
+├── SIMULATIONS/            # Simulations (e.g., chladni.too.foo)
+├── TOOLS/                  # User-facing tools (sensors.too.foo, etc.)
+├── LEARN/                  # Learning topics (ai.too.foo, etc.)
+└── BLOG/                   # Blog platform (blog.too.foo)
 ```
 
 ### L2: Projects within each bubble
 ```
-MCAD/
-├── CORE/                   # B-rep kernel (from scratch)
-├── AUTOCRATE/              # Shipping crate generator
-├── GEARS/                  # Gear designer
-├── CFD/                    # Computational Fluid Dynamics (GPU)
-├── STRESS/                 # FEA stress analysis (GPU)
-├── THERMAL/                # Thermal analysis (GPU)
-├── CAM/                    # Toolpath generation
-├── EXPORT/                 # STEP writer (ISO 10303-21)
-├── CLI/                    # sbl-mcad command
-└── WEB/                    # WASM viewer → too.foo/mcad
+DNA/
+├── src/                    # Core simulation algorithms
+├── SIMULATION_CLI/         # CLI for running simulations
+├── STORAGE_SERVER/         # Storage backend
+└── CLAUDE_AUTOMATION/      # GitHub automation
 
-ECAD/
-├── CORE/                   # Schematic + PCB (from scratch)
+SIMULATIONS/
+└── CHLADNI/                # Chladni wave patterns (chladni.too.foo)
+
+TOOLS/
+├── SENSORS/                # Sensor test (sensors.too.foo)
+├── AUTOCRATE/              # Shipping crate generator (autocrate.too.foo)
+└── CRM/                    # CRM (crm.too.foo)
+
+LEARN/
+└── AI/                     # AI tutorials (ai.too.foo)
 ├── POWER_SUPPLY/           # Power circuit designer
 ├── AMPLIFIERS/             # Amplifier designer
 ├── EXPORT/                 # Gerber X2 writer (from scratch)
