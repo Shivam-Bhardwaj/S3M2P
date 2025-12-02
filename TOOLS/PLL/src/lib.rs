@@ -76,7 +76,11 @@ fn setup_input_listeners(document: &Document) -> Result<(), JsValue> {
                 // Sync slider with input value
                 if let Some(slider_elem) = doc_clone.get_element_by_id(&slider_id) {
                     if let Ok(slider) = slider_elem.dyn_into::<HtmlInputElement>() {
-                        if let Ok(input_elem) = doc_clone.get_element_by_id(id).unwrap().dyn_into::<HtmlInputElement>() {
+                        if let Ok(input_elem) = doc_clone
+                            .get_element_by_id(id)
+                            .unwrap()
+                            .dyn_into::<HtmlInputElement>()
+                        {
                             slider.set_value(&input_elem.value());
                         }
                     }
@@ -101,7 +105,11 @@ fn setup_input_listeners(document: &Document) -> Result<(), JsValue> {
                 // Sync input with slider value
                 if let Some(input_elem) = doc_clone.get_element_by_id(&input_id_clone) {
                     if let Ok(input) = input_elem.dyn_into::<HtmlInputElement>() {
-                        if let Ok(slider_elem) = doc_clone.get_element_by_id(&format!("{}-slider", input_id_clone)).unwrap().dyn_into::<HtmlInputElement>() {
+                        if let Ok(slider_elem) = doc_clone
+                            .get_element_by_id(&format!("{}-slider", input_id_clone))
+                            .unwrap()
+                            .dyn_into::<HtmlInputElement>()
+                        {
                             input.set_value(&slider_elem.value());
                         }
                     }
@@ -163,6 +171,10 @@ fn run_design() -> Result<(), JsValue> {
             // Draw Bode plot
             draw_bode_plot(&document, &design.bode_plot)?;
 
+            // Draw new plots
+            draw_phase_noise_plot(&design.phase_noise)?;
+            draw_transient_plot(&design.transient, requirements.output_freq_max_hz)?;
+
             Ok(())
         }
         Err(e) => {
@@ -188,10 +200,7 @@ fn get_input_value(document: &Document, id: &str) -> Result<f64, JsValue> {
         .map_err(|_| JsValue::from_str("Invalid number"))
 }
 
-fn display_results(
-    document: &Document,
-    design: &dna::pll::PLLDesign,
-) -> Result<(), JsValue> {
+fn display_results(document: &Document, design: &dna::pll::PLLDesign) -> Result<(), JsValue> {
     // Hide error message
     if let Some(elem) = document.get_element_by_id("error-msg") {
         let elem: HtmlElement = elem.dyn_into()?;
@@ -213,18 +222,42 @@ fn display_results(
     )?;
 
     // Display loop filter components (find from components vector)
-    let c1 = design.loop_filter.components.iter().find(|c| c.designator == "C1");
-    let r1 = design.loop_filter.components.iter().find(|c| c.designator == "R1");
-    let c2 = design.loop_filter.components.iter().find(|c| c.designator == "C2");
+    let c1 = design
+        .loop_filter
+        .components
+        .iter()
+        .find(|c| c.designator == "C1");
+    let r1 = design
+        .loop_filter
+        .components
+        .iter()
+        .find(|c| c.designator == "R1");
+    let c2 = design
+        .loop_filter
+        .components
+        .iter()
+        .find(|c| c.designator == "C2");
 
     if let Some(c) = c1 {
-        set_text(document, "result-c1", &format!("{:.2} {}", c.actual_value, c.unit))?;
+        set_text(
+            document,
+            "result-c1",
+            &format!("{:.2} {}", c.actual_value, c.unit),
+        )?;
     }
     if let Some(r) = r1 {
-        set_text(document, "result-r1", &format!("{:.0} {}", r.actual_value, r.unit))?;
+        set_text(
+            document,
+            "result-r1",
+            &format!("{:.0} {}", r.actual_value, r.unit),
+        )?;
     }
     if let Some(c) = c2 {
-        set_text(document, "result-c2", &format!("{:.2} {}", c.actual_value, c.unit))?;
+        set_text(
+            document,
+            "result-c2",
+            &format!("{:.2} {}", c.actual_value, c.unit),
+        )?;
     }
 
     // Display performance metrics
@@ -242,6 +275,22 @@ fn display_results(
         document,
         "result-fc",
         &format!("{:.1} kHz", design.performance.crossover_freq_hz / 1e3),
+    )?;
+
+    set_text(
+        document,
+        "result-lock",
+        &format!("{:.1} µs", design.transient.lock_time_us),
+    )?;
+    set_text(
+        document,
+        "result-jitter",
+        &format!("{:.1} fs", design.phase_noise.integrated_jitter_fs),
+    )?;
+    set_text(
+        document,
+        "result-overshoot",
+        &format!("{:.1}%", design.transient.overshoot_percent),
     )?;
 
     // Show results section
@@ -278,8 +327,17 @@ fn draw_schematic(document: &Document, design: &dna::pll::PLLDesign) -> Result<(
     let css_height = rect.height();
 
     // Set actual canvas resolution based on DPR
-    canvas.set_width((css_width * dpr) as u32);
-    canvas.set_height((css_height * dpr) as u32);
+    let target_width = (css_width * dpr) as u32;
+    let target_height = (css_height * dpr) as u32;
+
+    // Robust resize check: only resize if difference is significant (> 2 pixels)
+    // This prevents fighting with the layout engine
+    if (canvas.width() as i32 - target_width as i32).abs() > 2
+        || (canvas.height() as i32 - target_height as i32).abs() > 2
+    {
+        canvas.set_width(target_width);
+        canvas.set_height(target_height);
+    }
 
     let ctx = canvas
         .get_context("2d")?
@@ -324,23 +382,58 @@ fn draw_schematic(document: &Document, design: &dna::pll::PLLDesign) -> Result<(
     ctx.set_text_baseline("middle");
 
     // PFD block
-    draw_block(&ctx, pfd_x, y_center - block_height / 2.0, block_width, block_height, "PFD")?;
+    draw_block(
+        &ctx,
+        pfd_x,
+        y_center - block_height / 2.0,
+        block_width,
+        block_height,
+        "PFD",
+    )?;
 
     // Charge Pump block
-    draw_block(&ctx, cp_x, y_center - block_height / 2.0, block_width, block_height, "Charge\nPump")?;
+    draw_block(
+        &ctx,
+        cp_x,
+        y_center - block_height / 2.0,
+        block_width,
+        block_height,
+        "Charge\nPump",
+    )?;
 
     // Loop Filter block
-    draw_block(&ctx, filter_x, y_center - block_height / 2.0, block_width, block_height, "Loop\nFilter")?;
+    draw_block(
+        &ctx,
+        filter_x,
+        y_center - block_height / 2.0,
+        block_width,
+        block_height,
+        "Loop\nFilter",
+    )?;
 
     // VCO block
-    draw_block(&ctx, vco_x, y_center - block_height / 2.0, block_width, block_height, "VCO")?;
+    draw_block(
+        &ctx,
+        vco_x,
+        y_center - block_height / 2.0,
+        block_width,
+        block_height,
+        "VCO",
+    )?;
 
     // Divider block
     let n_value = match &design.divider_n {
         dna::pll::DividerConfig::IntegerN { n, .. } => format!("÷{}", n),
         dna::pll::DividerConfig::FractionalN { n_int, .. } => format!("÷{}", n_int),
     };
-    draw_block(&ctx, div_x, y_center - block_height / 2.0, block_width, block_height, &n_value)?;
+    draw_block(
+        &ctx,
+        div_x,
+        y_center - block_height / 2.0,
+        block_width,
+        block_height,
+        &n_value,
+    )?;
 
     // Draw forward path connections
     ctx.set_stroke_style(&JsValue::from_str("#606060"));
@@ -368,7 +461,13 @@ fn draw_schematic(document: &Document, design: &dna::pll::PLLDesign) -> Result<(
     ctx.stroke();
 
     // Draw arrow at feedback input to PFD
-    draw_arrow_head(&ctx, pfd_x + block_width / 2.0, y_center + block_height / 2.0, 0.0, -1.0)?;
+    draw_arrow_head(
+        &ctx,
+        pfd_x + block_width / 2.0,
+        y_center + block_height / 2.0,
+        0.0,
+        -1.0,
+    )?;
 
     // Draw reference input
     let ref_x = pfd_x - 60.0;
@@ -376,14 +475,327 @@ fn draw_schematic(document: &Document, design: &dna::pll::PLLDesign) -> Result<(
     ctx.set_fill_style(&JsValue::from_str("#808080"));
     ctx.set_font("12px Monaco");
     ctx.set_text_align("right");
-    ctx.fill_text(&format!("{:.1} MHz", design.requirements.ref_freq_hz / 1e6), ref_x - 10.0, y_center)?;
+    ctx.fill_text(
+        &format!("{:.1} MHz", design.requirements.ref_freq_hz / 1e6),
+        ref_x - 10.0,
+        y_center,
+    )?;
 
     // Draw output
     let out_x = vco_x + block_width + 30.0;
     draw_arrow(&ctx, vco_x + block_width, y_center, out_x, y_center)?;
     ctx.set_text_align("left");
-    let output_freq = (design.requirements.output_freq_min_hz + design.requirements.output_freq_max_hz) / 2.0;
-    ctx.fill_text(&format!("{:.0} MHz", output_freq / 1e6), out_x + 10.0, y_center)?;
+    let output_freq =
+        (design.requirements.output_freq_min_hz + design.requirements.output_freq_max_hz) / 2.0;
+    ctx.fill_text(
+        &format!("{:.0} MHz", output_freq / 1e6),
+        out_x + 10.0,
+        y_center,
+    )?;
+
+    Ok(())
+}
+
+fn draw_phase_noise_plot(profile: &dna::pll::types::PhaseNoiseProfile) -> Result<(), JsValue> {
+    let document = web_sys::window()
+        .ok_or("No window")?
+        .document()
+        .ok_or("No document")?;
+    let canvas = document
+        .get_element_by_id("noise-canvas")
+        .ok_or("Canvas not found")?;
+    let canvas: HtmlCanvasElement = canvas.dyn_into()?;
+
+    // Get CSS dimensions and device pixel ratio
+    let window = web_sys::window().ok_or("No window")?;
+    let dpr = window.device_pixel_ratio();
+
+    let canvas_element: Element = canvas.clone().into();
+    let rect = canvas_element.get_bounding_client_rect();
+    let css_width = rect.width();
+    let css_height = rect.height();
+
+    // Set actual canvas size based on DPR
+    let target_width = (css_width * dpr) as u32;
+    let target_height = (css_height * dpr) as u32;
+
+    if canvas.width() != target_width || canvas.height() != target_height {
+        canvas.set_width(target_width);
+        canvas.set_height(target_height);
+    }
+
+    let ctx = canvas
+        .get_context("2d")?
+        .ok_or("No 2D context")?
+        .dyn_into::<CanvasRenderingContext2d>()?;
+
+    // Reset transform to identity before scaling
+    ctx.set_transform(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)?;
+    // Scale context to match DPR
+    ctx.scale(dpr, dpr)?;
+
+    let width = css_width;
+    let height = css_height;
+
+    // Clear canvas
+    ctx.set_fill_style(&JsValue::from_str("#0a0a12"));
+    ctx.fill_rect(0.0, 0.0, width, height);
+
+    let margin_left = 60.0;
+    let margin_right = 20.0;
+    let margin_top = 20.0;
+    let margin_bottom = 40.0;
+    let plot_width = width - margin_left - margin_right;
+    let plot_height = height - margin_top - margin_bottom;
+
+    if profile.offsets_hz.is_empty() {
+        return Ok(());
+    }
+
+    // Find min/max for auto-scaling
+    let min_offset_log = profile.offsets_hz[0].log10();
+    let max_offset_log = profile.offsets_hz.last().unwrap().log10();
+
+    let min_noise = profile
+        .total_dbc_hz
+        .iter()
+        .fold(f64::INFINITY, |a, &b| a.min(b));
+    let max_noise = profile
+        .total_dbc_hz
+        .iter()
+        .fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+    let noise_range = max_noise - min_noise;
+    let noise_padding = noise_range * 0.1;
+    let y_min = min_noise - noise_padding;
+    let y_max = max_noise + noise_padding;
+
+    let x_to_pixel = |offset_freq: f64| -> f64 {
+        let log_freq = offset_freq.log10();
+        margin_left + ((log_freq - min_offset_log) / (max_offset_log - min_offset_log)) * plot_width
+    };
+
+    let y_to_pixel = |noise_val: f64| -> f64 {
+        margin_top + (1.0 - (noise_val - y_min) / (y_max - y_min)) * plot_height
+    };
+
+    // Draw Grid
+    ctx.set_stroke_style(&JsValue::from_str("rgba(0, 255, 170, 0.1)"));
+    ctx.set_line_width(1.0);
+    ctx.begin_path();
+
+    // X-axis grid (logarithmic)
+    let num_x_labels = 5;
+    for i in 0..=num_x_labels {
+        let log_freq =
+            min_offset_log + (max_offset_log - min_offset_log) * (i as f64 / num_x_labels as f64);
+        let freq = 10f64.powf(log_freq);
+        let x = x_to_pixel(freq);
+        ctx.move_to(x, margin_top);
+        ctx.line_to(x, height - margin_bottom);
+
+        ctx.set_fill_style(&JsValue::from_str("#808080"));
+        ctx.set_text_align("center");
+        let label = if freq >= 1e6 {
+            format!("{:.0}M", freq / 1e6)
+        } else if freq >= 1e3 {
+            format!("{:.0}k", freq / 1e3)
+        } else {
+            format!("{:.0}", freq)
+        };
+        ctx.fill_text(&label, x, height - margin_bottom + 15.0)?;
+    }
+
+    // Y-axis grid
+    let num_y_labels = 5;
+    for i in 0..=num_y_labels {
+        let noise = y_min + (y_max - y_min) * (i as f64 / num_y_labels as f64);
+        let y = y_to_pixel(noise);
+        ctx.move_to(margin_left, y);
+        ctx.line_to(width - margin_right, y);
+
+        ctx.set_fill_style(&JsValue::from_str("#808080"));
+        ctx.set_text_align("right");
+        ctx.fill_text(&format!("{:.0}", noise), margin_left - 10.0, y + 3.0)?;
+    }
+    ctx.stroke();
+
+    // Draw Noise Profile
+    ctx.set_stroke_style(&JsValue::from_str("#00ffaa"));
+    ctx.set_line_width(2.0);
+    ctx.begin_path();
+
+    let mut first = true;
+    for (i, &offset_freq) in profile.offsets_hz.iter().enumerate() {
+        let noise = profile.total_dbc_hz[i];
+        let x = x_to_pixel(offset_freq);
+        let y = y_to_pixel(noise);
+
+        if first {
+            ctx.move_to(x, y);
+            first = false;
+        } else {
+            ctx.line_to(x, y);
+        }
+    }
+    ctx.stroke();
+
+    // Labels
+    ctx.set_fill_style(&JsValue::from_str("#00ffaa"));
+    ctx.set_font("12px Monaco");
+    ctx.set_text_align("left");
+    ctx.fill_text("Phase Noise (dBc/Hz)", margin_left, margin_top - 5.0)?;
+    ctx.set_text_align("center");
+    ctx.fill_text("Offset Frequency (Hz)", width / 2.0, height - 5.0)?;
+
+    Ok(())
+}
+
+fn draw_transient_plot(
+    result: &dna::pll::types::TransientResult,
+    target_freq: f64,
+) -> Result<(), JsValue> {
+    let document = web_sys::window()
+        .ok_or("No window")?
+        .document()
+        .ok_or("No document")?;
+    let canvas = document
+        .get_element_by_id("transient-canvas")
+        .ok_or("Canvas not found")?;
+    let canvas: HtmlCanvasElement = canvas.dyn_into()?;
+
+    // Get CSS dimensions and device pixel ratio
+    let window = web_sys::window().ok_or("No window")?;
+    let dpr = window.device_pixel_ratio();
+
+    let canvas_element: Element = canvas.clone().into();
+    let rect = canvas_element.get_bounding_client_rect();
+    let css_width = rect.width();
+    let css_height = rect.height();
+
+    // Set actual canvas size based on DPR
+    let target_width = (css_width * dpr) as u32;
+    let target_height = (css_height * dpr) as u32;
+
+    if canvas.width() != target_width || canvas.height() != target_height {
+        canvas.set_width(target_width);
+        canvas.set_height(target_height);
+    }
+
+    let ctx = canvas
+        .get_context("2d")?
+        .ok_or("No 2D context")?
+        .dyn_into::<CanvasRenderingContext2d>()?;
+
+    // Reset transform to identity before scaling
+    ctx.set_transform(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)?;
+    // Scale context to match DPR
+    ctx.scale(dpr, dpr)?;
+
+    let width = css_width;
+    let height = css_height;
+
+    // Clear
+    ctx.set_fill_style(&JsValue::from_str("#0a0a12"));
+    ctx.fill_rect(0.0, 0.0, width, height);
+
+    let margin_left = 60.0;
+    let margin_right = 20.0;
+    let margin_top = 20.0;
+    let margin_bottom = 40.0;
+    let plot_width = width - margin_left - margin_right;
+    let plot_height = height - margin_top - margin_bottom;
+
+    if result.time_s.is_empty() {
+        return Ok(());
+    }
+
+    let max_time = *result.time_s.last().unwrap();
+    // Auto-scale Y
+    let min_freq = result.freq_hz.iter().fold(f64::INFINITY, |a, &b| a.min(b));
+    let max_freq = result
+        .freq_hz
+        .iter()
+        .fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+    let freq_range = max_freq - min_freq;
+    let y_min = min_freq - freq_range * 0.1;
+    let y_max = max_freq + freq_range * 0.1;
+
+    let x_to_pixel = |t: f64| -> f64 { margin_left + (t / max_time) * plot_width };
+
+    let y_to_pixel =
+        |f: f64| -> f64 { margin_top + (1.0 - (f - y_min) / (y_max - y_min)) * plot_height };
+
+    // Draw Grid
+    ctx.set_stroke_style(&JsValue::from_str("rgba(0, 255, 170, 0.1)"));
+    ctx.set_line_width(1.0);
+    ctx.begin_path();
+
+    // Time grid (5 divisions)
+    for i in 0..=5 {
+        let t = max_time * (i as f64 / 5.0);
+        let x = x_to_pixel(t);
+        ctx.move_to(x, margin_top);
+        ctx.line_to(x, height - margin_bottom);
+
+        ctx.set_fill_style(&JsValue::from_str("#808080"));
+        ctx.set_text_align("center");
+        ctx.fill_text(
+            &format!("{:.0}µs", t * 1e6),
+            x,
+            height - margin_bottom + 15.0,
+        )?;
+    }
+
+    // Freq grid
+    for i in 0..=5 {
+        let f = y_min + (y_max - y_min) * (i as f64 / 5.0);
+        let y = y_to_pixel(f);
+        ctx.move_to(margin_left, y);
+        ctx.line_to(width - margin_right, y);
+
+        ctx.set_fill_style(&JsValue::from_str("#808080"));
+        ctx.set_text_align("right");
+        ctx.fill_text(&format!("{:.1}M", f / 1e6), margin_left - 10.0, y + 3.0)?;
+    }
+    ctx.stroke();
+
+    // Draw Target Line
+    ctx.set_stroke_style(&JsValue::from_str("rgba(255, 255, 255, 0.3)"));
+    ctx.set_line_dash(&serde_wasm_bindgen::to_value(&vec![5.0, 5.0])?)?;
+    ctx.begin_path();
+    let y_target = y_to_pixel(target_freq);
+    ctx.move_to(margin_left, y_target);
+    ctx.line_to(width - margin_right, y_target);
+    ctx.stroke();
+    ctx.set_line_dash(&serde_wasm_bindgen::to_value(&Vec::<f64>::new())?)?;
+
+    // Draw Response
+    ctx.set_stroke_style(&JsValue::from_str("#00ffaa"));
+    ctx.set_line_width(2.0);
+    ctx.begin_path();
+
+    let mut first = true;
+    for (i, &t) in result.time_s.iter().enumerate() {
+        let f = result.freq_hz[i];
+        let x = x_to_pixel(t);
+        let y = y_to_pixel(f);
+
+        if first {
+            ctx.move_to(x, y);
+            first = false;
+        } else {
+            ctx.line_to(x, y);
+        }
+    }
+    ctx.stroke();
+
+    // Labels
+    ctx.set_fill_style(&JsValue::from_str("#00ffaa"));
+    ctx.set_font("12px Monaco");
+    ctx.set_text_align("left");
+    ctx.fill_text("Output Frequency (Hz)", margin_left, margin_top - 5.0)?;
+    ctx.set_text_align("center");
+    ctx.fill_text("Time (s)", width / 2.0, height - 5.0)?;
 
     Ok(())
 }
@@ -442,9 +854,17 @@ fn draw_rounded_rect(
     ctx.line_to(x + width - radius, y);
     ctx.arc_to(x + width, y, x + width, y + radius, radius).ok();
     ctx.line_to(x + width, y + height - radius);
-    ctx.arc_to(x + width, y + height, x + width - radius, y + height, radius).ok();
+    ctx.arc_to(
+        x + width,
+        y + height,
+        x + width - radius,
+        y + height,
+        radius,
+    )
+    .ok();
     ctx.line_to(x + radius, y + height);
-    ctx.arc_to(x, y + height, x, y + height - radius, radius).ok();
+    ctx.arc_to(x, y + height, x, y + height - radius, radius)
+        .ok();
     ctx.line_to(x, y + radius);
     ctx.arc_to(x, y, x + radius, y, radius).ok();
     ctx.close_path();
@@ -501,10 +921,7 @@ fn draw_arrow_head(
     Ok(())
 }
 
-fn draw_bode_plot(
-    document: &Document,
-    bode: &dna::pll::BodePlot,
-) -> Result<(), JsValue> {
+fn draw_bode_plot(document: &Document, bode: &dna::pll::BodePlot) -> Result<(), JsValue> {
     let canvas = document
         .get_element_by_id("bode-canvas")
         .ok_or("Canvas not found")?;
@@ -520,8 +937,13 @@ fn draw_bode_plot(
     let css_height = rect.height();
 
     // Set actual canvas size based on DPR
-    canvas.set_width((css_width * dpr) as u32);
-    canvas.set_height((css_height * dpr) as u32);
+    let target_width = (css_width * dpr) as u32;
+    let target_height = (css_height * dpr) as u32;
+
+    if canvas.width() != target_width || canvas.height() != target_height {
+        canvas.set_width(target_width);
+        canvas.set_height(target_height);
+    }
 
     let ctx = canvas
         .get_context("2d")?
@@ -602,7 +1024,8 @@ fn draw_magnitude_plot(
 
     for i in 0..=4 {
         let mag = mag_min - mag_padding + (mag_range + 2.0 * mag_padding) * i as f64 / 4.0;
-        let plot_y = y + height - (mag - (mag_min - mag_padding)) / (mag_range + 2.0 * mag_padding) * height;
+        let plot_y =
+            y + height - (mag - (mag_min - mag_padding)) / (mag_range + 2.0 * mag_padding) * height;
 
         ctx.begin_path();
         ctx.move_to(x, plot_y);
@@ -624,7 +1047,8 @@ fn draw_magnitude_plot(
         let freq_max = bode.frequencies_hz[bode.frequencies_hz.len() - 1].log10();
 
         let plot_x = x + (log_freq - freq_min) / (freq_max - freq_min) * width;
-        let plot_y = y + height - (mag - (mag_min - mag_padding)) / (mag_range + 2.0 * mag_padding) * height;
+        let plot_y =
+            y + height - (mag - (mag_min - mag_padding)) / (mag_range + 2.0 * mag_padding) * height;
 
         if i == 0 {
             ctx.move_to(plot_x, plot_y);
@@ -660,11 +1084,7 @@ fn draw_phase_plot(
     ctx.stroke();
 
     // Find phase range
-    let phase_min = bode
-        .phase_deg
-        .iter()
-        .cloned()
-        .fold(f64::INFINITY, f64::min);
+    let phase_min = bode.phase_deg.iter().cloned().fold(f64::INFINITY, f64::min);
     let phase_max = bode
         .phase_deg
         .iter()
@@ -680,8 +1100,10 @@ fn draw_phase_plot(
     ctx.set_font("10px Monaco");
 
     for i in 0..=4 {
-        let phase = phase_min - phase_padding + (phase_range + 2.0 * phase_padding) * i as f64 / 4.0;
-        let plot_y = y + height - (phase - (phase_min - phase_padding)) / (phase_range + 2.0 * phase_padding) * height;
+        let phase =
+            phase_min - phase_padding + (phase_range + 2.0 * phase_padding) * i as f64 / 4.0;
+        let plot_y = y + height
+            - (phase - (phase_min - phase_padding)) / (phase_range + 2.0 * phase_padding) * height;
 
         ctx.begin_path();
         ctx.move_to(x, plot_y);
@@ -717,7 +1139,8 @@ fn draw_phase_plot(
         let log_freq = freq.log10();
 
         let plot_x = x + (log_freq - freq_min) / (freq_max - freq_min) * width;
-        let plot_y = y + height - (phase - (phase_min - phase_padding)) / (phase_range + 2.0 * phase_padding) * height;
+        let plot_y = y + height
+            - (phase - (phase_min - phase_padding)) / (phase_range + 2.0 * phase_padding) * height;
 
         if i == 0 {
             ctx.move_to(plot_x, plot_y);

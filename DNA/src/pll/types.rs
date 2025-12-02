@@ -1,5 +1,35 @@
 use serde::{Deserialize, Serialize};
 
+/// Phase noise components at a specific offset
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct NoiseComponents {
+    pub total_dbc_hz: f64,
+    pub ref_dbc_hz: f64,
+    pub pfd_dbc_hz: f64,
+    pub vco_dbc_hz: f64,
+    pub filter_dbc_hz: f64,
+    pub divider_dbc_hz: f64,
+}
+
+/// Complete phase noise profile
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PhaseNoiseProfile {
+    pub offsets_hz: Vec<f64>,
+    pub total_dbc_hz: Vec<f64>,
+    pub integrated_jitter_fs: f64,
+    pub components: Vec<NoiseComponents>,
+}
+
+/// Results of a transient simulation
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TransientResult {
+    pub time_s: Vec<f64>,
+    pub freq_hz: Vec<f64>,
+    pub phase_error_deg: Vec<f64>,
+    pub lock_time_us: f64,
+    pub overshoot_percent: f64,
+}
+
 /// PLL architecture type
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PLLArchitecture {
@@ -46,7 +76,7 @@ pub enum DividerConfig {
 pub struct FilterComponent {
     pub designator: String,
     pub value: f64,
-    pub actual_value: f64,  // E-series value
+    pub actual_value: f64, // E-series value
     pub unit: String,
     pub tolerance_pct: f64,
 }
@@ -108,6 +138,8 @@ pub struct PLLDesign {
     pub vco_gain_mhz_per_v: f64,
     pub performance: PLLPerformance,
     pub bode_plot: BodePlot,
+    pub phase_noise: PhaseNoiseProfile,
+    pub transient: TransientResult,
 }
 
 /// Validation errors

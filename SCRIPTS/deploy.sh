@@ -32,6 +32,7 @@ declare -A PROJECTS=(
     ["sensors"]="TOOLS/SENSORS:sensors.too.foo:sensors-too-foo"
     ["autocrate"]="TOOLS/AUTOCRATE:autocrate.too.foo:autocrate-too-foo"
     ["crm"]="TOOLS/CRM:crm.too.foo:crm-too-foo"
+    ["pll"]="TOOLS/PLL:pll.too.foo:pll-too-foo"
 )
 
 # Parse arguments

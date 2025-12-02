@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,282 +15,334 @@
 
         body {
             min-height: 100vh;
-            max-height: 100vh;
-            overflow: hidden;
             background: linear-gradient(135deg, #050508 0%, #0a0a12 100%);
-            font-family: 'Monaco', 'Courier New', monospace;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
             color: #e0e0e0;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
+            padding: 1.5rem;
         }
 
         .container {
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 0 auto;
             width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
         }
 
         header {
             text-align: center;
-            margin-bottom: 1rem;
-            flex-shrink: 0;
+            margin-bottom: 2rem;
         }
 
         h1 {
-            font-size: 1.8rem;
+            font-size: 2rem;
             color: #00ffaa;
             text-shadow: 0 0 20px rgba(0, 255, 170, 0.5);
             margin-bottom: 0.25rem;
+            font-weight: 600;
         }
 
         .subtitle {
             color: #808080;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            color: #00ffaa;
+            margin-bottom: 1.25rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
         }
 
         .main-grid {
             display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 1.5rem;
-            flex: 1;
-            min-height: 0;
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+            align-items: start;
         }
 
-        .panel {
-            background: rgba(20, 20, 30, 0.8);
-            border: 1px solid rgba(0, 255, 170, 0.2);
-            border-radius: 8px;
-            padding: 1rem;
-            overflow-y: auto;
-            min-height: 0;
-        }
-
-        .panel h2 {
-            color: #00ffaa;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.4rem;
-            border-bottom: 1px solid rgba(0, 255, 170, 0.3);
+        /* Left Panel - Design Parameters */
+        .panel-left {
+            background: rgba(10, 10, 18, 0.8);
+            border: 1px solid rgba(0, 255, 170, 0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: sticky;
+            top: 1.5rem;
         }
 
         .input-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
         }
 
-        label {
+        .input-group label {
             display: block;
-            color: #b0b0b0;
             font-size: 0.85rem;
-            margin-bottom: 0.4rem;
+            color: #a0a0a0;
+            margin-bottom: 0.5rem;
         }
 
-        input[type="number"] {
-            width: 100%;
-            background: rgba(10, 10, 15, 0.9);
-            border: 1px solid rgba(0, 255, 170, 0.3);
-            border-radius: 4px;
-            padding: 0.6rem;
-            color: #00ffaa;
-            font-family: 'Monaco', monospace;
-            font-size: 0.9rem;
-        }
-
-        input[type="number"]:focus {
-            outline: none;
-            border-color: #00ffaa;
-            box-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
-        }
-
-        .input-with-slider {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .input-with-slider input[type="number"] {
-            flex: 0 0 120px;
-        }
-
-        .slider {
-            flex: 1;
-            height: 6px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: rgba(0, 255, 170, 0.2);
-            border-radius: 3px;
-            outline: none;
-        }
-
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #00ffaa;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(0, 255, 170, 0.5);
-        }
-
-        .slider::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #00ffaa;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 0 10px rgba(0, 255, 170, 0.5);
-        }
-
-        .slider:hover::-webkit-slider-thumb {
-            box-shadow: 0 0 15px rgba(0, 255, 170, 0.8);
-        }
-
-        .slider:hover::-moz-range-thumb {
-            box-shadow: 0 0 15px rgba(0, 255, 170, 0.8);
-        }
-
-        .unit {
-            display: inline-block;
-            margin-left: 0.5rem;
-            color: #808080;
-            font-size: 0.85rem;
+        .input-group .unit {
+            color: #606060;
+            font-size: 0.8rem;
         }
 
         .architecture-select {
             width: 100%;
-            background: rgba(10, 10, 15, 0.9);
+            padding: 0.6rem 0.75rem;
+            background: rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(0, 255, 170, 0.3);
-            border-radius: 4px;
-            padding: 0.6rem;
-            color: #00ffaa;
-            font-family: 'Monaco', monospace;
-            font-size: 0.9rem;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-family: inherit;
+            font-size: 0.85rem;
             cursor: pointer;
         }
 
         .architecture-select:focus {
             outline: none;
             border-color: #00ffaa;
-            box-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
         }
 
-        .architecture-select option {
-            background: #0a0a12;
+        .input-with-slider {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .input-with-slider input[type="number"] {
+            width: 80px;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            border-radius: 6px;
             color: #00ffaa;
+            font-family: inherit;
+            font-size: 0.9rem;
+            text-align: right;
         }
 
-        button {
-            width: 100%;
-            background: linear-gradient(135deg, #00ffaa 0%, #00cc88 100%);
-            border: none;
-            border-radius: 4px;
-            padding: 1rem;
-            color: #0a0a12;
-            font-family: 'Monaco', monospace;
-            font-size: 1rem;
-            font-weight: bold;
+        .input-with-slider input[type="number"]:focus {
+            outline: none;
+            border-color: #00ffaa;
+        }
+
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: rgba(0, 255, 170, 0.2);
+            border-radius: 2px;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 255, 170, 0.4);
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #00ffaa;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0, 255, 170, 0.5);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: #00ffaa;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        #design-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, rgba(0, 255, 170, 0.2), rgba(0, 255, 170, 0.1));
+            border: 1px solid rgba(0, 255, 170, 0.5);
+            border-radius: 8px;
+            color: #00ffaa;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 0.5rem;
+        }
+
+        #design-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 255, 170, 0.3), rgba(0, 255, 170, 0.15));
+            box-shadow: 0 0 20px rgba(0, 255, 170, 0.2);
+        }
+
+        .info-text {
+            margin-top: 1.25rem;
+            font-size: 0.75rem;
+            color: #606060;
+            line-height: 1.5;
         }
 
         #error-msg {
             display: none;
-            background: rgba(255, 50, 50, 0.1);
-            border: 1px solid rgba(255, 50, 50, 0.3);
-            border-radius: 4px;
-            padding: 1rem;
-            color: #ff5555;
+            padding: 0.75rem;
+            background: rgba(255, 100, 100, 0.1);
+            border: 1px solid rgba(255, 100, 100, 0.3);
+            border-radius: 6px;
+            color: #ff6b6b;
+            font-size: 0.85rem;
             margin-bottom: 1rem;
         }
 
-        #results {
-            display: none;
+        /* Right Panel - Results */
+        .panel-right {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .results-section {
+            background: rgba(10, 10, 18, 0.8);
+            border: 1px solid rgba(0, 255, 170, 0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            color: #808080;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.75rem;
-            margin-bottom: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
         }
 
         .result-card {
-            background: rgba(10, 10, 15, 0.6);
-            border: 1px solid rgba(0, 255, 170, 0.2);
-            border-radius: 4px;
-            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 170, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
         }
 
         .result-label {
-            color: #808080;
             font-size: 0.75rem;
-            margin-bottom: 0.4rem;
+            color: #808080;
+            margin-bottom: 0.5rem;
         }
 
         .result-value {
-            color: #00ffaa;
             font-size: 1rem;
-            font-weight: bold;
+            color: #00ffaa;
+            font-weight: 500;
         }
 
-        .section-title {
-            color: #ffaa00;
-            font-size: 0.9rem;
-            margin: 1rem 0 0.75rem 0;
-            padding-bottom: 0.4rem;
-            border-bottom: 1px solid rgba(255, 170, 0, 0.3);
+        /* Block Diagram */
+        .diagram-section {
+            background: rgba(10, 10, 18, 0.8);
+            border: 1px solid rgba(0, 255, 170, 0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
         }
 
-        canvas {
+        #schematic-canvas {
             width: 100%;
-            background: rgba(10, 10, 15, 0.9);
-            border: 1px solid rgba(0, 255, 170, 0.2);
-            border-radius: 4px;
+            height: 180px;
+            display: block;
         }
 
-        .info-text {
+        /* Plots Section */
+        .plots-section {
+            background: rgba(10, 10, 18, 0.8);
+            border: 1px solid rgba(0, 255, 170, 0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(0, 255, 170, 0.2);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
             color: #606060;
-            font-size: 0.75rem;
-            margin-top: 0.75rem;
-            line-height: 1.4;
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
         }
 
-        @media (max-width: 1200px) {
+        .tab-btn:hover {
+            color: #a0a0a0;
+        }
+
+        .tab-btn.active {
+            color: #00ffaa;
+            border-bottom-color: #00ffaa;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content canvas {
+            width: 100%;
+            height: 350px;
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
             .main-grid {
                 grid-template-columns: 1fr;
             }
 
-            body {
-                overflow-y: auto;
-                max-height: none;
+            .panel-left {
+                position: static;
             }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 600px) {
             body {
                 padding: 1rem;
             }
 
             h1 {
-                font-size: 1.8rem;
+                font-size: 1.5rem;
+            }
+
+            .input-with-slider {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .input-with-slider input[type="number"] {
+                width: 100%;
             }
 
             .results-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -298,8 +351,8 @@
         </header>
 
         <div class="main-grid">
-            <!-- Input Panel -->
-            <div class="panel">
+            <!-- Left Panel - Design Parameters -->
+            <div class="panel-left">
                 <h2>Design Parameters</h2>
 
                 <div id="error-msg"></div>
@@ -308,7 +361,7 @@
                     <label for="architecture">PLL Architecture</label>
                     <select id="architecture" class="architecture-select">
                         <option value="IntegerN">Integer-N (Simple, Lower Cost)</option>
-                        <option value="FractionalN">Fractional-N (Finer Resolution, Higher Noise)</option>
+                        <option value="FractionalN">Fractional-N (Finer Resolution)</option>
                     </select>
                 </div>
 
@@ -316,7 +369,8 @@
                     <label for="ref-freq">Reference Frequency <span class="unit">(MHz)</span></label>
                     <div class="input-with-slider">
                         <input type="number" id="ref-freq" value="10" step="0.1" min="0.001" max="100">
-                        <input type="range" id="ref-freq-slider" value="10" step="0.1" min="0.001" max="100" class="slider">
+                        <input type="range" id="ref-freq-slider" value="10" step="0.1" min="0.001" max="100"
+                            class="slider">
                     </div>
                 </div>
 
@@ -324,7 +378,8 @@
                     <label for="output-freq-min">Output Frequency Min <span class="unit">(MHz)</span></label>
                     <div class="input-with-slider">
                         <input type="number" id="output-freq-min" value="2400" step="10" min="100" max="6000">
-                        <input type="range" id="output-freq-min-slider" value="2400" step="10" min="100" max="6000" class="slider">
+                        <input type="range" id="output-freq-min-slider" value="2400" step="10" min="100" max="6000"
+                            class="slider">
                     </div>
                 </div>
 
@@ -332,7 +387,8 @@
                     <label for="output-freq-max">Output Frequency Max <span class="unit">(MHz)</span></label>
                     <div class="input-with-slider">
                         <input type="number" id="output-freq-max" value="2500" step="10" min="100" max="6000">
-                        <input type="range" id="output-freq-max-slider" value="2500" step="10" min="100" max="6000" class="slider">
+                        <input type="range" id="output-freq-max-slider" value="2500" step="10" min="100" max="6000"
+                            class="slider">
                     </div>
                 </div>
 
@@ -340,7 +396,8 @@
                     <label for="loop-bandwidth">Loop Bandwidth <span class="unit">(kHz)</span></label>
                     <div class="input-with-slider">
                         <input type="number" id="loop-bandwidth" value="100" step="1" min="0.1" max="1000">
-                        <input type="range" id="loop-bandwidth-slider" value="100" step="1" min="0.1" max="1000" class="slider">
+                        <input type="range" id="loop-bandwidth-slider" value="100" step="1" min="0.1" max="1000"
+                            class="slider">
                     </div>
                 </div>
 
@@ -348,77 +405,134 @@
                     <label for="phase-margin">Phase Margin <span class="unit">(degrees)</span></label>
                     <div class="input-with-slider">
                         <input type="number" id="phase-margin" value="45" step="1" min="30" max="70">
-                        <input type="range" id="phase-margin-slider" value="45" step="1" min="30" max="70" class="slider">
+                        <input type="range" id="phase-margin-slider" value="45" step="1" min="30" max="70"
+                            class="slider">
                     </div>
                 </div>
 
                 <button id="design-btn">Design PLL</button>
 
                 <p class="info-text">
-                    This tool automatically calculates Integer-N PLL divider ratios,
-                    loop filter component values (E-series), and verifies stability margins.
+                    Automatically calculates divider ratios, loop filter component values (E-series),
+                    and verifies stability margins for your PLL design.
                 </p>
             </div>
 
-            <!-- Results Panel -->
-            <div class="panel" id="results">
-                <h2>Design Results</h2>
+            <!-- Right Panel - Results -->
+            <div class="panel-right" id="results">
+                <!-- Dividers & Loop Filter -->
+                <div class="results-section">
+                    <h2>Design Results</h2>
 
-                <div class="section-title">Divider Configuration</div>
-                <div class="results-grid">
-                    <div class="result-card">
-                        <div class="result-label">Reference Divider</div>
-                        <div class="result-value" id="result-r">-</div>
+                    <div class="section-title">Divider Configuration</div>
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <div class="result-label">Reference Divider</div>
+                            <div class="result-value" id="result-r">R = 1</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">Feedback Divider</div>
+                            <div class="result-value" id="result-n">N = -</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">PFD Frequency</div>
+                            <div class="result-value" id="result-pfd">-</div>
+                        </div>
                     </div>
-                    <div class="result-card">
-                        <div class="result-label">Feedback Divider</div>
-                        <div class="result-value" id="result-n">-</div>
+
+                    <div class="section-title" style="margin-top: 1.5rem;">Loop Filter (2nd Order Passive)</div>
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <div class="result-label">C1 (Integration)</div>
+                            <div class="result-value" id="result-c1">-</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">R1 (Zero)</div>
+                            <div class="result-value" id="result-r1">-</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">C2 (Pole)</div>
+                            <div class="result-value" id="result-c2">-</div>
+                        </div>
                     </div>
-                    <div class="result-card">
-                        <div class="result-label">PFD Frequency</div>
-                        <div class="result-value" id="result-pfd">-</div>
+
+                    <div class="section-title" style="margin-top: 1.5rem;">Performance Metrics</div>
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <div class="result-label">Phase Margin</div>
+                            <div class="result-value" id="result-pm">-</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">Gain Margin</div>
+                            <div class="result-value" id="result-gm">-</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">Bandwidth</div>
+                            <div class="result-value" id="result-fc">-</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">Lock Time</div>
+                            <div class="result-value" id="result-lock">-</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">Integrated Jitter</div>
+                            <div class="result-value" id="result-jitter">-</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">Overshoot</div>
+                            <div class="result-value" id="result-overshoot">-</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="section-title">Loop Filter (2nd Order Passive)</div>
-                <div class="results-grid">
-                    <div class="result-card">
-                        <div class="result-label">C1 (Integration)</div>
-                        <div class="result-value" id="result-c1">-</div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-label">R1 (Zero)</div>
-                        <div class="result-value" id="result-r1">-</div>
-                    </div>
-                    <div class="result-card">
-                        <div class="result-label">C2 (Pole)</div>
-                        <div class="result-value" id="result-c2">-</div>
-                    </div>
+                <!-- Block Diagram -->
+                <div class="diagram-section">
+                    <div class="section-title">Block Diagram</div>
+                    <canvas id="schematic-canvas"></canvas>
                 </div>
 
-                <div class="section-title">Stability Analysis</div>
-                <div class="results-grid">
-                    <div class="result-card">
-                        <div class="result-label">Phase Margin</div>
-                        <div class="result-value" id="result-pm">-</div>
+                <!-- Plots -->
+                <div class="plots-section">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="openTab('bode')">Bode Plot</button>
+                        <button class="tab-btn" onclick="openTab('noise')">Phase Noise</button>
+                        <button class="tab-btn" onclick="openTab('transient')">Transient Response</button>
                     </div>
-                    <div class="result-card">
-                        <div class="result-label">Gain Margin</div>
-                        <div class="result-value" id="result-gm">-</div>
+
+                    <div id="bode" class="tab-content active">
+                        <canvas id="bode-canvas"></canvas>
                     </div>
-                    <div class="result-card">
-                        <div class="result-label">Crossover Frequency</div>
-                        <div class="result-value" id="result-fc">-</div>
+                    <div id="noise" class="tab-content">
+                        <canvas id="noise-canvas"></canvas>
+                    </div>
+                    <div id="transient" class="tab-content">
+                        <canvas id="transient-canvas"></canvas>
                     </div>
                 </div>
-
-                <div class="section-title">Block Diagram</div>
-                <canvas id="schematic-canvas" width="800" height="250"></canvas>
-
-                <div class="section-title">Bode Plot (Open-Loop Response)</div>
-                <canvas id="bode-canvas" width="800" height="400"></canvas>
             </div>
         </div>
     </div>
+
+    <script>
+        function openTab(tabName) {
+            const contents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < contents.length; i++) {
+                contents[i].style.display = "none";
+                contents[i].classList.remove("active");
+            }
+
+            const buttons = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove("active");
+            }
+
+            document.getElementById(tabName).style.display = "block";
+            document.getElementById(tabName).classList.add("active");
+
+            const activeBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabName));
+            if (activeBtn) activeBtn.classList.add("active");
+        }
+    </script>
 </body>
+
 </html>
