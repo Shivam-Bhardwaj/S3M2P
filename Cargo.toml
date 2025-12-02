@@ -14,6 +14,7 @@ members = [
 
     # Simulations (L2 under Simulations bubble)
     "SIMULATIONS/CHLADNI",
+    "SIMULATIONS/POWERLAW",
 
     # Tools (L2 under Tools bubble)
     "TOOLS/SENSORS",

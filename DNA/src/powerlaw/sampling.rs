@@ -60,7 +60,7 @@ impl<const CAPACITY: usize> AliasTable<CAPACITY> {
         let mut sum = 0.0f32;
 
         // Count active entries and sum weights
-        for (i, (&weight, &active)) in weights.iter().zip(mask.iter()).enumerate() {
+        for (&weight, &active) in weights.iter().zip(mask.iter()) {
             if active && weight > 0.0 {
                 sum += weight;
                 self.size += 1;

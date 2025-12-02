@@ -1,0 +1,12 @@
+[[hooks]]
+stage = "pre_build"
+command = "sh"
+command_arguments = ["-c", "echo 'Building power law simulation...'"]
+
+[build]
+target = "index.html"
+dist = "dist"
+
+[serve]
+port = 8080
+open = true

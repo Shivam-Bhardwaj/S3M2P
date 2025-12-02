@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Law Network Simulation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #canvas-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            cursor: crosshair;
+        }
+
+        #sidebar {
+            width: 300px;
+            background: #1a1a1a;
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 1px solid #333;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #00ff88;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin: 20px 0 10px;
+            color: #00cc66;
+        }
+
+        .metric {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: #222;
+            border-radius: 4px;
+        }
+
+        .metric-label {
+            color: #888;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #00ff88;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #00cc66;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-wrapper">
+            <canvas id="canvas"></canvas>
+        </div>
+        <div id="sidebar">
+            <h1>Power Law Networks</h1>
+            <p style="color: #666; font-size: 13px; margin-bottom: 20px;">
+                Visualizing scale-free networks with preferential attachment
+            </p>
+
+            <h2>Controls</h2>
+            <button id="pause">Pause</button>
+            <button id="reset">Reset Network</button>
+            <button id="cascade">Trigger Cascade</button>
+
+            <h2>Network Metrics</h2>
+            <div class="metric">
+                <span class="metric-label">Nodes:</span>
+                <span class="metric-value" id="nodes">0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Edges:</span>
+                <span class="metric-value" id="edges">0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Avg Degree:</span>
+                <span class="metric-value" id="avg-degree">0.0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Max Degree:</span>
+                <span class="metric-value" id="max-degree">0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Alpha (exponent):</span>
+                <span class="metric-value" id="alpha">0.0</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Gini (inequality):</span>
+                <span class="metric-value" id="gini">0.0</span>
+            </div>
+
+            <div class="info">
+                <strong>How it works:</strong><br>
+                • New nodes connect to high-degree nodes (preferential attachment)<br>
+                • Node size = degree (connections)<br>
+                • Color = resource accumulation<br>
+                • Click any node to trigger cascade<br>
+                • Watch hubs emerge naturally!
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import init, { PowerLawSim } from './pkg/powerlaw.js';
+
+        async function run() {
+            await init();
+
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const sim = new PowerLawSim();
+
+            // Resize canvas
+            function resize() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            // UI elements
+            const pauseBtn = document.getElementById('pause');
+            const resetBtn = document.getElementById('reset');
+            const cascadeBtn = document.getElementById('cascade');
+
+            pauseBtn.addEventListener('click', () => {
+                sim.toggle_pause();
+                pauseBtn.textContent = pauseBtn.textContent === 'Pause' ? 'Resume' : 'Pause';
+            });
+
+            resetBtn.addEventListener('click', () => {
+                sim.reset();
+            });
+
+            cascadeBtn.addEventListener('click', () => {
+                // Trigger cascade at random high-degree node
+                const snapshot = sim.get_snapshot();
+                const nodes = snapshot.nodes;
+                if (nodes.length > 0) {
+                    // Find highest degree node
+                    let maxIdx = 0;
+                    let maxDegree = 0;
+                    for (let i = 0; i < nodes.length; i++) {
+                        if (nodes[i].degree > maxDegree) {
+                            maxDegree = nodes[i].degree;
+                            maxIdx = i;
+                        }
+                    }
+                    sim.trigger_cascade(maxIdx);
+                }
+            });
+
+            // Click to trigger cascade
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width * 800;
+                const y = (e.clientY - rect.top) / rect.height * 600;
+
+                const snapshot = sim.get_snapshot();
+                const nodes = snapshot.nodes;
+
+                // Find closest node
+                let closestIdx = -1;
+                let closestDist = Infinity;
+                for (let i = 0; i < nodes.length; i++) {
+                    const dx = nodes[i].x - x;
+                    const dy = nodes[i].y - y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < closestDist && dist < 30) {
+                        closestDist = dist;
+                        closestIdx = i;
+                    }
+                }
+
+                if (closestIdx >= 0) {
+                    sim.trigger_cascade(closestIdx);
+                }
+            });
+
+            // Animation loop
+            let lastTime = performance.now();
+            function frame(time) {
+                const dt = Math.min((time - lastTime) / 1000, 0.1);
+                lastTime = time;
+
+                sim.step(dt);
+                sim.step_cascade(dt);
+
+                const snapshot = sim.get_snapshot();
+                render(snapshot);
+                updateMetrics(snapshot.metrics);
+
+                requestAnimationFrame(frame);
+            }
+
+            function render(snapshot) {
+                const scaleX = canvas.width / 800;
+                const scaleY = canvas.height / 600;
+
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw edges first (behind nodes)
+                ctx.strokeStyle = 'rgba(0, 255, 136, 0.1)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (const [i, j] of snapshot.edges) {
+                    const n1 = snapshot.nodes[i];
+                    const n2 = snapshot.nodes[j];
+                    ctx.moveTo(n1.x * scaleX, n1.y * scaleY);
+                    ctx.lineTo(n2.x * scaleX, n2.y * scaleY);
+                }
+                ctx.stroke();
+
+                // Draw nodes
+                for (const node of snapshot.nodes) {
+                    const x = node.x * scaleX;
+                    const y = node.y * scaleY;
+                    const size = Math.sqrt(node.degree + 1) * 3;
+
+                    // Color based on cascade state and resource
+                    let color;
+                    if (node.state === 1) {
+                        color = '#ff3366'; // Infected
+                    } else if (node.state === 2) {
+                        color = '#6666ff'; // Recovered
+                    } else {
+                        // Gradient from blue (poor) to gold (rich)
+                        const t = Math.min(node.resource / 50, 1);
+                        const r = Math.floor(0 + t * 255);
+                        const g = Math.floor(100 + t * 155);
+                        const b = Math.floor(255 - t * 200);
+                        color = `rgb(${r}, ${g}, ${b})`;
+                    }
+
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Highlight high-degree nodes
+                    if (node.degree > 10) {
+                        ctx.strokeStyle = 'rgba(0, 255, 136, 0.5)';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            function updateMetrics(metrics) {
+                document.getElementById('nodes').textContent = metrics.node_count;
+                document.getElementById('edges').textContent = metrics.edge_count;
+                document.getElementById('avg-degree').textContent = metrics.avg_degree.toFixed(2);
+                document.getElementById('max-degree').textContent = metrics.max_degree;
+                document.getElementById('alpha').textContent = metrics.alpha_estimate.toFixed(2);
+                document.getElementById('gini').textContent = metrics.gini.toFixed(2);
+            }
+
+            requestAnimationFrame(frame);
+        }
+
+        run();
+    </script>
+</body>
+</html>

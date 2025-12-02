@@ -94,7 +94,7 @@ pub struct NetworkArena<const CAPACITY: usize> {
 
 impl<const CAPACITY: usize> NetworkArena<CAPACITY> {
     pub fn new() -> Self {
-        let mut arena = Self {
+        let arena = Self {
             degrees: vec![0; CAPACITY],
             degree_prefix: vec![0; CAPACITY],
             alive: vec![false; CAPACITY],

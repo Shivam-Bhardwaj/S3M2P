@@ -103,14 +103,17 @@ impl BarabasiAlbert {
     }
 
     /// Generate network with specific node properties
-    pub fn generate_with_properties<const N: usize, const E: usize>(
+    pub fn generate_with_properties<const N: usize, const E: usize, F, R>(
         &self,
         network: &mut NetworkArena<N>,
         edges: &mut EdgeArena<N, E>,
         total_nodes: usize,
-        node_props: impl Fn(&mut impl Rng) -> NodeProperties,
-        rng: &mut impl Rng,
-    ) {
+        node_props: F,
+        rng: &mut R,
+    ) where
+        F: Fn(&mut R) -> NodeProperties,
+        R: Rng,
+    {
         // Initial m0 nodes
         let mut handles = Vec::new();
         for _ in 0..self.m0.min(total_nodes).min(N) {

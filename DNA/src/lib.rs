@@ -47,6 +47,9 @@ pub mod random;
 pub mod statistics;
 pub use statistics::*;
 
+/// Power law network effects simulation
+pub mod powerlaw;
+
 /// Color management and theme utilities
 pub mod color;
 pub use color::*;
