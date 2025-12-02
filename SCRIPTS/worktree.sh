@@ -36,6 +36,8 @@ declare -A PROJECT_ALIASES=(
     ["simulation-cli"]="simcli"
     ["simcli"]="simcli"
     ["SIMULATION_CLI"]="simcli"
+    ["pll"]="pll"
+    ["PLL"]="pll"
     ["PROJECT_N"]="projectn"
     ["projectn"]="projectn"
     ["blog"]="blog"
@@ -48,7 +50,7 @@ declare -A PROJECT_ALIASES=(
 )
 
 # Valid projects - UPPERCASE categories/projects
-VALID_PROJECTS="DNA SIM/HELIOS SIM/TOOFOO SW/AUTOCRATE SW/CHLADNI SW/PORTFOLIO TOOLS/SIMULATION_CLI TOOLS/STORAGE_SERVER BLOG LEARN PROJECT_N infra"
+VALID_PROJECTS="DNA SIM/HELIOS SIM/TOOFOO SW/AUTOCRATE SW/CHLADNI SW/PORTFOLIO TOOLS/SIMULATION_CLI TOOLS/STORAGE_SERVER TOOLS/PLL BLOG LEARN PROJECT_N infra"
 
 usage() {
     echo "S3M2P Worktree Manager"
