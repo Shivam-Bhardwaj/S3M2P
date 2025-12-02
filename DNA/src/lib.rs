@@ -47,6 +47,14 @@ pub use statistics::*;
 pub mod color;
 pub use color::*;
 
+/// PLL (Phase-Locked Loop) circuit design
+pub mod pll;
+pub use pll::*;
+
+/// SPICE circuit simulation engine
+pub mod spice;
+pub use spice::*;
+
 // ============================================================================
 // MATH AND FILTERING MODULES
 // ============================================================================
