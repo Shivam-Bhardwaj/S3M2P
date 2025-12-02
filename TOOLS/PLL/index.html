@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PLL - Phase Lock Loop Designer</title>
+    <title>PLL Designer - Phase-Locked Loop Circuit Design Tool</title>
     <link data-trunk rel="rust" href="Cargo.toml" data-wasm-opt="z" />
     <style>
         * {
@@ -11,38 +11,175 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             background: linear-gradient(135deg, #050508 0%, #0a0a12 100%);
             font-family: 'Monaco', 'Courier New', monospace;
             color: #e0e0e0;
-        }
-        .container {
-            text-align: center;
             padding: 2rem;
-            max-width: 600px;
         }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
         h1 {
             font-size: 2.5rem;
-            margin-bottom: 1rem;
             color: #00ffaa;
             text-shadow: 0 0 20px rgba(0, 255, 170, 0.5);
+            margin-bottom: 0.5rem;
         }
-        .description {
+
+        .subtitle {
+            color: #808080;
+            font-size: 1rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .panel {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(0, 255, 170, 0.2);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .panel h2 {
+            color: #00ffaa;
             font-size: 1.2rem;
-            margin-bottom: 2rem;
-            color: #b0b0b0;
-            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(0, 255, 170, 0.3);
         }
-        .status {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            color: #ffaa00;
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            background: rgba(10, 10, 15, 0.9);
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            border-radius: 4px;
+            padding: 0.75rem;
+            color: #00ffaa;
+            font-family: 'Monaco', monospace;
+            font-size: 0.95rem;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #00ffaa;
+            box-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
+        }
+
+        .unit {
+            display: inline-block;
+            margin-left: 0.5rem;
+            color: #808080;
+            font-size: 0.85rem;
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #00ffaa 0%, #00cc88 100%);
+            border: none;
+            border-radius: 4px;
+            padding: 1rem;
+            color: #0a0a12;
+            font-family: 'Monaco', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 170, 0.4);
+        }
+
+        #error-msg {
+            display: none;
+            background: rgba(255, 50, 50, 0.1);
+            border: 1px solid rgba(255, 50, 50, 0.3);
+            border-radius: 4px;
+            padding: 1rem;
+            color: #ff5555;
+            margin-bottom: 1rem;
+        }
+
+        #results {
+            display: none;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-card {
+            background: rgba(10, 10, 15, 0.6);
+            border: 1px solid rgba(0, 255, 170, 0.2);
+            border-radius: 4px;
+            padding: 1rem;
+        }
+
+        .result-label {
+            color: #808080;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            color: #00ffaa;
+            font-size: 1.2rem;
             font-weight: bold;
         }
+
+        .section-title {
+            color: #ffaa00;
+            font-size: 1rem;
+            margin: 1.5rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 170, 0, 0.3);
+        }
+
+        canvas {
+            width: 100%;
+            background: rgba(10, 10, 15, 0.9);
+            border: 1px solid rgba(0, 255, 170, 0.2);
+            border-radius: 4px;
+        }
+
+        .info-text {
+            color: #606060;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            line-height: 1.6;
+        }
+
         .back-link {
             display: inline-block;
             margin-top: 2rem;
@@ -54,29 +191,140 @@
             border-radius: 4px;
             transition: all 0.3s ease;
         }
+
         .back-link:hover {
             background: rgba(0, 255, 170, 0.2);
             border-color: #00ffaa;
         }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
             h1 {
                 font-size: 1.8rem;
             }
-            .description {
-                font-size: 1rem;
+
+            .results-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>PLL Designer</h1>
-        <p class="description">
-            Phase Lock Loop circuit designer for frequency synthesis and clock recovery applications.
-            Design custom PLLs with configurable loop filters, VCOs, and phase detectors.
-        </p>
-        <p class="status">Coming Soon</p>
-        <a href="https://too.foo" class="back-link">← Back to antimony-labs</a>
+        <header>
+            <h1>PLL Designer</h1>
+            <p class="subtitle">Automated Phase-Locked Loop Circuit Design</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Input Panel -->
+            <div class="panel">
+                <h2>Design Parameters</h2>
+
+                <div id="error-msg"></div>
+
+                <div class="input-group">
+                    <label for="ref-freq">Reference Frequency <span class="unit">(MHz)</span></label>
+                    <input type="number" id="ref-freq" value="10" step="0.1" min="0.001">
+                </div>
+
+                <div class="input-group">
+                    <label for="output-freq-min">Output Frequency Min <span class="unit">(MHz)</span></label>
+                    <input type="number" id="output-freq-min" value="2400" step="1" min="1">
+                </div>
+
+                <div class="input-group">
+                    <label for="output-freq-max">Output Frequency Max <span class="unit">(MHz)</span></label>
+                    <input type="number" id="output-freq-max" value="2500" step="1" min="1">
+                </div>
+
+                <div class="input-group">
+                    <label for="loop-bandwidth">Loop Bandwidth <span class="unit">(kHz)</span></label>
+                    <input type="number" id="loop-bandwidth" value="100" step="1" min="0.1">
+                </div>
+
+                <div class="input-group">
+                    <label for="phase-margin">Phase Margin <span class="unit">(degrees)</span></label>
+                    <input type="number" id="phase-margin" value="45" step="1" min="30" max="70">
+                </div>
+
+                <button id="design-btn">Design PLL</button>
+
+                <p class="info-text">
+                    This tool automatically calculates Integer-N PLL divider ratios,
+                    loop filter component values (E-series), and verifies stability margins.
+                </p>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="panel" id="results">
+                <h2>Design Results</h2>
+
+                <div class="section-title">Divider Configuration</div>
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-label">Reference Divider</div>
+                        <div class="result-value" id="result-r">-</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Feedback Divider</div>
+                        <div class="result-value" id="result-n">-</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">PFD Frequency</div>
+                        <div class="result-value" id="result-pfd">-</div>
+                    </div>
+                </div>
+
+                <div class="section-title">Loop Filter (2nd Order Passive)</div>
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-label">C1 (Integration)</div>
+                        <div class="result-value" id="result-c1">-</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">R1 (Zero)</div>
+                        <div class="result-value" id="result-r1">-</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">C2 (Pole)</div>
+                        <div class="result-value" id="result-c2">-</div>
+                    </div>
+                </div>
+
+                <div class="section-title">Stability Analysis</div>
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-label">Phase Margin</div>
+                        <div class="result-value" id="result-pm">-</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Gain Margin</div>
+                        <div class="result-value" id="result-gm">-</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Crossover Frequency</div>
+                        <div class="result-value" id="result-fc">-</div>
+                    </div>
+                </div>
+
+                <div class="section-title">Bode Plot (Open-Loop Response)</div>
+                <canvas id="bode-canvas" width="800" height="500"></canvas>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="https://too.foo" class="back-link">← Back to antimony-labs</a>
+        </div>
     </div>
 </body>
 </html>
