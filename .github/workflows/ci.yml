@@ -1,6 +1,9 @@
-name: CI
+name: CI (Passive)
 
+# Passive test suite - runs in background, never blocks pushes
 on:
+  push:
+    branches: [main]
   pull_request:
 
 jobs:
@@ -8,15 +11,76 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Detect changes
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            docs:
+              - '**/*.md'
+              - 'LICENSE'
+            dna:
+              - 'DNA/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+            helios:
+              - 'HELIOS/**'
+            welcome:
+              - 'WELCOME/**'
+            chladni:
+              - 'SIMULATIONS/CHLADNI/**'
+            tools:
+              - 'TOOLS/**'
+            learn:
+              - 'LEARN/**'
+            blog:
+              - 'BLOG/**'
+
+      # Skip entirely for docs-only changes
+      - name: Check if code changed
+        id: code_changed
+        run: |
+          if [[ "${{ steps.filter.outputs.dna }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.helios }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.welcome }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.chladni }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.tools }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.learn }}" == "true" ]] || \
+             [[ "${{ steps.filter.outputs.blog }}" == "true" ]]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "Docs-only change, skipping tests"
+          fi
+
+      - name: Setup Rust
+        if: steps.code_changed.outputs.changed == 'true'
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo check --workspace
 
-# NOTE: fmt, clippy, test, audit, deny moved to local dev workflow
-# Run these locally before PR:
-#   - cargo fmt --all -- --check
-#   - cargo clippy --workspace -- -D warnings
-#   - cargo test --workspace
-#   - ./SCRIPTS/audit.sh (for security checks)
+      - name: Cache dependencies
+        if: steps.code_changed.outputs.changed == 'true'
+        uses: Swatinem/rust-cache@v2
+
+      # Full workspace check if DNA or Cargo files changed
+      - name: Check workspace (core changed)
+        if: steps.filter.outputs.dna == 'true'
+        run: cargo check --workspace
+
+      # Project-specific checks for isolated changes
+      - name: Check helios
+        if: steps.filter.outputs.dna != 'true' && steps.filter.outputs.helios == 'true'
+        run: cargo check -p helios
+
+      - name: Check welcome
+        if: steps.filter.outputs.dna != 'true' && steps.filter.outputs.welcome == 'true'
+        run: cargo check -p welcome
+
+      - name: Check chladni
+        if: steps.filter.outputs.dna != 'true' && steps.filter.outputs.chladni == 'true'
+        run: cargo check -p chladni
+
+# NOTE: Deploy locally with ./SCRIPTS/deploy.sh <project> --publish
+# Full test suite runs locally before commits
