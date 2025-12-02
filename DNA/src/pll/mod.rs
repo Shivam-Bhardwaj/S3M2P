@@ -1,5 +1,6 @@
 pub mod circuit;
 pub mod components;
+pub mod fractional_n;
 pub mod integer_n;
 pub mod loop_filter;
 pub mod stability;
@@ -20,11 +21,39 @@ pub fn design_pll(requirements: &PLLRequirements) -> Result<PLLDesign, String> {
     // Use center frequency for design
     let output_freq_hz = (requirements.output_freq_min_hz + requirements.output_freq_max_hz) / 2.0;
 
-    // Calculate dividers
-    let (r, n, pfd_freq_hz) = integer_n::calculate_dividers(requirements.ref_freq_hz, output_freq_hz);
+    // Calculate dividers based on architecture
+    let (divider_n, pfd_freq_hz) = match requirements.architecture {
+        PLLArchitecture::IntegerN => {
+            let (r, n, pfd) = integer_n::calculate_dividers(requirements.ref_freq_hz, output_freq_hz);
+            if r != 1 {
+                return Err(format!("Reference divider R={} not supported (only R=1 currently)", r));
+            }
+            (integer_n::create_integer_n_config(n), pfd)
+        }
+        PLLArchitecture::FractionalN => {
+            // Use order-3 sigma-delta modulator for best noise performance
+            let modulator_order = 3;
+            let pfd = requirements.ref_freq_hz; // R=1 for simplicity
+            let (n_int, n_frac, modulus) = fractional_n::calculate_fractional_divider(
+                pfd,
+                output_freq_hz,
+                modulator_order,
+            );
+            (
+                fractional_n::create_fractional_n_config(n_int, n_frac, modulus, modulator_order),
+                pfd,
+            )
+        }
+    };
 
-    // Create divider configuration
-    let divider_n = integer_n::create_integer_n_config(n);
+    let n_effective = match &divider_n {
+        DividerConfig::IntegerN { n, .. } => *n as f64,
+        DividerConfig::FractionalN { n_int, n_frac, modulus, .. } => {
+            *n_int as f64 + (*n_frac as f64 / *modulus as f64)
+        }
+    };
+
+    let r = 1; // Fixed for now
 
     // Typical PLL IC parameters
     let charge_pump_current_ua = 1000.0;  // 1 mA
@@ -34,12 +63,24 @@ pub fn design_pll(requirements: &PLLRequirements) -> Result<PLLDesign, String> {
     let vco_gain_mhz_per_v = 10.0;
     let k_vco = vco_gain_mhz_per_v * 1e6 * 2.0 * PI;  // Convert to rad/s/V
 
+    // Adjust loop bandwidth for fractional-N if needed
+    let loop_bandwidth_hz = match requirements.architecture {
+        PLLArchitecture::IntegerN => requirements.loop_bandwidth_hz,
+        PLLArchitecture::FractionalN => {
+            if let DividerConfig::FractionalN { modulator_order, .. } = &divider_n {
+                fractional_n::adjust_bandwidth_for_fractional(requirements.loop_bandwidth_hz, *modulator_order)
+            } else {
+                requirements.loop_bandwidth_hz
+            }
+        }
+    };
+
     // Design loop filter
-    let omega_c = 2.0 * PI * requirements.loop_bandwidth_hz;
+    let omega_c = 2.0 * PI * loop_bandwidth_hz;
     let (c1, r1, c2) = loop_filter::design_passive_second_order(
         k_phi,
         k_vco,
-        n as f64,
+        n_effective,
         omega_c,
         requirements.phase_margin_deg,
     );
@@ -50,7 +91,7 @@ pub fn design_pll(requirements: &PLLRequirements) -> Result<PLLDesign, String> {
     let bode_plot = stability::generate_bode_plot(
         k_phi,
         k_vco,
-        n as f64,
+        n_effective,
         loop_filter_design.r1_ohms,
         loop_filter_design.c1_pf * 1e-12,
         loop_filter_design.c2_pf * 1e-12,

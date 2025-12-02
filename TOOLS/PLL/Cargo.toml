@@ -22,6 +22,7 @@ features = [
     "Element",
     "HtmlElement",
     "HtmlInputElement",
+    "HtmlSelectElement",
     "HtmlCanvasElement",
     "CanvasRenderingContext2d",
     "Window",

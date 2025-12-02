@@ -1,6 +1,7 @@
 use wasm_bindgen::prelude::*;
 use web_sys::{
     CanvasRenderingContext2d, Document, Element, HtmlCanvasElement, HtmlElement, HtmlInputElement,
+    HtmlSelectElement,
 };
 
 use dna::pll::{design_pll, PLLArchitecture, PLLRequirements};
@@ -44,6 +45,18 @@ fn init_ui() -> Result<(), JsValue> {
 }
 
 fn setup_input_listeners(document: &Document) -> Result<(), JsValue> {
+    // Set up architecture selector listener
+    if let Some(arch_select) = document.get_element_by_id("architecture") {
+        let arch_select: HtmlSelectElement = arch_select.dyn_into()?;
+        let closure = Closure::wrap(Box::new(move || {
+            if let Err(e) = run_design() {
+                web_sys::console::error_1(&format!("Design update failed: {:?}", e).into());
+            }
+        }) as Box<dyn FnMut()>);
+        arch_select.set_onchange(Some(closure.as_ref().unchecked_ref()));
+        closure.forget();
+    }
+
     const INPUT_IDS: &[&str] = &[
         "ref-freq",
         "output-freq-min",
@@ -110,6 +123,16 @@ fn run_design() -> Result<(), JsValue> {
     let window = web_sys::window().ok_or("No window")?;
     let document = window.document().ok_or("No document")?;
 
+    // Read architecture selection
+    let arch_select = document
+        .get_element_by_id("architecture")
+        .ok_or("Architecture selector not found")?;
+    let arch_select: HtmlSelectElement = arch_select.dyn_into()?;
+    let architecture = match arch_select.value().as_str() {
+        "FractionalN" => PLLArchitecture::FractionalN,
+        _ => PLLArchitecture::IntegerN,
+    };
+
     // Read input values
     let ref_freq = get_input_value(&document, "ref-freq")? * 1e6; // MHz to Hz
     let output_freq_min = get_input_value(&document, "output-freq-min")? * 1e6;
@@ -124,7 +147,7 @@ fn run_design() -> Result<(), JsValue> {
         output_freq_max_hz: output_freq_max,
         loop_bandwidth_hz: loop_bandwidth,
         phase_margin_deg: phase_margin,
-        architecture: PLLArchitecture::IntegerN,
+        architecture,
         supply_voltage: 3.3,
     };
 

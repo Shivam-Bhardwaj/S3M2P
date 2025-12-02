@@ -37,6 +37,7 @@ pub enum DividerConfig {
         n_int: u32,
         n_frac: u32,
         modulus: u32,
+        modulator_order: u32,
     },
 }
 
