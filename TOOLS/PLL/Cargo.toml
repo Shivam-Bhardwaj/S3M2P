@@ -27,6 +27,7 @@ features = [
     "Window",
     "MouseEvent",
     "CssStyleDeclaration",
+    "DomRect",
 ]
 
 [profile.release]

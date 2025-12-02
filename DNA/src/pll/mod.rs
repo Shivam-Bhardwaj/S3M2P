@@ -1,3 +1,4 @@
+pub mod circuit;
 pub mod components;
 pub mod integer_n;
 pub mod loop_filter;

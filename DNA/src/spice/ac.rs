@@ -215,6 +215,40 @@ impl ComplexMNAMatrix {
         }
     }
 
+    /// Stamp VCVS (voltage-controlled voltage source)
+    /// This requires adding an auxiliary variable for the current through the VCVS
+    pub fn stamp_vcvs(
+        &mut self,
+        node_out_p: usize,
+        node_out_n: usize,
+        node_ctrl_p: usize,
+        node_ctrl_n: usize,
+        gain: f64,
+        vs_index: usize,
+    ) {
+        let vs_row = self.num_nodes + vs_index;
+
+        // KCL at output nodes (current flows through VCVS)
+        if node_out_p > 0 {
+            self.matrix[node_out_p - 1][vs_row] = self.matrix[node_out_p - 1][vs_row] + Complex::new(1.0, 0.0);
+            self.matrix[vs_row][node_out_p - 1] = self.matrix[vs_row][node_out_p - 1] + Complex::new(1.0, 0.0);
+        }
+        if node_out_n > 0 {
+            self.matrix[node_out_n - 1][vs_row] = self.matrix[node_out_n - 1][vs_row] - Complex::new(1.0, 0.0);
+            self.matrix[vs_row][node_out_n - 1] = self.matrix[vs_row][node_out_n - 1] - Complex::new(1.0, 0.0);
+        }
+
+        // Voltage constraint: V_out = gain * V_ctrl
+        // V_out_p - V_out_n - gain * (V_ctrl_p - V_ctrl_n) = 0
+        let g = Complex::new(gain, 0.0);
+        if node_ctrl_p > 0 {
+            self.matrix[vs_row][node_ctrl_p - 1] = self.matrix[vs_row][node_ctrl_p - 1] - g;
+        }
+        if node_ctrl_n > 0 {
+            self.matrix[vs_row][node_ctrl_n - 1] = self.matrix[vs_row][node_ctrl_n - 1] + g;
+        }
+    }
+
     /// Solve using complex LU decomposition
     pub fn solve(&self) -> Result<Vec<Complex>, String> {
         let mut a = self.matrix.clone();
@@ -334,6 +368,14 @@ pub fn ac_analysis(
                     let ncp = netlist.node_index(node_ctrl_p).unwrap();
                     let ncn = netlist.node_index(node_ctrl_n).unwrap();
                     matrix.stamp_vccs(nop, non, ncp, ncn, *transconductance);
+                }
+                Element::VCVS { node_out_p, node_out_n, node_ctrl_p, node_ctrl_n, gain, .. } => {
+                    let nop = netlist.node_index(node_out_p).unwrap();
+                    let non = netlist.node_index(node_out_n).unwrap();
+                    let ncp = netlist.node_index(node_ctrl_p).unwrap();
+                    let ncn = netlist.node_index(node_ctrl_n).unwrap();
+                    matrix.stamp_vcvs(nop, non, ncp, ncn, *gain, vs_count);
+                    vs_count += 1;
                 }
                 _ => {}
             }
