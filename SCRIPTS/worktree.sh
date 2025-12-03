@@ -12,7 +12,12 @@
 set -e
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-WORKTREE_BASE="$(dirname "$REPO_ROOT")"
+WORKTREE_BASE="$HOME/worktrees"
+
+# Ensure worktree base exists
+if [[ ! -d "$WORKTREE_BASE" ]]; then
+    mkdir -p "$WORKTREE_BASE"
+fi
 
 # Project aliases for branch naming
 declare -A PROJECT_ALIASES=(
@@ -24,6 +29,8 @@ declare -A PROJECT_ALIASES=(
     ["too-foo"]="toofoo"
     ["toofoo"]="toofoo"
     ["TOOFOO"]="toofoo"
+    ["welcome"]="welcome"
+    ["WELCOME"]="welcome"
     ["autocrate"]="autocrate"
     ["AUTOCRATE"]="autocrate"
     ["chladni"]="chladni"
@@ -50,7 +57,7 @@ declare -A PROJECT_ALIASES=(
 )
 
 # Valid projects - UPPERCASE categories/projects
-VALID_PROJECTS="DNA SIM/HELIOS SIM/TOOFOO SW/AUTOCRATE SW/CHLADNI SW/PORTFOLIO TOOLS/SIMULATION_CLI TOOLS/STORAGE_SERVER TOOLS/PLL BLOG LEARN PROJECT_N infra"
+VALID_PROJECTS="DNA SIM/HELIOS SIM/TOOFOO WELCOME SW/AUTOCRATE SW/CHLADNI SW/PORTFOLIO TOOLS/SIMULATION_CLI TOOLS/STORAGE_SERVER TOOLS/PLL BLOG LEARN PROJECT_N infra"
 
 usage() {
     echo "S3M2P Worktree Manager"
@@ -133,7 +140,7 @@ create_worktree() {
     title=$(echo "$issue_json" | jq -r '.title' | sed 's/\[.*\]//' | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-' | sed 's/^-//;s/-$//' | cut -c1-30)
 
     local branch_name="${project}/issue-${issue_num}"
-    local worktree_path="${WORKTREE_BASE}/S3M2P-${project}-${issue_num}"
+    local worktree_path="${WORKTREE_BASE}/${project}-issue-${issue_num}"
 
     echo "Project: $project"
     echo "Branch: $branch_name"

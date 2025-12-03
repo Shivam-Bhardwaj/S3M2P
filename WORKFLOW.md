@@ -11,13 +11,20 @@
 
 ## Development Workflow
 ### 1. Start Work
+**Option A: Manual / Claude Code**
 Always start by picking an issue and creating a worktree.
 ```bash
 work <issue_id>
 # Example: work 42
 ```
+
+**Option B: Agent-Assisted (Gemini/LLM)**
+Paste the GitHub issue description or URL into the agent chat. The agent will:
+1. Run `./SCRIPTS/worktree.sh create <id>`
+2. Set up the environment.
+
 This command:
-- Creates a git worktree: `~/worktrees/issue-42`
+- Creates a git worktree: `~/worktrees/<project>-issue-<id>`
 - Fetches issue details.
 - Opens a dedicated terminal layout (System Monitor, Dev Server, Claude Code).
 

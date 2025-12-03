@@ -40,6 +40,16 @@ Use `./SCRIPTS/dev-serve.sh <project>` to start - it auto-kills any existing pro
 | swarm | 8105 | http://127.0.0.1:8105 | Swarm robotics |
 | slam | 8106 | http://127.0.0.1:8106 | SLAM tutorials |
 
+## Agent Protocol
+
+### Handling New Tasks (Issue Paste)
+When the user pastes a GitHub issue description or URL:
+1.  **Extract Issue ID**: Identify the issue number (e.g., `#42` or from URL).
+2.  **Setup Worktree**: Execute `./SCRIPTS/worktree.sh create <issue_id>`.
+    *   *Note*: This script uses `gh` to fetch details and creates a worktree in `~/worktrees/`.
+3.  **Context Switch**: Instruct the user to `cd` into the new worktree path provided by the script output.
+4.  **Start Work**: Begin analyzing the codebase context *within that new worktree*.
+
 ## Directory Structure
 
 ### L1: Main Bubbles (too.foo landing page)
