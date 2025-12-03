@@ -111,13 +111,13 @@ pub const HOME_BUBBLES: &[Bubble] = &[
         icon: "assets/islands/tools.svg",
         action: BubbleAction::Category(CategoryId::Tools),
     },
-    // 7. About Me (Left) - Direct project
+    // 7. About Me (Left) - LinkedIn profile
     Bubble {
         id: "about",
         label: "About Me",
-        description: "Coming Soon",
+        description: "LinkedIn Profile",
         icon: "assets/islands/about.svg",
-        action: BubbleAction::DirectProject("https://portfolio.too.foo"),
+        action: BubbleAction::External("https://www.linkedin.com/in/shivambdj/"),
     },
 ];
 

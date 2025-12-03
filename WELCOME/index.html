@@ -201,6 +201,34 @@
             color: rgba(0, 255, 255, 0.8);
         }
 
+        /* ============================================
+           CURVED TEXT LABELS (Issue #46)
+           Always visible, wraps around bottom of bubble
+           ============================================ */
+        .bubble-text-arc {
+            position: absolute;
+            pointer-events: none;
+            overflow: visible;
+            z-index: 90;
+        }
+
+        .bubble-text-arc text {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            fill: rgba(255, 255, 255, 0.9);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .bubble-text-arc textPath {
+            /* Inherits from text element */
+        }
+
+        /* Hide the old hover-only label since we now have always-visible curved text */
+        .monolith span {
+            display: none;
+        }
+
         /* Desktop Adjustments */
         @media (min-width: 768px) {
             /* Constellation size handled by viewport units above */

@@ -11,10 +11,34 @@ Deployed to **too.foo**
 | `cargo test --workspace` | Run all tests |
 | `trunk build HELIOS/index.html` | Build helios WASM |
 | `trunk build WELCOME/index.html` | Build WELCOME (too.foo) WASM |
-| `trunk serve HELIOS/index.html` | Dev server for helios |
+| `./SCRIPTS/dev-serve.sh <project>` | Dev server (auto-kills existing) |
 | `./SCRIPTS/deploy.sh welcome --publish` | Deploy too.foo (WELCOME) |
 | `./SCRIPTS/worktree.sh create <issue>` | Create worktree for issue |
 | `./SCRIPTS/audit.sh` | Security audit |
+
+## Dev Server Ports
+
+Each project has a dedicated port to allow multiple services to run simultaneously.
+Use `./SCRIPTS/dev-serve.sh <project>` to start - it auto-kills any existing process on that port.
+
+| Project | Port | URL | Description |
+|---------|------|-----|-------------|
+| welcome | 8080 | http://127.0.0.1:8080 | too.foo landing page |
+| helios | 8081 | http://127.0.0.1:8081 | Solar system |
+| chladni | 8082 | http://127.0.0.1:8082 | Chladni patterns |
+| sensors | 8083 | http://127.0.0.1:8083 | Sensor test |
+| autocrate | 8084 | http://127.0.0.1:8084 | Crate generator |
+| blog | 8085 | http://127.0.0.1:8085 | Blog platform |
+| learn | 8086 | http://127.0.0.1:8086 | Learning hub |
+| pll | 8090 | http://127.0.0.1:8090 | PLL designer |
+| power | 8091 | http://127.0.0.1:8091 | Power circuits |
+| ai | 8100 | http://127.0.0.1:8100 | AI tutorials |
+| ubuntu | 8101 | http://127.0.0.1:8101 | Ubuntu tutorials |
+| opencv | 8102 | http://127.0.0.1:8102 | OpenCV tutorials |
+| arduino | 8103 | http://127.0.0.1:8103 | Arduino tutorials |
+| esp32 | 8104 | http://127.0.0.1:8104 | ESP32 tutorials |
+| swarm | 8105 | http://127.0.0.1:8105 | Swarm robotics |
+| slam | 8106 | http://127.0.0.1:8106 | SLAM tutorials |
 
 ## Directory Structure
 

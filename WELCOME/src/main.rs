@@ -62,6 +62,131 @@ struct ChakravyuZone {
     inward_force: f32, // Used for rush mechanics
 }
 
+// ============================================
+// BUBBLE LAYOUT CALCULATIONS (Issue #46)
+// ============================================
+
+/// All calculated layout values for the bubble constellation
+/// Implements the spacing requirements:
+/// - Text size = 10% of bubble diameter
+/// - Text gap from bubble = 2% of bubble diameter
+/// - Outer margin = 5% of (bubble + text) diameter
+#[derive(Clone, Copy, Debug)]
+struct BubbleLayout {
+    /// Radius of the constellation circle
+    big_circle_radius: f64,
+    /// Radius of each bubble
+    bubble_radius: f64,
+    /// Font size for curved text (10% of diameter)
+    text_size: f64,
+    /// Gap between bubble edge and text (2% of diameter)
+    text_gap: f64,
+    /// Outer margin between bubbles (5% of effective diameter)
+    outer_margin: f64,
+    /// Total radius including bubble + gap + text + margin
+    effective_radius: f64,
+    /// Distance from center to bubble center
+    orbit_radius: f64,
+}
+
+impl BubbleLayout {
+    /// Calculate layout values given viewport and bubble count
+    ///
+    /// Key insight: Each bubble's visual footprint = bubble + gap + text
+    /// This "effective diameter" must be used for ALL spacing calculations.
+    ///
+    /// Constraints:
+    /// 1. orbit_radius + effective_radius <= big_circle_radius (fit inside)
+    /// 2. 2 * orbit_radius * sin(π/N) >= 2 * effective_radius (no overlap)
+    ///
+    /// We solve for bubble_radius that satisfies BOTH constraints.
+    fn calculate(viewport_min: f64, bubble_count: usize) -> Self {
+        // Constellation fills 35% of available space
+        let constellation_size = viewport_min * 0.35;
+        let big_circle_radius = constellation_size / 2.0;
+
+        // Text sizing ratios (as fraction of bubble DIAMETER)
+        let text_size_ratio = 0.10;  // 10% of diameter
+        let text_gap_ratio = 0.08;   // 8% of diameter
+        let edge_margin_ratio = 0.05; // 5% margin from constellation edge
+
+        // effective_radius = bubble_radius + text_gap + text_size
+        //                  = r + (2r * text_gap_ratio) + (2r * text_size_ratio)
+        //                  = r * (1 + 2*0.08 + 2*0.10) = r * 1.36
+        let effective_multiplier = 1.0 + 2.0 * text_gap_ratio + 2.0 * text_size_ratio;
+
+        let bubble_radius = if bubble_count > 1 {
+            let half_angle = std::f64::consts::PI / bubble_count as f64;
+            let sin_half = half_angle.sin();
+
+            // Constraint 1: orbit + effective_radius * (1 + edge_margin) <= big_circle_radius
+            //   orbit <= big_circle_radius - effective_multiplier * r * 1.05
+            //
+            // Constraint 2: orbit >= effective_radius / sin(half_angle)
+            //   orbit >= effective_multiplier * r / sin_half
+            //
+            // For both to be satisfiable:
+            //   effective_multiplier * r / sin_half <= big_circle_radius - effective_multiplier * r * 1.05
+            //   effective_multiplier * r * (1/sin_half + 1.05) <= big_circle_radius
+            //   r <= big_circle_radius / (effective_multiplier * (1/sin_half + 1.05))
+
+            let constraint_factor = 1.0 / sin_half + 1.0 + edge_margin_ratio;
+            let max_radius = big_circle_radius / (effective_multiplier * constraint_factor);
+
+            // Apply practical limits
+            let min_radius = 15.0; // Minimum for usability
+            let max_practical = 55.0; // Maximum to prevent huge bubbles
+
+            max_radius.max(min_radius).min(max_practical)
+        } else {
+            // Single bubble: center it, make it reasonably sized
+            (big_circle_radius * 0.35).min(50.0).max(15.0)
+        };
+
+        // Calculate all derived values from bubble_radius
+        let diameter = bubble_radius * 2.0;
+        let text_size = diameter * text_size_ratio;
+        let text_gap = diameter * text_gap_ratio;
+        let effective_radius = bubble_radius + text_gap + text_size;
+        let outer_margin = effective_radius * edge_margin_ratio;
+
+        // Calculate orbit radius: place bubbles as far out as possible
+        // while keeping effective_radius inside big_circle
+        let orbit_radius = if bubble_count > 1 {
+            big_circle_radius - effective_radius - outer_margin
+        } else {
+            0.0 // Single bubble at center
+        };
+
+        BubbleLayout {
+            big_circle_radius,
+            bubble_radius,
+            text_size,
+            text_gap,
+            outer_margin,
+            effective_radius,
+            orbit_radius,
+        }
+    }
+
+    /// Verify no bubbles overlap (returns true if layout is valid)
+    #[allow(dead_code)]
+    fn validate(&self, bubble_count: usize) -> bool {
+        if bubble_count <= 1 {
+            return true;
+        }
+
+        let angle_step = std::f64::consts::TAU / bubble_count as f64;
+        let min_distance = 2.0 * self.effective_radius + 0.5; // 0.5px epsilon
+
+        // Check distance between adjacent bubbles
+        // d = 2 * orbit * sin(angle_step / 2)
+        let actual_distance = 2.0 * self.orbit_radius * (angle_step / 2.0).sin();
+
+        actual_distance >= min_distance
+    }
+}
+
 /// Update the single-line console log (replaces content)
 fn log_event(document: &Document, msg: &str, event_class: &str) {
     if let Some(console_log) = document.get_element_by_id("console-log") {
@@ -236,6 +361,91 @@ fn is_paused() -> bool {
 // BUBBLE RENDERING
 // ============================================
 
+/// SVG namespace for creating SVG elements
+const SVG_NS: &str = "http://www.w3.org/2000/svg";
+
+/// Create an SVG element with curved text below the bubble
+/// The text follows an arc centered at the bottom of the bubble
+fn create_curved_text_svg(
+    document: &Document,
+    label: &str,
+    layout: &BubbleLayout,
+    index: usize,
+) -> Option<web_sys::Element> {
+    // SVG dimensions - encompasses the bubble plus text area
+    let svg_size = layout.effective_radius * 2.0;
+    let center = svg_size / 2.0;
+
+    // Arc for text: positioned below the bubble
+    // Arc radius = bubble_radius + text_gap + text_size/2 (center of text)
+    let arc_radius = layout.bubble_radius + layout.text_gap + layout.text_size / 2.0;
+
+    // In SVG coords (y increases downward):
+    // - 0° is right, 90° is bottom, 180° is left, 270° is top
+    // - For bottom arc: start at lower-left (~135°), end at lower-right (~45°)
+    // - Arc spans ~90° centered at bottom (6 o'clock position)
+    let arc_start_angle = 135.0_f64.to_radians(); // Lower-left
+    let arc_end_angle = 45.0_f64.to_radians();    // Lower-right
+
+    // Calculate arc endpoints
+    let x1 = center + arc_radius * arc_start_angle.cos();
+    let y1 = center + arc_radius * arc_start_angle.sin();
+    let x2 = center + arc_radius * arc_end_angle.cos();
+    let y2 = center + arc_radius * arc_end_angle.sin();
+
+    // Create SVG element
+    let svg = document
+        .create_element_ns(Some(SVG_NS), "svg")
+        .ok()?;
+    svg.set_attribute("class", "bubble-text-arc").ok();
+    svg.set_attribute("width", &format!("{:.1}", svg_size)).ok();
+    svg.set_attribute("height", &format!("{:.1}", svg_size)).ok();
+    svg.set_attribute(
+        "viewBox",
+        &format!("0 0 {:.1} {:.1}", svg_size, svg_size),
+    )
+    .ok();
+
+    // Create defs for the path
+    let defs = document.create_element_ns(Some(SVG_NS), "defs").ok()?;
+
+    // Create arc path (clockwise arc at bottom of circle)
+    let path = document.create_element_ns(Some(SVG_NS), "path").ok()?;
+    let path_id = format!("text-arc-{}", index);
+    path.set_attribute("id", &path_id).ok();
+
+    // SVG arc: M x1,y1 A rx,ry rotation large-arc sweep x2,y2
+    // large-arc=0 (small arc), sweep=0 (counter-clockwise, goes through bottom)
+    let arc_d = format!(
+        "M {:.2} {:.2} A {:.2} {:.2} 0 0 0 {:.2} {:.2}",
+        x1, y1, arc_radius, arc_radius, x2, y2
+    );
+    path.set_attribute("d", &arc_d).ok();
+    path.set_attribute("fill", "none").ok();
+    defs.append_child(&path).ok();
+    svg.append_child(&defs).ok();
+
+    // Create text element
+    let text = document.create_element_ns(Some(SVG_NS), "text").ok()?;
+    text.set_attribute("font-size", &format!("{:.1}", layout.text_size)).ok();
+
+    // Create textPath referencing our arc
+    let text_path = document
+        .create_element_ns(Some(SVG_NS), "textPath")
+        .ok()?;
+    text_path
+        .set_attribute("href", &format!("#{}", path_id))
+        .ok();
+    text_path.set_attribute("startOffset", "50%").ok();
+    text_path.set_attribute("text-anchor", "middle").ok();
+    text_path.set_text_content(Some(label));
+
+    text.append_child(&text_path).ok();
+    svg.append_child(&text).ok();
+
+    Some(svg)
+}
+
 /// Clear existing bubbles and render new ones
 fn render_bubbles(document: &Document, bubbles: &[Bubble], show_back: bool) {
     let constellation = match document.get_element_by_id("constellation") {
@@ -243,10 +453,16 @@ fn render_bubbles(document: &Document, bubbles: &[Bubble], show_back: bool) {
         None => return,
     };
 
-    // Remove existing bubbles (but keep center-core)
+    // Remove existing bubbles and text arcs
     let monoliths = document.get_elements_by_class_name("monolith");
     while monoliths.length() > 0 {
         if let Some(el) = monoliths.item(0) {
+            el.remove();
+        }
+    }
+    let text_arcs = document.get_elements_by_class_name("bubble-text-arc");
+    while text_arcs.length() > 0 {
+        if let Some(el) = text_arcs.item(0) {
             el.remove();
         }
     }
@@ -265,7 +481,7 @@ fn render_bubbles(document: &Document, bubbles: &[Bubble], show_back: bool) {
     }
 
     // ============================================
-    // CALCULATE ALL LAYOUT VALUES DYNAMICALLY
+    // CALCULATE LAYOUT USING NEW ALGORITHM (Issue #46)
     // ============================================
 
     let window = web_sys::window().unwrap();
@@ -282,51 +498,44 @@ fn render_bubbles(document: &Document, bubbles: &[Bubble], show_back: bool) {
     let available_height = viewport_height - telemetry_height;
     let available_min = viewport_width.min(available_height);
 
-    // Constellation size = 35% of available space (balanced for mobile/desktop)
-    let constellation_size = available_min * 0.35;
-
-    // Bubble size = 12% of constellation (scales proportionally)
-    let bubble_size = constellation_size * 0.12;
-
-    // Calculate orbit radius based on bubble count
+    // Calculate layout using new algorithm
     let bubble_count = bubbles.len();
+    let layout = BubbleLayout::calculate(available_min, bubble_count);
+
+    // Derived values for positioning
+    let constellation_size = layout.big_circle_radius * 2.0;
+    let bubble_size = layout.bubble_radius * 2.0;
+    let orbit_radius = layout.orbit_radius;
+
     let angle_step = std::f64::consts::TAU / bubble_count as f64;
     let start_angle = -std::f64::consts::FRAC_PI_2;
 
-    // Minimum radius to prevent overlap: R = W / (2 * sin(π/N)) * padding
-    let min_orbit = if bubble_count > 1 {
-        let half_angle = std::f64::consts::PI / bubble_count as f64;
-        (bubble_size / (2.0 * half_angle.sin())) * 1.4 // 1.4 = spacing factor
-    } else {
-        constellation_size * 0.3 // Single bubble default
-    };
+    // Calculate vertical offset to center the visual mass
+    // Each bubble's visual center is shifted down by (text_gap + text_size)
+    // So we shift the entire constellation UP by that full amount
+    let vertical_offset = layout.text_gap + layout.text_size;
 
-    // Target orbit = 75% of constellation radius (inside circle, near edge)
-    let target_orbit = (constellation_size / 2.0) * 0.75;
-
-    // Use whichever ensures proper spacing
-    let orbit_radius = min_orbit.max(target_orbit);
-
-    // Set ALL CSS variables dynamically
+    // Set CSS variables dynamically, including the vertical offset
     constellation
         .set_attribute(
             "style",
             &format!(
-                "--constellation-size: {}px; --bubble-size: {}px; --orbit-radius: {}px;",
-                constellation_size, bubble_size, orbit_radius
+                "--constellation-size: {:.1}px; --bubble-size: {:.1}px; --orbit-radius: {:.1}px; --text-size: {:.1}px; transform: translate(-50%, -50%) translateY(-{:.1}px);",
+                constellation_size, bubble_size, orbit_radius, layout.text_size, vertical_offset
             ),
         )
         .ok();
 
     // Debug log to verify calculations
     web_sys::console::log_1(&format!(
-        "Layout: viewport={}x{}, available={}, constellation={}, bubble={}, orbit={}",
+        "Layout: viewport={}x{}, constellation={:.0}, bubble_r={:.1}, text={:.1}, orbit={:.1}, effective_r={:.1}",
         viewport_width as i32,
         viewport_height as i32,
-        available_min as i32,
-        constellation_size as i32,
-        bubble_size as i32,
-        orbit_radius as i32
+        constellation_size,
+        layout.bubble_radius,
+        layout.text_size,
+        orbit_radius,
+        layout.effective_radius
     )
     .into());
 
@@ -334,13 +543,15 @@ fn render_bubbles(document: &Document, bubbles: &[Bubble], show_back: bool) {
         let angle = start_angle + (i as f64 * angle_step);
         let angle_deg = angle.to_degrees();
 
+        // Calculate bubble position in pixels (for SVG positioning)
+        let bubble_x = constellation_size / 2.0 + orbit_radius * angle.cos();
+        let bubble_y = constellation_size / 2.0 + orbit_radius * angle.sin();
+
         // Create the bubble element
         let link = document.create_element("a").unwrap();
         link.set_class_name("monolith");
 
         // Set position with inline transform
-        // Transform chain: rotate to angle → translate outward → rotate back to upright
-        // Also translate by half bubble size to center on orbit point
         let pos_style = format!(
             "transform: translate(-50%, -50%) rotate({:.1}deg) translate(var(--orbit-radius)) rotate({:.1}deg);",
             angle_deg, -angle_deg
@@ -369,13 +580,22 @@ fn render_bubbles(document: &Document, bubbles: &[Bubble], show_back: bool) {
         img.set_attribute("alt", bubble.label).ok();
         link.append_child(&img).ok();
 
-        // Add label
-        let span = document.create_element("span").unwrap();
-        span.set_text_content(Some(bubble.label));
-        link.append_child(&span).ok();
-
         // Add to constellation
         constellation.append_child(&link).ok();
+
+        // Create and position SVG curved text
+        if let Some(svg) = create_curved_text_svg(document, bubble.label, &layout, i) {
+            let svg_size = layout.effective_radius * 2.0;
+            let svg_style = format!(
+                "left: {:.1}px; top: {:.1}px; width: {:.1}px; height: {:.1}px;",
+                bubble_x - svg_size / 2.0,
+                bubble_y - svg_size / 2.0,
+                svg_size,
+                svg_size
+            );
+            svg.set_attribute("style", &svg_style).ok();
+            constellation.append_child(&svg).ok();
+        }
     }
 }
 
