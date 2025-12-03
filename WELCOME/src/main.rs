@@ -101,8 +101,18 @@ impl BubbleLayout {
     ///
     /// We solve for bubble_radius that satisfies BOTH constraints.
     fn calculate(viewport_min: f64, bubble_count: usize) -> Self {
-        // Constellation fills 35% of available space
-        let constellation_size = viewport_min * 0.35;
+        // Responsive constellation sizing:
+        // - Mobile (< 600px): 80% of viewport for better readability
+        // - Tablet (600-1024px): 60% of viewport
+        // - Desktop (> 1024px): 45% of viewport
+        let size_ratio = if viewport_min < 600.0 {
+            0.80  // Mobile: large bubbles for touch targets
+        } else if viewport_min < 1024.0 {
+            0.60  // Tablet: medium
+        } else {
+            0.45  // Desktop: smaller, more elegant
+        };
+        let constellation_size = viewport_min * size_ratio;
         let big_circle_radius = constellation_size / 2.0;
 
         // Text sizing ratios (as fraction of bubble DIAMETER)
