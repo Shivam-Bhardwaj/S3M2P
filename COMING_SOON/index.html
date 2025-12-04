@@ -64,9 +64,9 @@
 
     .subtitle {
       font-size: 15px;
-      color: #00ffff;
+      color: #0088ff;
       margin-bottom: 40px;
-      opacity: 0.7;
+      opacity: 0.9;
       letter-spacing: 2px;
       text-transform: uppercase;
     }
@@ -121,8 +121,8 @@
       bottom: 25px;
       right: 25px;
       font-size: 10px;
-      color: #00ffff;
-      opacity: 0.3;
+      color: #0088ff;
+      opacity: 0.5;
       text-align: right;
       z-index: 10;
       letter-spacing: 1px;
@@ -182,6 +182,9 @@
         <div class="rule-text">
           "Wander. Stick when you touch. Die when you're old."
         </div>
+        <div class="rule-text" style="margin-top: 12px; color: #ff6600;">
+          Helping others increases the odds for everyone to win.
+        </div>
       </div>
     </div>
 
@@ -212,60 +215,19 @@
     const MAX_AGE = 400;
     const DECAY_START = 200;
 
-    function hslToRgb(h, s, l) {
-      let r, g, b;
-      if (s === 0) {
-        r = g = b = l;
-      } else {
-        const hue2rgb = (p, q, t) => {
-          if (t < 0) t += 1;
-          if (t > 1) t -= 1;
-          if (t < 1/6) return p + (q - p) * 6 * t;
-          if (t < 1/2) return q;
-          if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-          return p;
-        };
-        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        const p = 2 * l - q;
-        r = hue2rgb(p, q, h + 1/3);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1/3);
-      }
-      return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-    }
+    // Two colors only: bright orange and bright blue (high contrast)
+    const ORANGE = '#ff6600';
+    const BLUE = '#0088ff';
 
     function getColor(age) {
       const t = age / MAX_AGE;
 
-      // Young: bright orange (30°) → mature: cyan (180°) → old: dim blue (220°)
-      let hue, sat, light;
-
-      if (t < 0.15) {
-        // Newborn: bright orange/yellow
-        hue = 30 / 360;
-        sat = 1.0;
-        light = 0.6;
-      } else if (t < 0.4) {
-        // Growing: orange to cyan transition
-        const p = (t - 0.15) / 0.25;
-        hue = (30 + p * 150) / 360;
-        sat = 0.9;
-        light = 0.5;
-      } else if (t < 0.7) {
-        // Mature: cyan
-        hue = 180 / 360;
-        sat = 0.8;
-        light = 0.45;
+      // Young cells: orange | Old cells: blue
+      if (t < 0.5) {
+        return ORANGE;
       } else {
-        // Dying: fade to dark blue
-        const p = (t - 0.7) / 0.3;
-        hue = (180 + p * 40) / 360;
-        sat = 0.6 - p * 0.4;
-        light = 0.45 - p * 0.35;
+        return BLUE;
       }
-
-      const [r, g, b] = hslToRgb(hue, sat, light);
-      return `rgb(${r},${g},${b})`;
     }
 
     function resize() {
@@ -425,11 +387,11 @@
             ctx.fillStyle = getColor(age);
             ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
 
-            // Glow for young cells
-            if (age < 30) {
-              ctx.fillStyle = 'rgba(255, 150, 50, 0.15)';
+            // Glow for young cells (orange glow)
+            if (age < 50) {
+              ctx.fillStyle = 'rgba(255, 102, 0, 0.2)';
               ctx.beginPath();
-              ctx.arc(x * SCALE + SCALE/2, y * SCALE + SCALE/2, SCALE * 3, 0, Math.PI * 2);
+              ctx.arc(x * SCALE + SCALE/2, y * SCALE + SCALE/2, SCALE * 4, 0, Math.PI * 2);
               ctx.fill();
             }
           }
