@@ -11,29 +11,9 @@ use wasm_bindgen::JsCast;
 use web_sys::{window, HtmlCanvasElement, WebGl2RenderingContext};
 
 pub mod renderer;
-pub mod wave;
 
+pub use wave_engine::{ChladniMode, PlateMode, WaveSimulation};
 pub use renderer::WaveRenderer;
-pub use wave::{ChladniMode, WaveSimulation};
-
-/// Chladni plate modes (m, n) - defines the vibration pattern
-#[derive(Clone, Copy, Debug)]
-pub struct PlateMode {
-    pub m: u32, // Horizontal mode number
-    pub n: u32, // Vertical mode number
-}
-
-impl PlateMode {
-    pub fn new(m: u32, n: u32) -> Self {
-        Self { m, n }
-    }
-
-    /// Calculate frequency for a square plate
-    /// f_mn = C * (m^2 + n^2) where C depends on plate properties
-    pub fn frequency(&self, plate_constant: f32) -> f32 {
-        plate_constant * ((self.m * self.m + self.n * self.n) as f32)
-    }
-}
 
 /// Configuration for the wave simulation
 #[derive(Clone, Debug)]
@@ -412,7 +392,8 @@ fn start_animation_loop() -> Result<(), JsValue> {
                 // Handle canvas resize
                 let container_width = app.canvas.client_width() as u32;
                 let container_height = app.canvas.client_height() as u32;
-                if container_width != app.canvas.width() || container_height != app.canvas.height() {
+                if container_width != app.canvas.width() || container_height != app.canvas.height()
+                {
                     if container_width > 0 && container_height > 0 {
                         app.canvas.set_width(container_width);
                         app.canvas.set_height(container_height);

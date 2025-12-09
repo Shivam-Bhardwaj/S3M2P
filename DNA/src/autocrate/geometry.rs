@@ -1,6 +1,6 @@
 // Geometry types for crate components
 
-use crate::LumberSize;
+use super::constants::LumberSize;
 use glam::Vec3;
 use serde::{Deserialize, Serialize};
 

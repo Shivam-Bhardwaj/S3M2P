@@ -4,6 +4,9 @@
 //! LAYER: DNA → PHYSICS → ELECTROMAGNETICS
 //! ═══════════════════════════════════════════════════════════════════════════════
 
+/// Lumped circuit element simulation (SPICE-like)
+pub mod lumped;
+pub use lumped::*;
+
 // pub mod maxwell;  // TODO: Maxwell's equations
 // pub mod fdtd;     // TODO: Finite Difference Time Domain
-// pub mod lumped;   // TODO: Lumped circuit elements (migrate spice/)

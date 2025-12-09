@@ -1,0 +1,12 @@
+[package]
+name = "cad-engine"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+dna.workspace = true
+glam.workspace = true
+serde.workspace = true
+
+[lints]
+workspace = true

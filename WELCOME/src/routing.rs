@@ -11,6 +11,8 @@ pub enum Route {
     Home,
     /// Category page - shows sub-bubbles for a category
     Category(CategoryId),
+    /// Architecture diagram view
+    Architecture,
 }
 
 impl Route {
@@ -20,6 +22,7 @@ impl Route {
             "#/tools" => Route::Category(CategoryId::Tools),
             "#/sims" => Route::Category(CategoryId::Simulations),
             "#/learn" => Route::Category(CategoryId::Learn),
+            "#/arch" => Route::Architecture,
             _ => Route::Home,
         }
     }
@@ -29,6 +32,7 @@ impl Route {
         match self {
             Route::Home => "",
             Route::Category(id) => id.hash_route(),
+            Route::Architecture => "#/arch",
         }
     }
 }

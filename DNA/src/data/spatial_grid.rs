@@ -45,8 +45,8 @@ pub struct UniformGrid<const CELL_CAPACITY: usize> {
     cell_size: f32,
     cols: usize,
     rows: usize,
-    width: f32,
-    height: f32,
+    _width: f32,
+    _height: f32,
     /// Each cell stores up to CELL_CAPACITY entity indices
     cells: Vec<[u16; CELL_CAPACITY]>,
     /// Number of entities in each cell
@@ -69,8 +69,8 @@ impl<const CELL_CAPACITY: usize> UniformGrid<CELL_CAPACITY> {
             cell_size,
             cols,
             rows,
-            width,
-            height,
+            _width: width,
+            _height: height,
             cells: vec![[0; CELL_CAPACITY]; num_cells],
             cell_counts: vec![0; num_cells],
         }
@@ -101,14 +101,8 @@ impl<const CELL_CAPACITY: usize> UniformGrid<CELL_CAPACITY> {
     /// Query entities within radius of (x, y)
     ///
     /// Writes results to output buffer, returns count.
-    pub fn query_radius(
-        &self,
-        x: f32,
-        y: f32,
-        radius: f32,
-        output: &mut [u16],
-    ) -> usize {
-        let radius_sq = radius * radius;
+    pub fn query_radius(&self, x: f32, y: f32, radius: f32, output: &mut [u16]) -> usize {
+        let _radius_sq = radius * radius;
         let mut count = 0;
 
         // Check 3x3 neighborhood of cells

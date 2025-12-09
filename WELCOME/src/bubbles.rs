@@ -22,6 +22,7 @@ impl CategoryId {
     }
 
     /// Returns human-readable title
+    #[allow(dead_code)]
     pub fn title(&self) -> &'static str {
         match self {
             CategoryId::Tools => "Tools",
@@ -45,8 +46,10 @@ pub enum BubbleAction {
 /// A single bubble in the navigation
 #[derive(Clone, Copy, Debug)]
 pub struct Bubble {
+    #[allow(dead_code)]
     pub id: &'static str,
     pub label: &'static str,
+    #[allow(dead_code)]
     pub description: &'static str,
     pub icon: &'static str,
     pub action: BubbleAction,
@@ -54,6 +57,7 @@ pub struct Bubble {
 
 /// A category page containing sub-bubbles
 pub struct Category {
+    #[allow(dead_code)]
     pub id: CategoryId,
     pub bubbles: &'static [Bubble],
 }

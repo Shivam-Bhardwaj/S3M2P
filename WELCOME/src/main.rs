@@ -1,11 +1,11 @@
 #![allow(unexpected_cfgs)]
 
-use dna::{
+use glam::Vec2;
+use simulation_engine::{
     apply_predator_zones, compute_diversity, compute_flocking_forces, feed_from_sources,
     get_boid_color, simulation_step, trigger_mass_extinction, BoidArena, BoidRole, BoidState,
     FoodSource, Genome, Obstacle, PredatorZone, SeasonCycle, SimConfig, SpatialGrid,
 };
-use glam::Vec2;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
@@ -22,6 +22,9 @@ mod bubbles;
 mod routing;
 use bubbles::{get_category, Bubble, BubbleAction, CategoryId, HOME_BUBBLES};
 use routing::{get_current_route, navigate_home, Route};
+
+mod arch_diagram;
+use arch_diagram::render_architecture_diagram;
 
 /// Type alias for the animation frame closure pattern
 type AnimationCallback = Rc<RefCell<Option<Closure<dyn FnMut()>>>>;
@@ -82,6 +85,7 @@ struct BubbleLayout {
     /// Gap between bubble edge and text (2% of diameter)
     text_gap: f64,
     /// Outer margin between bubbles (5% of effective diameter)
+    #[allow(dead_code)]
     outer_margin: f64,
     /// Total radius including bubble + gap + text + margin
     effective_radius: f64,
@@ -106,18 +110,18 @@ impl BubbleLayout {
         // - Tablet (600-1024px): 60% of viewport
         // - Desktop (> 1024px): 45% of viewport
         let size_ratio = if viewport_min < 600.0 {
-            0.80  // Mobile: large bubbles for touch targets
+            0.80 // Mobile: large bubbles for touch targets
         } else if viewport_min < 1024.0 {
-            0.60  // Tablet: medium
+            0.60 // Tablet: medium
         } else {
-            0.45  // Desktop: smaller, more elegant
+            0.45 // Desktop: smaller, more elegant
         };
         let constellation_size = viewport_min * size_ratio;
         let big_circle_radius = constellation_size / 2.0;
 
         // Text sizing ratios (as fraction of bubble DIAMETER)
-        let text_size_ratio = 0.10;  // 10% of diameter
-        let text_gap_ratio = 0.08;   // 8% of diameter
+        let text_size_ratio = 0.10; // 10% of diameter
+        let text_gap_ratio = 0.08; // 8% of diameter
         let edge_margin_ratio = 0.05; // 5% margin from constellation edge
 
         // effective_radius = bubble_radius + text_gap + text_size
@@ -228,7 +232,10 @@ fn update_commit_info(document: &Document) {
         };
 
         // GitHub commit URL
-        let commit_url = format!("https://github.com/Shivam-Bhardwaj/S3M2P/commit/{}", COMMIT_HASH);
+        let commit_url = format!(
+            "https://github.com/Shivam-Bhardwaj/S3M2P/commit/{}",
+            COMMIT_HASH
+        );
 
         // Update link
         commit_link.set_attribute("href", &commit_url).ok();
@@ -395,7 +402,7 @@ fn create_curved_text_svg(
     // - For bottom arc: start at lower-left (~135°), end at lower-right (~45°)
     // - Arc spans ~90° centered at bottom (6 o'clock position)
     let arc_start_angle = 135.0_f64.to_radians(); // Lower-left
-    let arc_end_angle = 45.0_f64.to_radians();    // Lower-right
+    let arc_end_angle = 45.0_f64.to_radians(); // Lower-right
 
     // Calculate arc endpoints
     let x1 = center + arc_radius * arc_start_angle.cos();
@@ -404,17 +411,13 @@ fn create_curved_text_svg(
     let y2 = center + arc_radius * arc_end_angle.sin();
 
     // Create SVG element
-    let svg = document
-        .create_element_ns(Some(SVG_NS), "svg")
-        .ok()?;
+    let svg = document.create_element_ns(Some(SVG_NS), "svg").ok()?;
     svg.set_attribute("class", "bubble-text-arc").ok();
     svg.set_attribute("width", &format!("{:.1}", svg_size)).ok();
-    svg.set_attribute("height", &format!("{:.1}", svg_size)).ok();
-    svg.set_attribute(
-        "viewBox",
-        &format!("0 0 {:.1} {:.1}", svg_size, svg_size),
-    )
-    .ok();
+    svg.set_attribute("height", &format!("{:.1}", svg_size))
+        .ok();
+    svg.set_attribute("viewBox", &format!("0 0 {:.1} {:.1}", svg_size, svg_size))
+        .ok();
 
     // Create defs for the path
     let defs = document.create_element_ns(Some(SVG_NS), "defs").ok()?;
@@ -437,12 +440,11 @@ fn create_curved_text_svg(
 
     // Create text element
     let text = document.create_element_ns(Some(SVG_NS), "text").ok()?;
-    text.set_attribute("font-size", &format!("{:.1}", layout.text_size)).ok();
+    text.set_attribute("font-size", &format!("{:.1}", layout.text_size))
+        .ok();
 
     // Create textPath referencing our arc
-    let text_path = document
-        .create_element_ns(Some(SVG_NS), "textPath")
-        .ok()?;
+    let text_path = document.create_element_ns(Some(SVG_NS), "textPath").ok()?;
     text_path
         .set_attribute("href", &format!("#{}", path_id))
         .ok();
@@ -480,13 +482,9 @@ fn render_bubbles(document: &Document, bubbles: &[Bubble], show_back: bool) {
     // Show/hide back button
     if let Some(back_btn) = document.get_element_by_id("back-button") {
         if show_back {
-            back_btn
-                .set_attribute("style", "display: flex;")
-                .ok();
+            back_btn.set_attribute("style", "display: flex;").ok();
         } else {
-            back_btn
-                .set_attribute("style", "display: none;")
-                .ok();
+            back_btn.set_attribute("style", "display: none;").ok();
         }
     }
 
@@ -575,7 +573,26 @@ fn render_bubbles(document: &Document, bubbles: &[Bubble], show_back: bool) {
                 link.set_attribute("target", "_blank").ok();
             }
             BubbleAction::DirectProject(url) => {
-                link.set_attribute("href", url).ok();
+                // Use relative protocol to support both http and https
+                // If we are on localhost, we might want to use port-based URLs
+                // But for now, let's assume the URL provided in bubbles.rs is correct
+                // or we can make it relative if it's a subdomain.
+
+                // Check if we are in dev mode (localhost/127.0.0.1)
+                let window = web_sys::window().unwrap();
+                let hostname = window.location().hostname().unwrap_or_default();
+
+                let final_url = if hostname == "localhost" || hostname == "127.0.0.1" {
+                    // In dev mode, we might need to map subdomains to ports if not using a proxy
+                    // But if the user set up /etc/hosts, subdomains work.
+                    // If they use ports, we need a mapping.
+                    // For now, let's trust the URL but ensure it's protocol-relative
+                    url.to_string()
+                } else {
+                    url.to_string()
+                };
+
+                link.set_attribute("href", &final_url).ok();
             }
             BubbleAction::Category(cat_id) => {
                 let hash = cat_id.hash_route();
@@ -611,21 +628,79 @@ fn render_bubbles(document: &Document, bubbles: &[Bubble], show_back: bool) {
 
 /// Render the home page bubbles
 fn render_home(document: &Document) {
+    // Ensure center bubble is present
+    render_center_bubble(document);
     render_bubbles(document, HOME_BUBBLES, false);
 }
 
 /// Render a category page
 fn render_category(document: &Document, category_id: CategoryId) {
     let category = get_category(category_id);
+    // Ensure center bubble is present
+    render_center_bubble(document);
     render_bubbles(document, category.bubbles, true);
 }
 
 /// Handle route changes
 fn handle_route_change(document: &Document) {
     let route = get_current_route();
+
+    // Toggle containers
+    let arch_container = document.get_element_by_id("arch-container");
+    let back_button = document.get_element_by_id("back-button");
+
+    if let Some(container) = arch_container {
+        if matches!(route, Route::Architecture) {
+            container.set_attribute("style", "display: flex; position: fixed; inset: 0; background: rgba(5, 5, 8, 0.95); z-index: 5000; justify-content: center; align-items: center;").ok();
+            // Hide back button in arch view (or handle custom back)
+            if let Some(btn) = back_button {
+                btn.set_attribute("style", "display: flex; z-index: 5001;")
+                    .ok();
+            }
+        } else {
+            container.set_attribute("style", "display: none;").ok();
+        }
+    }
+
     match route {
         Route::Home => render_home(document),
         Route::Category(cat_id) => render_category(document, cat_id),
+        Route::Architecture => render_architecture_diagram(document),
+    }
+}
+
+/// Render the central Antimony bubble
+fn render_center_bubble(document: &Document) {
+    let center_core = match document.get_element_by_id("center-core") {
+        Some(el) => el,
+        None => return,
+    };
+
+    // Clear previous content (except text container which we want to keep/manage)
+    // Actually, let's just append the image if it doesn't exist.
+    if document.get_element_by_id("antimony-bubble").is_some() {
+        return;
+    }
+
+    // Create the Antimony Bubble Image
+    let img = document.create_element("img").unwrap();
+    img.set_id("antimony-bubble");
+    img.set_attribute("src", "assets/islands/antimony.svg").ok();
+    img.set_attribute("alt", "Antimony Architecture").ok();
+
+    // Click -> Navigate to Architecture
+    let on_click = Closure::wrap(Box::new(move || {
+        routing::navigate_to(Route::Architecture);
+    }) as Box<dyn FnMut()>);
+    img.add_event_listener_with_callback("click", on_click.as_ref().unchecked_ref())
+        .ok();
+    on_click.forget();
+
+    // Insert before text container
+    if let Some(text_container) = document.get_element_by_id("center-text-container") {
+        center_core.insert_before(&img, Some(&text_container)).ok();
+    } else {
+        center_core.append_child(&img).ok();
     }
 }
 
@@ -1547,26 +1622,32 @@ fn main() {
             let text = "::रागद्वेषवियुक्तैस्तु::void* // <आत्मवश्यैर्विधेयात्मा>; // fn(प्रसादमधिगच्छति) -> Peace";
 
             // Draw text in a circle
-            let radius = chakravyu.radius as f64 - 10.0;
-            let chars: Vec<char> = text.chars().collect();
-            let angle_step = std::f64::consts::TAU / (chars.len() as f64);
+            let radius = (chakravyu.radius as f64 - 10.0).max(0.0);
+            if radius > 1.0 {
+                let chars: Vec<char> = text.chars().collect();
+                let angle_step = std::f64::consts::TAU / (chars.len() as f64);
 
-            for (i, char) in chars.iter().enumerate() {
-                ctx.save();
-                let angle = i as f64 * angle_step;
-                ctx.rotate(angle).unwrap();
-                ctx.translate(0.0, -radius).unwrap();
-                ctx.fill_text(&char.to_string(), 0.0, 0.0).unwrap();
-                ctx.restore();
+                for (i, char) in chars.iter().enumerate() {
+                    ctx.save();
+                    let angle = i as f64 * angle_step;
+                    ctx.rotate(angle).unwrap();
+                    ctx.translate(0.0, -radius).unwrap();
+                    ctx.fill_text(&char.to_string(), 0.0, 0.0).unwrap();
+                    ctx.restore();
+                }
             }
 
             // Inner faint shield circle
-            ctx.begin_path();
-            ctx.arc(0.0, 0.0, radius - 15.0, 0.0, std::f64::consts::TAU)
-                .unwrap();
-            ctx.set_stroke_style(&JsValue::from_str("rgba(0, 255, 170, 0.1)"));
-            ctx.set_line_width(1.0);
-            ctx.stroke();
+            let inner_radius = (radius - 15.0).max(0.0);
+            if inner_radius > 0.0 {
+                ctx.begin_path();
+                ctx.arc(0.0, 0.0, inner_radius, 0.0, std::f64::consts::TAU)
+                    .unwrap();
+
+                ctx.set_stroke_style(&JsValue::from_str("rgba(0, 255, 170, 0.1)"));
+                ctx.set_line_width(1.0);
+                ctx.stroke();
+            }
 
             ctx.restore();
         }

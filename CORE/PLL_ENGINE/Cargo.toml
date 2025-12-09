@@ -1,0 +1,12 @@
+[package]
+name = "pll-engine"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+dna.workspace = true
+spice-engine = { path = "../SPICE_ENGINE" }
+serde.workspace = true
+
+[lints]
+workspace = true

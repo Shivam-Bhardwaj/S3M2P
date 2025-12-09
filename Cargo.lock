@@ -104,6 +104,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "69f7f8c3906b62b754cd5326047894316021dcfe5a194c8ea52bdd94934a3457"
 
 [[package]]
+name = "arch"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "serde",
+ "serde_json",
+ "toml",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "arduino-learn"
 version = "0.1.0"
 dependencies = [
@@ -139,17 +152,24 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 name = "autocrate"
 version = "0.1.0"
 dependencies = [
+ "autocrate-engine",
  "console_error_panic_hook",
- "dna",
- "getrandom 0.2.16",
  "glam",
  "js-sys",
- "rand",
  "serde",
- "serde_json",
+ "serde-wasm-bindgen",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+]
+
+[[package]]
+name = "autocrate-engine"
+version = "0.1.0"
+dependencies = [
+ "dna",
+ "glam",
+ "serde",
 ]
 
 [[package]]
@@ -257,6 +277,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b35204fbdc0b3f4446b89fc1ac2cf84a8a68971995d0bf2e925ec7cd960f9cb3"
 
 [[package]]
+name = "cad-engine"
+version = "0.1.0"
+dependencies = [
+ "dna",
+ "glam",
+ "serde",
+]
+
+[[package]]
 name = "cc"
 version = "1.2.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -280,6 +309,7 @@ dependencies = [
  "glam",
  "js-sys",
  "wasm-bindgen",
+ "wave-engine",
  "web-sys",
 ]
 
@@ -406,7 +436,6 @@ name = "crm"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "dna",
  "getrandom 0.2.16",
  "glam",
  "js-sys",
@@ -537,6 +566,14 @@ dependencies = [
  "console_error_panic_hook",
  "wasm-bindgen",
  "web-sys",
+]
+
+[[package]]
+name = "export-engine"
+version = "0.1.0"
+dependencies = [
+ "dna",
+ "serde",
 ]
 
 [[package]]
@@ -702,6 +739,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8babf46d4c1c9d92deac9f7be466f76dfc4482b6452fc5024b5e8daf6ffeb3ee"
 dependencies = [
  "rand",
+ "serde",
 ]
 
 [[package]]
@@ -1394,11 +1432,20 @@ name = "pll"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "dna",
+ "pll-engine",
  "serde",
  "serde-wasm-bindgen",
  "wasm-bindgen",
  "web-sys",
+]
+
+[[package]]
+name = "pll-engine"
+version = "0.1.0"
+dependencies = [
+ "dna",
+ "serde",
+ "spice-engine",
 ]
 
 [[package]]
@@ -1869,6 +1916,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "simulation-engine"
+version = "0.1.0"
+dependencies = [
+ "dna",
+ "glam",
+ "rand",
+]
+
+[[package]]
 name = "slab"
 version = "0.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1918,6 +1974,14 @@ checksum = "17129e116933cf371d018bb80ae557e889637989d8638274fb25622827b03881"
 dependencies = [
  "libc",
  "windows-sys 0.60.2",
+]
+
+[[package]]
+name = "spice-engine"
+version = "0.1.0"
+dependencies = [
+ "dna",
+ "serde",
 ]
 
 [[package]]
@@ -2501,6 +2565,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c62a0a307cb4a311d3a07867860911ca130c3494e8c2719593806c08bc5d0484"
 
 [[package]]
+name = "wave-engine"
+version = "0.1.0"
+dependencies = [
+ "dna",
+ "glam",
+]
+
+[[package]]
 name = "web-sys"
 version = "0.3.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2525,11 +2597,11 @@ name = "welcome"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "dna",
  "getrandom 0.2.16",
  "glam",
  "js-sys",
  "rand",
+ "simulation-engine",
  "wasm-bindgen",
  "web-sys",
 ]

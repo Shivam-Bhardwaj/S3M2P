@@ -41,12 +41,7 @@ impl Complex {
 ///
 /// For 2nd order: Z(s) = R1 + 1/(sC1) || 1/(sC2)
 /// Simplified: Z(s) = (1 + sR1C1) / (sC1(1 + sR1C2))
-fn eval_loop_filter_impedance(
-    omega: f64,
-    r1: f64,
-    c1: f64,
-    c2: f64,
-) -> Complex {
+fn eval_loop_filter_impedance(omega: f64, r1: f64, c1: f64, c2: f64) -> Complex {
     let s_imag = omega;
 
     // Numerator: 1 + jωR1C1
@@ -92,6 +87,7 @@ fn eval_open_loop_gain(
 }
 
 /// Generate Bode plot data
+#[allow(clippy::too_many_arguments)]
 pub fn generate_bode_plot(
     k_phi: f64,
     k_vco: f64,
@@ -160,7 +156,7 @@ pub fn analyze_stability(bode: &BodePlot) -> PLLPerformance {
     }
 
     // Find gain margin (magnitude at -180° phase)
-    let mut gain_margin = 100.0;  // Default high value if stable
+    let mut gain_margin = 100.0; // Default high value if stable
 
     for i in 0..bode.phase_deg.len() - 1 {
         if bode.phase_deg[i] >= -180.0 && bode.phase_deg[i + 1] < -180.0 {
@@ -171,7 +167,7 @@ pub fn analyze_stability(bode: &BodePlot) -> PLLPerformance {
             let m2 = bode.magnitude_db[i + 1];
 
             let mag_at_180 = m1 + (-180.0 - p1) * (m2 - m1) / (p2 - p1);
-            gain_margin = -mag_at_180;  // GM is positive
+            gain_margin = -mag_at_180; // GM is positive
             break;
         }
     }
@@ -188,7 +184,7 @@ pub fn analyze_stability(bode: &BodePlot) -> PLLPerformance {
         phase_margin_deg: phase_margin,
         gain_margin_db: gain_margin,
         crossover_freq_hz: crossover_freq,
-        loop_bandwidth_hz: crossover_freq,  // Approximation
+        loop_bandwidth_hz: crossover_freq, // Approximation
         lock_time_us,
     }
 }
@@ -211,16 +207,13 @@ mod tests {
     #[test]
     fn test_bode_plot_generation() {
         let k_phi = 1e-3;
-        let k_vco = 10e6 * 2.0 * PI;  // Convert to rad/s/V
+        let k_vco = 10e6 * 2.0 * PI; // Convert to rad/s/V
         let n = 240.0;
         let r1 = 10e3;
         let c1 = 1e-9;
         let c2 = 100e-12;
 
-        let bode = generate_bode_plot(
-            k_phi, k_vco, n, r1, c1, c2,
-            1e3, 1e7, 20,
-        );
+        let bode = generate_bode_plot(k_phi, k_vco, n, r1, c1, c2, 1e3, 1e7, 20);
 
         assert!(!bode.frequencies_hz.is_empty());
         assert_eq!(bode.frequencies_hz.len(), bode.magnitude_db.len());
@@ -236,10 +229,7 @@ mod tests {
         let c1 = 1e-9;
         let c2 = 100e-12;
 
-        let bode = generate_bode_plot(
-            k_phi, k_vco, n, r1, c1, c2,
-            1e3, 1e7, 50,
-        );
+        let bode = generate_bode_plot(k_phi, k_vco, n, r1, c1, c2, 1e3, 1e7, 50);
 
         let perf = analyze_stability(&bode);
 

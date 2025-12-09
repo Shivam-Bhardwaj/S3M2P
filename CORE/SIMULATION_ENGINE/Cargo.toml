@@ -1,0 +1,12 @@
+[package]
+name = "simulation-engine"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+dna.workspace = true
+glam.workspace = true
+rand.workspace = true
+
+[lints]
+workspace = true

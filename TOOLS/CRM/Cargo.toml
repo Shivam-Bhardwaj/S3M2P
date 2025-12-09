@@ -9,7 +9,6 @@ description = "Customer Relationship Management for antimony-labs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-dna = { path = "../../DNA" }
 glam = { version = "0.29", features = ["rand"] }
 rand = "0.8"
 getrandom = { version = "0.2", features = ["js"] }

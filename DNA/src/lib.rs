@@ -72,16 +72,22 @@ pub mod color;
 pub use color::*;
 
 /// Wave field simulation with FFT
+/// Note: FFT migrated to physics/solvers/pde/spectral, Chladni to physics/fields/wave
 pub mod wave_field;
 pub use wave_field::*;
+
+// Also export from new locations
+pub use physics::solvers::pde::FFT2D;
+pub use physics::fields::wave::{ChladniMode, PlateMode, WaveSimulation};
 
 /// PLL (Phase-Locked Loop) circuit design
 pub mod pll;
 pub use pll::*;
 
 /// SPICE circuit simulation engine
+/// DEPRECATED: Use `physics::electromagnetics::lumped` or `spice_engine` crate
+#[deprecated(since = "0.1.0", note = "use `physics::electromagnetics::lumped` instead")]
 pub mod spice;
-pub use spice::*;
 
 /// Autocrate crate generation algorithms
 pub mod autocrate;
@@ -90,13 +96,16 @@ pub mod autocrate;
 // MATH AND FILTERING MODULES
 // ============================================================================
 
-// Note: Mat2 moved to math::mat
-// Re-export for backward compatibility
+// Mat2 canonical location
 pub use math::mat::Mat2;
 
 /// Extended Kalman Filter for state estimation
+/// DEPRECATED: Use `physics::solvers::filters::EKF`
+#[deprecated(since = "0.1.0", note = "use `physics::solvers::filters::EKF` instead")]
 pub mod ekf;
-pub use ekf::EKF;
+
+// Canonical export from new location
+pub use physics::solvers::filters::{smooth_trajectory, EKF};
 
 /// A* and grid-based pathfinding
 pub mod pathfinding;
@@ -104,6 +113,9 @@ pub use pathfinding::{astar, GridMap, Heuristic, PathResult};
 
 /// Export module (PDF, Gerber X2)
 pub mod export;
+
+/// CAD module (B-Rep solid modeling)
+pub mod cad;
 
 // ============================================================================
 // CORE TYPES

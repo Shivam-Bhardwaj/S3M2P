@@ -1,110 +1,199 @@
-# Core - Simulation Engine
+# DNA - Foundation Layer
 
-The shared foundation for all simulation projects. Zero-allocation, cache-friendly design.
+Shared algorithms, physics, and math for all antimony-labs projects.
+Zero-allocation, cache-friendly design.
+
+## Build & Test
+
+```bash
+cargo check -p dna
+cargo test -p dna
+cargo doc -p dna --open
+```
+
+## Architecture
+
+DNA is the foundation layer. All CORE engines depend on DNA. Projects depend on CORE engines.
+
+```
+DNA (foundation)
+ └── CORE engines (domain-specific)
+      └── Projects (applications)
+```
 
 ## Module Overview
 
-| Module | Purpose |
-|--------|---------|
-| `lib.rs` | Core types: `BoidArena`, `SpatialGrid`, `Genome`, flocking |
-| `heliosphere.rs` | Heliospheric boundary models |
-| `heliosphere_model.rs` | Parker spiral, termination shock |
-| `solar_wind.rs` | Solar wind particle simulation |
-| `coordinates.rs` | Coordinate system transforms |
-| `spatial.rs` | Additional spatial utilities |
-| `zones.rs` | Zone/exclusion area logic |
-| `interaction.rs` | Entity interaction effects |
-| `statistics.rs` | Population metrics |
-| `color.rs` | HSL color utilities |
-| `random.rs` | RNG helpers |
+```
+DNA/src/
+├── lib.rs              # Public API exports
+│
+├── physics/            # Physics foundations
+│   ├── mod.rs
+│   ├── electromagnetics/
+│   │   ├── mod.rs
+│   │   └── lumped.rs   # R, L, C, Diode, OpAmp, transistors
+│   └── solvers/
+│       ├── mod.rs
+│       ├── rk45.rs     # Runge-Kutta 4/5 integrator
+│       └── filters.rs  # EKF, trajectory smoothing
+│
+├── cad/                # B-Rep CAD kernel
+│   ├── mod.rs
+│   ├── geometry.rs     # Point3, Vector3, Plane, Transform3
+│   ├── topology.rs     # Vertex, Edge, Face, Loop, Shell, Solid
+│   └── primitives.rs   # make_box, make_cylinder, make_sphere, make_cone
+│
+├── pll/                # Phase-Locked Loop components
+│   ├── mod.rs
+│   ├── components.rs   # VCO, PFD, ChargePump, Divider
+│   ├── loop_filter.rs  # ActiveLoopFilter, PassiveLoopFilter
+│   ├── stability.rs    # phase_margin, loop_bandwidth
+│   ├── integer_n.rs    # Integer-N synthesizer
+│   └── transient.rs    # Transient simulation
+│
+├── sim/                # Simulation algorithms
+│   ├── mod.rs
+│   ├── boid_arena.rs   # Fixed-capacity entity storage (SoA)
+│   ├── spatial_grid.rs # O(1) neighbor queries
+│   └── state_machine.rs # Behavior state transitions
+│
+├── export/             # File format exporters
+│   ├── mod.rs
+│   ├── pdf.rs          # PDF generation
+│   └── gerber.rs       # Gerber X2 format
+│
+├── autocrate/          # Shipping crate design
+│   └── mod.rs          # CrateGeometry, calculate_boards
+│
+├── heliosphere.rs      # Heliospheric boundary models
+├── heliosphere_model.rs # Parker spiral, termination shock
+├── solar_wind.rs       # Solar wind particles
+├── coordinates.rs      # Coordinate transforms
+└── ... (other modules)
+```
 
 ## Key Types
 
-### BoidArena<const CAPACITY: usize>
+### Physics: Lumped Elements
+
 ```rust
-// SoA layout for cache-friendly iteration
-pub positions: Vec<Vec2>,
-pub velocities: Vec<Vec2>,
-pub genes: Vec<Genome>,
-pub states: Vec<BoidState>,
-pub energy: Vec<f32>,
-// ...
+use dna::physics::electromagnetics::lumped::*;
 
-// O(1) operations
-fn spawn(&mut self, pos, vel, genes) -> BoidHandle
-fn kill(&mut self, idx: usize)
-fn iter_alive(&self) -> impl Iterator<Item = usize>
+let r = Resistor::new(1000.0);           // 1kΩ
+let c = Capacitor::new(100e-12);         // 100pF
+let l = Inductor::new(10e-6);            // 10µH
+let d = Diode::ideal();
+let op = OpAmp::ideal();
 ```
 
-### SpatialGrid<const CELL_CAPACITY: usize>
+### Physics: Solvers
+
 ```rust
-fn build<const CAP>(&mut self, arena: &BoidArena<CAP>)
-fn query_neighbors(pos, radius, arena, exclude, output) -> count
-fn count_neighbors(pos, radius, arena, exclude) -> usize
+use dna::physics::solvers::rk45::*;
+use dna::physics::solvers::filters::EKF;
+
+// RK45 integration
+let result = rk45_integrate(state, t0, t1, dt, |s, t| derivatives);
+
+// Extended Kalman Filter
+let ekf = EKF::new(4, 2);  // 4 states, 2 measurements
 ```
 
-### Genome
+### CAD: Geometry & Topology
+
 ```rust
-pub role: BoidRole,        // Herbivore, Carnivore, Scavenger
-pub max_speed: f32,        // 2.0 - 6.0
-pub agility: f32,          // 0.5 - 2.0
-pub size: f32,             // 0.5 - 2.0
-pub strength: f32,         // 0.5 - 2.0
-pub sensor_radius: f32,    // 40.0 - 120.0
-pub metabolism: f32,       // 0.7 - 1.3
+use dna::cad::*;
 
-fn mutate(&self) -> Self   // 5 evolutionary events
+let solid = primitives::make_box(100.0, 50.0, 25.0);
+let cylinder = primitives::make_cylinder(10.0, 50.0, 32);
+
+let builder = SolidBuilder::from_box(100.0, 50.0, 25.0)
+    .translate(10.0, 0.0, 0.0)
+    .rotate_z(0.5)
+    .build();
 ```
 
-## Simulation Pipeline
+### PLL: Components
 
+```rust
+use dna::pll::*;
+
+let vco = VCO::new(1e9, 50e6);           // 1GHz center, 50MHz/V
+let pfd = PFD::new();
+let cp = ChargePump::new(1e-3);          // 1mA
+let filter = ActiveLoopFilter::new(1e3, 1e-9, 10e3);
 ```
-1. update_states()         - State machine transitions
-2. compute_flocking_forces() - Per-state behavior
-3. simulation_step()       - Physics, reproduction, death
-4. process_predation()     - Carnivore attacks
-5. process_scavenging()    - Corpse consumption
-6. feed_from_sources()     - Food zone energy transfer
+
+### Simulation: BoidArena
+
+```rust
+use dna::sim::{BoidArena, SpatialGrid, Genome};
+
+let mut arena = BoidArena::<1024>::new();
+let handle = arena.spawn(pos, vel, Genome::random(&mut rng));
+
+let mut grid = SpatialGrid::<32>::new(800.0, 600.0, 50.0);
+grid.build(&arena);
+
+let mut neighbors = [0u16; 64];
+let count = grid.query_neighbors(pos, 100.0, &arena, None, &mut neighbors);
 ```
 
 ## Testing
 
 ```bash
-cargo test -p core
-cargo test -p core -- --nocapture  # See println output
-```
+# All DNA tests
+cargo test -p dna
 
-Key test categories:
-- `test_arena_*`: Entity management
-- `test_spatial_*`: Grid queries
-- `test_state_*`: State machine
-- `test_predation_*`: Interactions
-- `test_genome_*`: Evolution
+# Specific module
+cargo test -p dna -- pll
+cargo test -p dna -- cad
+cargo test -p dna -- physics
+
+# With output
+cargo test -p dna -- --nocapture
+```
 
 ## Performance Guidelines
 
-1. **No allocations in hot paths**: Use pre-sized `scratch_*` buffers
-2. **Stack-allocated neighbor buffers**: `let mut neighbors = [0u16; 64];`
-3. **Avoid `Vec::push` in loops**: Pre-allocate or use fixed arrays
-4. **Use `#[inline]` for small per-entity functions**
-5. **Guard against NaN**: Check vector length before normalize
+1. **No allocations in hot paths**: Use pre-sized buffers
+2. **Stack-allocated arrays**: `let mut neighbors = [0u16; 64];`
+3. **Use `#[inline]` for small per-entity functions**
+4. **Guard against NaN**: Check vector length before normalize
+5. **Prefer f32 over f64** for simulation (matches GPU)
 
-## Common Changes
+## Deprecated Modules
 
-### Adding a new BoidState
-1. Add variant to `BoidState` enum
-2. Add transition logic in `update_states()`
-3. Add force calculation in `compute_flocking_forces()`
-4. Update tests
+These modules are deprecated but still available for backward compatibility:
 
-### Adding a genome trait
-1. Add field to `Genome` struct
-2. Update `Genome::default()` and `Genome::random()`
-3. Add to mutation logic in `mutate()`
-4. Update `compute_color_hs()` if visual
-5. Add tests for bounds and mutation
+```rust
+// Old path (deprecated)
+use dna::spice::*;
+// New path
+use dna::physics::electromagnetics::lumped::*;
 
-### Adding an interaction type
-1. Create new function like `process_predation()`
-2. Call from `simulation_step()` at appropriate phase
+// Old path (deprecated)
+use dna::ekf::EKF;
+// New path
+use dna::physics::solvers::filters::EKF;
+```
+
+## Common Tasks
+
+### Adding a new physics component
+1. Add struct to `physics/electromagnetics/lumped.rs`
+2. Implement `Component` trait if applicable
 3. Add tests
+4. Export from `physics/electromagnetics/mod.rs`
+
+### Adding a CAD primitive
+1. Add function to `cad/primitives.rs`
+2. Create proper topology (vertices, edges, faces)
+3. Add tests
+4. Export from `cad/mod.rs`
+
+### Adding a PLL component
+1. Add to appropriate file in `pll/`
+2. Implement component behavior
+3. Add tests
+4. Export from `pll/mod.rs`

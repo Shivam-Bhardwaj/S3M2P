@@ -7,22 +7,32 @@ members = [
     "DNA/STORAGE_SERVER",
     "DNA/CLAUDE_AUTOMATION",
 
+    # CORE - Domain-specific engines
+    "CORE/SIMULATION_ENGINE",
+    "CORE/SPICE_ENGINE",
+    "CORE/PLL_ENGINE",
+    "CORE/EXPORT_ENGINE",
+    "CORE/WAVE_ENGINE",
+    "CORE/AUTOCRATE_ENGINE",
+    "CORE/CAD_ENGINE",
+
     # L1 Bubbles (deployed)
     "WELCOME",
     "HELIOS",
     "BLOG",
+    "ARCH",
 
     # Simulations (L2 under Simulations bubble)
     "SIMULATIONS/CHLADNI",
 
     # Tools (L2 under Tools bubble)
-    "TOOLS/SENSORS",
     "TOOLS/AUTOCRATE",
     "TOOLS/CRM",
     "TOOLS/PLL",
     "TOOLS/POWER_CIRCUITS",
 
     # Learn (L2 under Learn bubble)
+    "LEARN/SENSORS",
     "LEARN/AI",
     "LEARN/UBUNTU",
     "LEARN/OPENCV",

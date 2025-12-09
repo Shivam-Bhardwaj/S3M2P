@@ -10,8 +10,8 @@ pub fn calculate_dividers(ref_freq_hz: f64, output_freq_hz: f64) -> (u32, u32, f
     // Start with R = 1 to maximize PFD frequency
     // Then try higher R values if N becomes too large
 
-    let max_n = 65535;  // Typical maximum for PLL ICs
-    let min_pfd = 1e6;  // Minimum PFD frequency (1 MHz)
+    let max_n = 65535; // Typical maximum for PLL ICs
+    let min_pfd = 1e6; // Minimum PFD frequency (1 MHz)
 
     for r in 1..=16 {
         let r_f64 = r as f64;
@@ -52,10 +52,7 @@ pub fn create_integer_n_config(n: u32) -> DividerConfig {
             prescaler: Some(prescaler),
         }
     } else {
-        DividerConfig::IntegerN {
-            n,
-            prescaler: None,
-        }
+        DividerConfig::IntegerN { n, prescaler: None }
     }
 }
 
@@ -81,16 +78,16 @@ mod tests {
         let actual_output = calculate_output_freq(10e6, r, n);
         let error = calculate_freq_error(2.4e9, actual_output);
 
-        assert_eq!(r, 1);  // Should maximize PFD frequency
+        assert_eq!(r, 1); // Should maximize PFD frequency
         assert_eq!(n, 240);
         assert!((pfd_freq - 10e6).abs() < 1.0);
-        assert!(error.abs() < 1e-6);  // Less than 1 ppm error
+        assert!(error.abs() < 1e-6); // Less than 1 ppm error
     }
 
     #[test]
     fn test_low_output_frequency() {
         // Test case: 10 MHz ref -> 100 MHz output
-        let (r, n, pfd_freq) = calculate_dividers(10e6, 100e6);
+        let (r, n, _pfd_freq) = calculate_dividers(10e6, 100e6);
         let actual_output = calculate_output_freq(10e6, r, n);
 
         assert_eq!(r, 1);

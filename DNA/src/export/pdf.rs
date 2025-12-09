@@ -148,19 +148,34 @@ impl PdfDocument {
     /// Draw a rectangle (stroke only)
     pub fn draw_rect(&mut self, x: f64, y: f64, width: f64, height: f64) {
         let page = self.current_page();
-        writeln!(page.content, "{:.2} {:.2} {:.2} {:.2} re S", x, y, width, height).ok();
+        writeln!(
+            page.content,
+            "{:.2} {:.2} {:.2} {:.2} re S",
+            x, y, width, height
+        )
+        .ok();
     }
 
     /// Draw a filled rectangle
     pub fn fill_rect(&mut self, x: f64, y: f64, width: f64, height: f64) {
         let page = self.current_page();
-        writeln!(page.content, "{:.2} {:.2} {:.2} {:.2} re f", x, y, width, height).ok();
+        writeln!(
+            page.content,
+            "{:.2} {:.2} {:.2} {:.2} re f",
+            x, y, width, height
+        )
+        .ok();
     }
 
     /// Draw a filled and stroked rectangle
     pub fn fill_stroke_rect(&mut self, x: f64, y: f64, width: f64, height: f64) {
         let page = self.current_page();
-        writeln!(page.content, "{:.2} {:.2} {:.2} {:.2} re B", x, y, width, height).ok();
+        writeln!(
+            page.content,
+            "{:.2} {:.2} {:.2} {:.2} re B",
+            x, y, width, height
+        )
+        .ok();
     }
 
     /// Generate the PDF file content as bytes
@@ -189,7 +204,7 @@ impl PdfDocument {
             }
             write!(output, "{} 0 R", 3 + i * 2).ok();
         }
-        write!(output, "] /Count {} >>\n", self.pages.len()).ok();
+        writeln!(output, "] /Count {} >>", self.pages.len()).ok();
         output.push_str("endobj\n");
 
         // For each page: Page object + Content stream
@@ -197,7 +212,7 @@ impl PdfDocument {
         for page in &self.pages {
             // Page object
             offsets.push(output.len());
-            write!(output, "{} 0 obj\n", next_obj).ok();
+            writeln!(output, "{} 0 obj", next_obj).ok();
             output.push_str("<< /Type /Page /Parent 2 0 R ");
             write!(
                 output,
@@ -214,8 +229,8 @@ impl PdfDocument {
             // Content stream
             let content_bytes = page.content.as_bytes();
             offsets.push(output.len());
-            write!(output, "{} 0 obj\n", next_obj).ok();
-            write!(output, "<< /Length {} >>\n", content_bytes.len()).ok();
+            writeln!(output, "{} 0 obj", next_obj).ok();
+            writeln!(output, "<< /Length {} >>", content_bytes.len()).ok();
             output.push_str("stream\n");
             output.push_str(&page.content);
             output.push_str("endstream\n");
@@ -226,17 +241,17 @@ impl PdfDocument {
         // Cross-reference table
         let xref_offset = output.len();
         output.push_str("xref\n");
-        write!(output, "0 {}\n", next_obj).ok();
+        writeln!(output, "0 {}", next_obj).ok();
         output.push_str("0000000000 65535 f \n");
         for offset in &offsets {
-            write!(output, "{:010} 00000 n \n", offset).ok();
+            writeln!(output, "{:010} 00000 n ", offset).ok();
         }
 
         // Trailer
         output.push_str("trailer\n");
-        write!(output, "<< /Size {} /Root 1 0 R >>\n", next_obj).ok();
+        writeln!(output, "<< /Size {} /Root 1 0 R >>", next_obj).ok();
         output.push_str("startxref\n");
-        write!(output, "{}\n", xref_offset).ok();
+        writeln!(output, "{}", xref_offset).ok();
         output.push_str("%%EOF\n");
 
         output.into_bytes()
@@ -274,7 +289,7 @@ fn escape_pdf_string(s: &str) -> String {
 // PLL-Specific PDF Generation
 // ============================================================================
 
-use crate::pll::{PLLDesign, DividerConfig};
+use crate::pll::{DividerConfig, PLLDesign};
 
 /// Generate a PDF report for a PLL design
 pub fn generate_pll_report(design: &PLLDesign) -> Vec<u8> {
@@ -292,7 +307,12 @@ pub fn generate_pll_report(design: &PLLDesign) -> Vec<u8> {
         DividerConfig::IntegerN { .. } => "Integer-N",
         DividerConfig::FractionalN { .. } => "Fractional-N",
     };
-    pdf.draw_text_aligned(306.0, 725.0, &format!("{} Phase-Locked Loop", arch_str), TextAlign::Center);
+    pdf.draw_text_aligned(
+        306.0,
+        725.0,
+        &format!("{} Phase-Locked Loop", arch_str),
+        TextAlign::Center,
+    );
 
     // Horizontal rule
     pdf.set_stroke_color(0.0, 0.5, 0.4);
@@ -310,15 +330,42 @@ pub fn generate_pll_report(design: &PLLDesign) -> Vec<u8> {
 
     pdf.set_font_size(10.0);
     y -= 20.0;
-    pdf.draw_text(60.0, y, &format!("Reference Frequency: {:.2} MHz", design.requirements.ref_freq_hz / 1e6));
+    pdf.draw_text(
+        60.0,
+        y,
+        &format!(
+            "Reference Frequency: {:.2} MHz",
+            design.requirements.ref_freq_hz / 1e6
+        ),
+    );
     y -= 15.0;
-    pdf.draw_text(60.0, y, &format!("Output Frequency: {:.2} - {:.2} MHz",
-        design.requirements.output_freq_min_hz / 1e6,
-        design.requirements.output_freq_max_hz / 1e6));
+    pdf.draw_text(
+        60.0,
+        y,
+        &format!(
+            "Output Frequency: {:.2} - {:.2} MHz",
+            design.requirements.output_freq_min_hz / 1e6,
+            design.requirements.output_freq_max_hz / 1e6
+        ),
+    );
     y -= 15.0;
-    pdf.draw_text(60.0, y, &format!("Loop Bandwidth: {:.2} kHz", design.requirements.loop_bandwidth_hz / 1e3));
+    pdf.draw_text(
+        60.0,
+        y,
+        &format!(
+            "Loop Bandwidth: {:.2} kHz",
+            design.requirements.loop_bandwidth_hz / 1e3
+        ),
+    );
     y -= 15.0;
-    pdf.draw_text(60.0, y, &format!("Target Phase Margin: {:.1} deg", design.requirements.phase_margin_deg));
+    pdf.draw_text(
+        60.0,
+        y,
+        &format!(
+            "Target Phase Margin: {:.1} deg",
+            design.requirements.phase_margin_deg
+        ),
+    );
 
     // Section: Divider Configuration
     y -= 30.0;
@@ -329,7 +376,11 @@ pub fn generate_pll_report(design: &PLLDesign) -> Vec<u8> {
 
     pdf.set_font_size(10.0);
     y -= 20.0;
-    pdf.draw_text(60.0, y, &format!("Reference Divider (R): {}", design.divider_r));
+    pdf.draw_text(
+        60.0,
+        y,
+        &format!("Reference Divider (R): {}", design.divider_r),
+    );
     y -= 15.0;
 
     match &design.divider_n {
@@ -340,7 +391,12 @@ pub fn generate_pll_report(design: &PLLDesign) -> Vec<u8> {
                 pdf.draw_text(60.0, y, &format!("Prescaler: {}", p));
             }
         }
-        DividerConfig::FractionalN { n_int, n_frac, modulus, modulator_order } => {
+        DividerConfig::FractionalN {
+            n_int,
+            n_frac,
+            modulus,
+            modulator_order,
+        } => {
             pdf.draw_text(60.0, y, &format!("Integer Part (N_INT): {}", n_int));
             y -= 15.0;
             pdf.draw_text(60.0, y, &format!("Fractional Part: {}/{}", n_frac, modulus));
@@ -349,7 +405,11 @@ pub fn generate_pll_report(design: &PLLDesign) -> Vec<u8> {
         }
     }
     y -= 15.0;
-    pdf.draw_text(60.0, y, &format!("PFD Frequency: {:.2} MHz", design.pfd_freq_hz / 1e6));
+    pdf.draw_text(
+        60.0,
+        y,
+        &format!("PFD Frequency: {:.2} MHz", design.pfd_freq_hz / 1e6),
+    );
 
     // Section: Loop Filter
     y -= 30.0;
@@ -362,7 +422,11 @@ pub fn generate_pll_report(design: &PLLDesign) -> Vec<u8> {
     y -= 20.0;
     pdf.draw_text(60.0, y, &format!("C1: {:.2} pF", design.loop_filter.c1_pf));
     y -= 15.0;
-    pdf.draw_text(60.0, y, &format!("R1: {:.2} ohms", design.loop_filter.r1_ohms));
+    pdf.draw_text(
+        60.0,
+        y,
+        &format!("R1: {:.2} ohms", design.loop_filter.r1_ohms),
+    );
     y -= 15.0;
     pdf.draw_text(60.0, y, &format!("C2: {:.2} pF", design.loop_filter.c2_pf));
 
@@ -375,13 +439,38 @@ pub fn generate_pll_report(design: &PLLDesign) -> Vec<u8> {
 
     pdf.set_font_size(10.0);
     y -= 20.0;
-    pdf.draw_text(60.0, y, &format!("Phase Margin: {:.1} deg", design.performance.phase_margin_deg));
+    pdf.draw_text(
+        60.0,
+        y,
+        &format!(
+            "Phase Margin: {:.1} deg",
+            design.performance.phase_margin_deg
+        ),
+    );
     y -= 15.0;
-    pdf.draw_text(60.0, y, &format!("Gain Margin: {:.1} dB", design.performance.gain_margin_db));
+    pdf.draw_text(
+        60.0,
+        y,
+        &format!("Gain Margin: {:.1} dB", design.performance.gain_margin_db),
+    );
     y -= 15.0;
-    pdf.draw_text(60.0, y, &format!("Crossover Frequency: {:.2} kHz", design.performance.crossover_freq_hz / 1e3));
+    pdf.draw_text(
+        60.0,
+        y,
+        &format!(
+            "Crossover Frequency: {:.2} kHz",
+            design.performance.crossover_freq_hz / 1e3
+        ),
+    );
     y -= 15.0;
-    pdf.draw_text(60.0, y, &format!("Estimated Lock Time: {:.1} us", design.performance.lock_time_us));
+    pdf.draw_text(
+        60.0,
+        y,
+        &format!(
+            "Estimated Lock Time: {:.1} us",
+            design.performance.lock_time_us
+        ),
+    );
 
     // Section: System Parameters
     y -= 30.0;
@@ -392,14 +481,30 @@ pub fn generate_pll_report(design: &PLLDesign) -> Vec<u8> {
 
     pdf.set_font_size(10.0);
     y -= 20.0;
-    pdf.draw_text(60.0, y, &format!("Charge Pump Current: {:.2} uA", design.charge_pump_current_ua));
+    pdf.draw_text(
+        60.0,
+        y,
+        &format!(
+            "Charge Pump Current: {:.2} uA",
+            design.charge_pump_current_ua
+        ),
+    );
     y -= 15.0;
-    pdf.draw_text(60.0, y, &format!("VCO Gain (Kvco): {:.2} MHz/V", design.vco_gain_mhz_per_v));
+    pdf.draw_text(
+        60.0,
+        y,
+        &format!("VCO Gain (Kvco): {:.2} MHz/V", design.vco_gain_mhz_per_v),
+    );
 
     // Footer
     pdf.set_font_size(8.0);
     pdf.set_fill_color(0.5, 0.5, 0.5);
-    pdf.draw_text_aligned(306.0, 30.0, "Generated by PLL Designer - too.foo", TextAlign::Center);
+    pdf.draw_text_aligned(
+        306.0,
+        30.0,
+        "Generated by PLL Designer - too.foo",
+        TextAlign::Center,
+    );
 
     pdf.to_bytes()
 }
@@ -432,7 +537,7 @@ mod tests {
         assert!(bytes.starts_with(b"%PDF-1.4"));
 
         // Check PDF footer
-        let footer = String::from_utf8_lossy(&bytes[bytes.len()-10..]);
+        let footer = String::from_utf8_lossy(&bytes[bytes.len() - 10..]);
         assert!(footer.contains("%%EOF"));
     }
 
@@ -445,7 +550,7 @@ mod tests {
 
     #[test]
     fn test_pll_report_generation() {
-        use crate::pll::{PLLRequirements, PLLArchitecture, design_pll};
+        use crate::pll::{design_pll, PLLArchitecture, PLLRequirements};
 
         let requirements = PLLRequirements {
             ref_freq_hz: 10e6,

@@ -160,7 +160,10 @@ pub fn get_pll_ic_library() -> Vec<PLLICSpec> {
             freq_min_hz: 35e6,
             freq_max_hz: 4.4e9,
             max_ref_freq_hz: 250e6,
-            icp_options_ma: vec![0.31, 0.63, 0.94, 1.25, 1.56, 1.88, 2.19, 2.5, 2.81, 3.13, 3.44, 3.75, 4.06, 4.38, 4.69, 5.0],
+            icp_options_ma: vec![
+                0.31, 0.63, 0.94, 1.25, 1.56, 1.88, 2.19, 2.5, 2.81, 3.13, 3.44, 3.75, 4.06, 4.38,
+                4.69, 5.0,
+            ],
             kvco_mhz_per_v: 30.0,
             fractional_n: true,
             frac_modulus: Some(4095),
@@ -174,7 +177,10 @@ pub fn get_pll_ic_library() -> Vec<PLLICSpec> {
             freq_min_hz: 137.5e6,
             freq_max_hz: 4.4e9,
             max_ref_freq_hz: 250e6,
-            icp_options_ma: vec![0.31, 0.63, 0.94, 1.25, 1.56, 1.88, 2.19, 2.5, 2.81, 3.13, 3.44, 3.75, 4.06, 4.38, 4.69, 5.0],
+            icp_options_ma: vec![
+                0.31, 0.63, 0.94, 1.25, 1.56, 1.88, 2.19, 2.5, 2.81, 3.13, 3.44, 3.75, 4.06, 4.38,
+                4.69, 5.0,
+            ],
             kvco_mhz_per_v: 30.0,
             fractional_n: true,
             frac_modulus: Some(4095),
@@ -242,9 +248,9 @@ pub fn score_vco(vco: &VCOSpec, target_freq_hz: f64, required_kvco: f64) -> f64 
 
     // Penalize if Kvco is too different from required
     let kvco_ratio = (vco.kvco_mhz_per_v / required_kvco).abs();
-    if kvco_ratio > 2.0 || kvco_ratio < 0.5 {
+    if !(0.5..=2.0).contains(&kvco_ratio) {
         score -= 30.0;
-    } else if kvco_ratio > 1.5 || kvco_ratio < 0.67 {
+    } else if !(0.67..=1.5).contains(&kvco_ratio) {
         score -= 15.0;
     }
 
@@ -283,7 +289,8 @@ pub fn score_pll_ic(
     let mut score = 100.0;
 
     // Find closest charge pump current option
-    let closest_icp = ic.icp_options_ma
+    let closest_icp = ic
+        .icp_options_ma
         .iter()
         .min_by(|a, b| {
             ((*a - target_icp_ma).abs())
@@ -329,11 +336,31 @@ pub fn select_pll_ic(
     let library = get_pll_ic_library();
     library
         .into_iter()
-        .filter(|ic| score_pll_ic(ic, target_freq_hz, ref_freq_hz, target_icp_ma, needs_fractional) > 0.0)
+        .filter(|ic| {
+            score_pll_ic(
+                ic,
+                target_freq_hz,
+                ref_freq_hz,
+                target_icp_ma,
+                needs_fractional,
+            ) > 0.0
+        })
         .max_by(|a, b| {
-            score_pll_ic(a, target_freq_hz, ref_freq_hz, target_icp_ma, needs_fractional)
-                .partial_cmp(&score_pll_ic(b, target_freq_hz, ref_freq_hz, target_icp_ma, needs_fractional))
-                .unwrap()
+            score_pll_ic(
+                a,
+                target_freq_hz,
+                ref_freq_hz,
+                target_icp_ma,
+                needs_fractional,
+            )
+            .partial_cmp(&score_pll_ic(
+                b,
+                target_freq_hz,
+                ref_freq_hz,
+                target_icp_ma,
+                needs_fractional,
+            ))
+            .unwrap()
         })
 }
 
@@ -343,20 +370,18 @@ pub fn select_pll_ic(
 
 /// E24 resistor series (5% tolerance)
 pub const E24: [f64; 24] = [
-    1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0,
-    3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1,
+    1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6,
+    6.2, 6.8, 7.5, 8.2, 9.1,
 ];
 
 /// E96 resistor series (1% tolerance)
 pub const E96: [f64; 96] = [
-    1.00, 1.02, 1.05, 1.07, 1.10, 1.13, 1.15, 1.18, 1.21, 1.24, 1.27, 1.30,
-    1.33, 1.37, 1.40, 1.43, 1.47, 1.50, 1.54, 1.58, 1.62, 1.65, 1.69, 1.74,
-    1.78, 1.82, 1.87, 1.91, 1.96, 2.00, 2.05, 2.10, 2.15, 2.21, 2.26, 2.32,
-    2.37, 2.43, 2.49, 2.55, 2.61, 2.67, 2.74, 2.80, 2.87, 2.94, 3.01, 3.09,
-    3.16, 3.24, 3.32, 3.40, 3.48, 3.57, 3.65, 3.74, 3.83, 3.92, 4.02, 4.12,
-    4.22, 4.32, 4.42, 4.53, 4.64, 4.75, 4.87, 4.99, 5.11, 5.23, 5.36, 5.49,
-    5.62, 5.76, 5.90, 6.04, 6.19, 6.34, 6.49, 6.65, 6.81, 6.98, 7.15, 7.32,
-    7.50, 7.68, 7.87, 8.06, 8.25, 8.45, 8.66, 8.87, 9.09, 9.31, 9.53, 9.76,
+    1.00, 1.02, 1.05, 1.07, 1.10, 1.13, 1.15, 1.18, 1.21, 1.24, 1.27, 1.30, 1.33, 1.37, 1.40, 1.43,
+    1.47, 1.50, 1.54, 1.58, 1.62, 1.65, 1.69, 1.74, 1.78, 1.82, 1.87, 1.91, 1.96, 2.00, 2.05, 2.10,
+    2.15, 2.21, 2.26, 2.32, 2.37, 2.43, 2.49, 2.55, 2.61, 2.67, 2.74, 2.80, 2.87, 2.94, 3.01, 3.09,
+    3.16, 3.24, 3.32, 3.40, 3.48, 3.57, 3.65, 3.74, 3.83, 3.92, 4.02, 4.12, 4.22, 4.32, 4.42, 4.53,
+    4.64, 4.75, 4.87, 4.99, 5.11, 5.23, 5.36, 5.49, 5.62, 5.76, 5.90, 6.04, 6.19, 6.34, 6.49, 6.65,
+    6.81, 6.98, 7.15, 7.32, 7.50, 7.68, 7.87, 8.06, 8.25, 8.45, 8.66, 8.87, 9.09, 9.31, 9.53, 9.76,
 ];
 
 /// Find the nearest E24 value to the target
@@ -449,7 +474,7 @@ mod tests {
     #[test]
     fn test_nearest_e96() {
         assert_eq!(nearest_e96(1000.0), 1000.0);
-        assert_eq!(nearest_e96(1010.0), 1000.0);  // Closer to 1000
+        assert_eq!(nearest_e96(1010.0), 1000.0); // Closer to 1000
         assert_eq!(nearest_e96(10500.0), 10500.0);
     }
 

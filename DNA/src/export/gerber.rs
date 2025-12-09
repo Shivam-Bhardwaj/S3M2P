@@ -16,8 +16,6 @@
 //! M02*
 //! ```
 
-use std::fmt::Write as FmtWrite;
-
 /// Gerber document builder
 #[derive(Debug)]
 pub struct GerberDocument {
@@ -194,68 +192,75 @@ impl GerberDocument {
         self.line_to(x, y);
         self.region_end();
     }
+}
 
-    /// Generate the Gerber file content as string
-    pub fn to_string(&self) -> String {
-        let mut output = String::new();
-
+impl std::fmt::Display for GerberDocument {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // X2 attributes
-        writeln!(output, "%TF.GenerationSoftware,too.foo,PLL Designer,1.0*%").ok();
-        writeln!(output, "%TF.FileFunction,{}*%", self.file_function).ok();
+        writeln!(f, "%TF.GenerationSoftware,too.foo,PLL Designer,1.0*%")?;
+        writeln!(f, "%TF.FileFunction,{}*%", self.file_function)?;
 
         // Format specification
         let (int_digits, dec_digits) = self.format;
-        writeln!(output, "%FSLAX{}{}Y{}{}*%", int_digits, dec_digits, int_digits, dec_digits).ok();
+        writeln!(
+            f,
+            "%FSLAX{}{}Y{}{}*%",
+            int_digits, dec_digits, int_digits, dec_digits
+        )?;
 
         // Units
         match self.unit {
-            GerberUnit::Inches => writeln!(output, "%MOIN*%").ok(),
-            GerberUnit::Millimeters => writeln!(output, "%MOMM*%").ok(),
+            GerberUnit::Inches => writeln!(f, "%MOIN*%")?,
+            GerberUnit::Millimeters => writeln!(f, "%MOMM*%")?,
         };
 
         // Aperture definitions
         for aperture in &self.apertures {
             let def = match &aperture.aperture_type {
                 ApertureType::Circle { diameter } => format!("C,{:.6}", diameter),
-                ApertureType::Rectangle { width, height } => format!("R,{:.6}X{:.6}", width, height),
+                ApertureType::Rectangle { width, height } => {
+                    format!("R,{:.6}X{:.6}", width, height)
+                }
                 ApertureType::Obround { width, height } => format!("O,{:.6}X{:.6}", width, height),
             };
-            writeln!(output, "%ADD{:02}{}*%", aperture.number, def).ok();
+            writeln!(f, "%ADD{:02}{}*%", aperture.number, def)?;
         }
 
         // Set linear interpolation mode
-        writeln!(output, "G01*").ok();
+        writeln!(f, "G01*")?;
 
         // Commands
         for cmd in &self.commands {
             match cmd {
                 GerberCommand::SelectAperture(n) => {
-                    writeln!(output, "D{:02}*", n).ok();
+                    writeln!(f, "D{:02}*", n)?;
                 }
                 GerberCommand::Move { x, y } => {
-                    writeln!(output, "X{}Y{}D02*", x, y).ok();
+                    writeln!(f, "X{}Y{}D02*", x, y)?;
                 }
                 GerberCommand::Line { x, y } => {
-                    writeln!(output, "X{}Y{}D01*", x, y).ok();
+                    writeln!(f, "X{}Y{}D01*", x, y)?;
                 }
                 GerberCommand::Flash { x, y } => {
-                    writeln!(output, "X{}Y{}D03*", x, y).ok();
+                    writeln!(f, "X{}Y{}D03*", x, y)?;
                 }
                 GerberCommand::RegionStart => {
-                    writeln!(output, "G36*").ok();
+                    writeln!(f, "G36*")?;
                 }
                 GerberCommand::RegionEnd => {
-                    writeln!(output, "G37*").ok();
+                    writeln!(f, "G37*")?;
                 }
             }
         }
 
         // End of file
-        writeln!(output, "M02*").ok();
+        writeln!(f, "M02*")?;
 
-        output
+        Ok(())
     }
+}
 
+impl GerberDocument {
     /// Generate the Gerber file content as bytes
     pub fn to_bytes(&self) -> Vec<u8> {
         self.to_string().into_bytes()
@@ -379,7 +384,7 @@ mod tests {
 
     #[test]
     fn test_loop_filter_gerber() {
-        use crate::pll::{PLLRequirements, PLLArchitecture, design_pll};
+        use crate::pll::{design_pll, PLLArchitecture, PLLRequirements};
 
         let requirements = PLLRequirements {
             ref_freq_hz: 10e6,

@@ -6,7 +6,7 @@ public_url = "/"
 filehash = true
 
 [watch]
-watch = ["src", "index.html", "../../DNA/src"]
+watch = ["src", "index.html", "../DNA/src"]
 
 [serve]
 addresses = ["127.0.0.1"]
@@ -14,4 +14,3 @@ port = 8081
 
 [tools]
 wasm_bindgen = "0.2.93"
-

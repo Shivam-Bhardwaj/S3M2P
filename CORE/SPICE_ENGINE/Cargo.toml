@@ -1,0 +1,11 @@
+[package]
+name = "spice-engine"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+dna.workspace = true
+serde.workspace = true
+
+[lints]
+workspace = true

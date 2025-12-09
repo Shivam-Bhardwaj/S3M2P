@@ -1,0 +1,12 @@
+[package]
+name = "autocrate-engine"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+dna.workspace = true
+serde.workspace = true
+glam.workspace = true
+
+[lints]
+workspace = true

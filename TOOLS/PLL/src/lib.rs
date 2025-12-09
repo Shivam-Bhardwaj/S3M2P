@@ -1,10 +1,11 @@
+#![allow(unexpected_cfgs)]
 use wasm_bindgen::prelude::*;
 use web_sys::{
     CanvasRenderingContext2d, Document, Element, HtmlCanvasElement, HtmlElement, HtmlInputElement,
     HtmlSelectElement,
 };
 
-use dna::pll::{design_pll, PLLArchitecture, PLLRequirements};
+use pll_engine::{design_pll, PLLArchitecture, PLLRequirements};
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
@@ -200,7 +201,7 @@ fn get_input_value(document: &Document, id: &str) -> Result<f64, JsValue> {
         .map_err(|_| JsValue::from_str("Invalid number"))
 }
 
-fn display_results(document: &Document, design: &dna::pll::PLLDesign) -> Result<(), JsValue> {
+fn display_results(document: &Document, design: &pll_engine::PLLDesign) -> Result<(), JsValue> {
     // Hide error message
     if let Some(elem) = document.get_element_by_id("error-msg") {
         let elem: HtmlElement = elem.dyn_into()?;
@@ -211,8 +212,8 @@ fn display_results(document: &Document, design: &dna::pll::PLLDesign) -> Result<
     set_text(document, "result-r", &format!("R = {}", design.divider_r))?;
 
     let n_value = match &design.divider_n {
-        dna::pll::DividerConfig::IntegerN { n, .. } => *n,
-        dna::pll::DividerConfig::FractionalN { n_int, .. } => *n_int,
+        pll_engine::DividerConfig::IntegerN { n, .. } => *n,
+        pll_engine::DividerConfig::FractionalN { n_int, .. } => *n_int,
     };
     set_text(document, "result-n", &format!("N = {}", n_value))?;
     set_text(
@@ -310,7 +311,7 @@ fn set_text(document: &Document, id: &str, text: &str) -> Result<(), JsValue> {
     Ok(())
 }
 
-fn draw_schematic(document: &Document, design: &dna::pll::PLLDesign) -> Result<(), JsValue> {
+fn draw_schematic(document: &Document, design: &pll_engine::PLLDesign) -> Result<(), JsValue> {
     let canvas = document
         .get_element_by_id("schematic-canvas")
         .ok_or("Canvas not found")?;
@@ -423,8 +424,8 @@ fn draw_schematic(document: &Document, design: &dna::pll::PLLDesign) -> Result<(
 
     // Divider block
     let n_value = match &design.divider_n {
-        dna::pll::DividerConfig::IntegerN { n, .. } => format!("÷{}", n),
-        dna::pll::DividerConfig::FractionalN { n_int, .. } => format!("÷{}", n_int),
+        pll_engine::DividerConfig::IntegerN { n, .. } => format!("÷{}", n),
+        pll_engine::DividerConfig::FractionalN { n_int, .. } => format!("÷{}", n_int),
     };
     draw_block(
         &ctx,
@@ -496,7 +497,7 @@ fn draw_schematic(document: &Document, design: &dna::pll::PLLDesign) -> Result<(
     Ok(())
 }
 
-fn draw_phase_noise_plot(profile: &dna::pll::types::PhaseNoiseProfile) -> Result<(), JsValue> {
+fn draw_phase_noise_plot(profile: &pll_engine::PhaseNoiseProfile) -> Result<(), JsValue> {
     let document = web_sys::window()
         .ok_or("No window")?
         .document()
@@ -651,7 +652,7 @@ fn draw_phase_noise_plot(profile: &dna::pll::types::PhaseNoiseProfile) -> Result
 }
 
 fn draw_transient_plot(
-    result: &dna::pll::types::TransientResult,
+    result: &pll_engine::TransientResult,
     target_freq: f64,
 ) -> Result<(), JsValue> {
     let document = web_sys::window()
@@ -921,7 +922,7 @@ fn draw_arrow_head(
     Ok(())
 }
 
-fn draw_bode_plot(document: &Document, bode: &dna::pll::BodePlot) -> Result<(), JsValue> {
+fn draw_bode_plot(document: &Document, bode: &pll_engine::BodePlot) -> Result<(), JsValue> {
     let canvas = document
         .get_element_by_id("bode-canvas")
         .ok_or("Canvas not found")?;
@@ -987,7 +988,7 @@ fn draw_bode_plot(document: &Document, bode: &dna::pll::BodePlot) -> Result<(), 
 
 fn draw_magnitude_plot(
     ctx: &CanvasRenderingContext2d,
-    bode: &dna::pll::BodePlot,
+    bode: &pll_engine::BodePlot,
     x: f64,
     y: f64,
     width: f64,
@@ -1068,7 +1069,7 @@ fn draw_magnitude_plot(
 
 fn draw_phase_plot(
     ctx: &CanvasRenderingContext2d,
-    bode: &dna::pll::BodePlot,
+    bode: &pll_engine::BodePlot,
     x: f64,
     y: f64,
     width: f64,

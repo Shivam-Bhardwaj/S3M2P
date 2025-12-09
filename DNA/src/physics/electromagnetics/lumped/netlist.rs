@@ -1,3 +1,43 @@
+//! ═══════════════════════════════════════════════════════════════════════════════
+//! FILE: netlist.rs
+//! PATH: DNA/src/physics/electromagnetics/lumped/netlist.rs
+//! ═══════════════════════════════════════════════════════════════════════════════
+//!
+//! PURPOSE: SPICE netlist representation and circuit element definitions
+//!
+//! LAYER: DNA → PHYSICS → ELECTROMAGNETICS → LUMPED
+//!
+//! ┌─────────────────────────────────────────────────────────────────────────────┐
+//! │ DATA DEFINED                                                                │
+//! ├─────────────────────────────────────────────────────────────────────────────┤
+//! │ Netlist            Circuit representation with elements and nodes           │
+//! │ Element            Enum of circuit components (R, L, C, V, I, VCVS, VCCS)   │
+//! │ SourceValue        DC, AC, Pulse, Sin source types                          │
+//! │ BehavioralExpression  Custom behavioral models (VCO, Phase Detector)        │
+//! └─────────────────────────────────────────────────────────────────────────────┘
+//!
+//! ┌─────────────────────────────────────────────────────────────────────────────┐
+//! │ DATA FLOW                                                                   │
+//! ├─────────────────────────────────────────────────────────────────────────────┤
+//! │ CONSUMES:  Element definitions, node names                                  │
+//! │ PRODUCES:  Node-indexed netlist for MNA matrix stamping                     │
+//! └─────────────────────────────────────────────────────────────────────────────┘
+//!
+//! DEPENDS ON:
+//!   • serde → Serialization
+//!   • std::collections::HashMap → Node mapping
+//!
+//! USED BY:
+//!   • physics/electromagnetics/lumped/matrix.rs → DC analysis
+//!   • physics/electromagnetics/lumped/ac.rs → AC analysis
+//!   • TOOLS/PLL → PLL circuit design
+//!
+//! ═══════════════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────────────────────────
+// CODE BELOW - Optimized for ML development
+// ─────────────────────────────────────────────────────────────────────────────────
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

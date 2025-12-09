@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+<style>
+.shell { transform-origin: 100px 100px; }
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.shell-0 { animation: rotate 4s linear infinite normal; }
+.shell-1 { animation: rotate 8s linear infinite reverse; }
+.shell-2 { animation: rotate 15s linear infinite normal; }
+.shell-3 { animation: rotate 25s linear infinite reverse; }
+.shell-4 { animation: rotate 40s linear infinite normal; }
+</style>
+<defs>
+<radialGradient id="nucleus-glow" cx="50%" cy="50%" r="50%">
+<stop offset="0%" stop-color="#ff0080" stop-opacity="1" />
+<stop offset="100%" stop-color="#ff0080" stop-opacity="0" />
+</radialGradient>
+</defs>
+<circle cx="100.0" cy="100.0" r="12" fill="url(#nucleus-glow)" />
+<circle cx="100.0" cy="100.0" r="6" fill="#ffffff" opacity="1.0" />
+<g class="shell shell-0">
+<circle cx="100.0" cy="100.0" r="20" fill="none" stroke="#00ffff" stroke-width="1.5" opacity="0.6" stroke-dasharray="3,3" />
+<circle cx="120.0" cy="100.0" r="3.5" fill="#00ffff" opacity="1.0" filter="drop-shadow(0 0 2px #00ffff)" />
+<circle cx="80.0" cy="100.0" r="3.5" fill="#00ffff" opacity="1.0" filter="drop-shadow(0 0 2px #00ffff)" />
+</g>
+<g class="shell shell-1">
+<circle cx="100.0" cy="100.0" r="35" fill="none" stroke="#00bfff" stroke-width="1.5" opacity="0.6" stroke-dasharray="3,3" />
+<circle cx="124.74873734152916" cy="124.74873734152916" r="3.5" fill="#00bfff" opacity="1.0" filter="drop-shadow(0 0 2px #00bfff)" />
+<circle cx="100.0" cy="135.0" r="3.5" fill="#00bfff" opacity="1.0" filter="drop-shadow(0 0 2px #00bfff)" />
+<circle cx="75.25126265847084" cy="124.74873734152916" r="3.5" fill="#00bfff" opacity="1.0" filter="drop-shadow(0 0 2px #00bfff)" />
+<circle cx="65.0" cy="100.0" r="3.5" fill="#00bfff" opacity="1.0" filter="drop-shadow(0 0 2px #00bfff)" />
+<circle cx="75.25126265847084" cy="75.25126265847084" r="3.5" fill="#00bfff" opacity="1.0" filter="drop-shadow(0 0 2px #00bfff)" />
+<circle cx="100.0" cy="65.0" r="3.5" fill="#00bfff" opacity="1.0" filter="drop-shadow(0 0 2px #00bfff)" />
+<circle cx="124.74873734152916" cy="75.25126265847084" r="3.5" fill="#00bfff" opacity="1.0" filter="drop-shadow(0 0 2px #00bfff)" />
+<circle cx="135.0" cy="99.99999999999999" r="3.5" fill="#00bfff" opacity="1.0" filter="drop-shadow(0 0 2px #00bfff)" />
+</g>
+<g class="shell shell-2">
+<circle cx="100.0" cy="100.0" r="50" fill="none" stroke="#4361ee" stroke-width="1.5" opacity="0.6" stroke-dasharray="3,3" />
+<circle cx="100.0" cy="150.0" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="82.89899283371656" cy="146.98463103929544" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="67.86061951567302" cy="138.3022221559489" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="56.698729810778076" cy="125.00000000000001" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="50.7596123493896" cy="108.68240888334651" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="50.75961234938959" cy="91.3175911166535" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="56.69872981077806" cy="75.00000000000001" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="67.86061951567302" cy="61.6977778440511" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="82.89899283371658" cy="53.01536896070458" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="99.99999999999999" cy="50.0" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="117.10100716628341" cy="53.01536896070457" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="132.13938048432692" cy="61.69777784405107" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="143.30127018922192" cy="74.99999999999997" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="149.2403876506104" cy="91.31759111665347" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="149.24038765061042" cy="108.6824088833465" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="143.30127018922195" cy="124.99999999999997" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="132.13938048432698" cy="138.3022221559489" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+<circle cx="117.10100716628344" cy="146.98463103929544" r="3.5" fill="#4361ee" opacity="1.0" filter="drop-shadow(0 0 2px #4361ee)" />
+</g>
+<g class="shell shell-3">
+<circle cx="100.0" cy="100.0" r="70" fill="none" stroke="#7209b7" stroke-width="1.5" opacity="0.6" stroke-dasharray="3,3" />
+<circle cx="50.50252531694168" cy="149.49747468305833" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="36.5584549074345" cy="129.58327832184898" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="30.266371133577806" cy="106.10090199233608" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="32.38519215976521" cy="81.88266684282357" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="42.65935689977057" cy="59.84964945542677" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="59.84964945542675" cy="42.65935689977059" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="81.88266684282355" cy="32.385192159765225" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="106.10090199233605" cy="30.266371133577806" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="129.58327832184892" cy="36.55845490743448" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="149.49747468305833" cy="50.502525316941664" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="163.4415450925655" cy="70.41672167815105" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="169.73362886642218" cy="93.89909800766392" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="167.6148078402348" cy="118.11733315717642" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="157.34064310022944" cy="140.15035054457323" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="140.15035054457326" cy="157.34064310022939" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="118.11733315717652" cy="167.61480784023476" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="93.89909800766395" cy="169.73362886642218" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+<circle cx="70.41672167815109" cy="163.44154509256552" r="3.5" fill="#7209b7" opacity="1.0" filter="drop-shadow(0 0 2px #7209b7)" />
+</g>
+<g class="shell shell-4">
+<circle cx="100.0" cy="100.0" r="90" fill="none" stroke="#f72585" stroke-width="1.5" opacity="0.6" stroke-dasharray="3,3" />
+<circle cx="10.0" cy="100.00000000000001" r="3.5" fill="#f72585" opacity="1.0" filter="drop-shadow(0 0 2px #f72585)" />
+<circle cx="72.18847050625472" cy="14.404913533436186" r="3.5" fill="#f72585" opacity="1.0" filter="drop-shadow(0 0 2px #f72585)" />
+<circle cx="172.81152949374524" cy="47.0993272936774" r="3.5" fill="#f72585" opacity="1.0" filter="drop-shadow(0 0 2px #f72585)" />
+<circle cx="172.8115294937453" cy="152.90067270632255" r="3.5" fill="#f72585" opacity="1.0" filter="drop-shadow(0 0 2px #f72585)" />
+<circle cx="72.18847050625476" cy="185.59508646656383" r="3.5" fill="#f72585" opacity="1.0" filter="drop-shadow(0 0 2px #f72585)" />
+</g>
+</svg>

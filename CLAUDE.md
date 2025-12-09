@@ -26,10 +26,11 @@ Use `./SCRIPTS/dev-serve.sh <project>` to start - it auto-kills any existing pro
 | welcome | 8080 | http://127.0.0.1:8080 | too.foo landing page |
 | helios | 8081 | http://127.0.0.1:8081 | Solar system |
 | chladni | 8082 | http://127.0.0.1:8082 | Chladni patterns |
-| sensors | 8083 | http://127.0.0.1:8083 | Sensor test |
-| autocrate | 8084 | http://127.0.0.1:8084 | Crate generator |
+| autocrate | 8083 | http://127.0.0.1:8083 | Crate generator |
+| sensors | 8084 | http://127.0.0.1:8084 | Sensor test (LEARN) |
 | blog | 8085 | http://127.0.0.1:8085 | Blog platform |
 | learn | 8086 | http://127.0.0.1:8086 | Learning hub |
+| arch | 8087 | http://127.0.0.1:8087 | Architecture explorer |
 | pll | 8090 | http://127.0.0.1:8090 | PLL designer |
 | power | 8091 | http://127.0.0.1:8091 | Power circuits |
 | ai | 8100 | http://127.0.0.1:8100 | AI tutorials |
@@ -221,6 +222,7 @@ Use `/pr` command to:
 - Use `#[inline]` for small functions called per-entity
 - Wrap coordinates at world boundaries (toroidal topology)
 - Energy clamped to [0, 200], metabolism affects drain rate
+- **Zero Warnings Policy**: All code must compile with `cargo check --workspace` producing NO warnings. Fix unused variables, dead code, and deprecated calls immediately.
 
 ## Testing
 

@@ -5,8 +5,8 @@
 #![allow(unused_mut)]
 #![allow(clippy::let_and_return)]
 
-use crate::geometry::*;
-use crate::{CrateGeometry, CrateSpec};
+use super::geometry::*;
+use super::types::{CrateGeometry, CrateSpec};
 
 /// Calculate complete crate geometry from specification
 pub fn calculate_crate(spec: &CrateSpec) -> CrateGeometry {
@@ -20,7 +20,7 @@ pub fn calculate_crate(spec: &CrateSpec) -> CrateGeometry {
     let base_height = skid_dims.0 + floorboard_dims.0;
 
     // Step 2: Calculate overall dimensions
-    let panel_thickness = crate::constants::geometry::DEFAULT_PANEL_THICKNESS;
+    let panel_thickness = super::constants::geometry::DEFAULT_PANEL_THICKNESS;
 
     let overall_width = product.width + 2.0 * clearances.side + 2.0 * panel_thickness;
     let overall_length = product.length + 2.0 * clearances.end + 2.0 * panel_thickness;
@@ -107,7 +107,7 @@ fn calculate_floorboards(
 
     // Floorboards run across width (X axis)
     let board_count =
-        ((length - crate::constants::geometry::STANDARD_TOLERANCE) / board_dims.1).floor() as usize;
+        ((length - super::constants::geometry::STANDARD_TOLERANCE) / board_dims.1).floor() as usize;
     let total_board_length = board_count as f32 * board_dims.1;
     let start_y = -total_board_length / 2.0;
 
@@ -141,7 +141,7 @@ fn calculate_panels(
     panel_thickness: f32,
     spec: &CrateSpec,
 ) -> PanelSet {
-    let ground_clearance = crate::constants::geometry::SIDE_PANEL_GROUND_CLEARANCE;
+    let ground_clearance = super::constants::geometry::SIDE_PANEL_GROUND_CLEARANCE;
     let panel_height = height - base_height - ground_clearance;
 
     // Front panel (negative Y)
@@ -290,6 +290,7 @@ fn calculate_panel_cleats(
 
 #[cfg(test)]
 mod tests {
+    use super::super::types::CrateSpec;
     use super::*;
 
     #[test]

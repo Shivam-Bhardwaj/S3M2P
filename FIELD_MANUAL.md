@@ -2,7 +2,7 @@
 
 **The only document you need to read.**
 
-Last updated: 2025-11-30
+Last updated: 2025-12-09
 
 ---
 
@@ -13,7 +13,7 @@ Last updated: 2025-11-30
 source ~/.bashrc
 
 # Start development
-run toofoo          # Landing page (http://localhost:3000)
+run welcome         # Landing page (http://localhost:3000)
 run website         # Personal site (http://localhost:3030)
 mon                 # System monitor (btop)
 
@@ -45,7 +45,6 @@ targets = ["wasm32-unknown-unknown"]
 | rustc | 1.91.1 | Rust compiler |
 | cargo | 1.91.1 | Package manager |
 | trunk | 0.21.14 | WASM bundler/server |
-| zellij | 0.43.1 | Terminal multiplexer |
 
 ### Update Tools
 
@@ -64,56 +63,91 @@ cd ~/S3M2P && cargo update
 
 ## File Structure
 
+### Architecture: DNA → CORE → SRC (Three-Tier Pattern)
+
+```
+DNA/        → Foundation layer (shared algorithms, physics, math)
+CORE/       → Domain-specific engines (SIMULATION, SPICE, PLL, CAD, etc.)
+*/src/      → Project-specific code (WELCOME, HELIOS, TOOLS/*)
+```
+
+**Dependency flow:** DNA ← CORE ← Projects (never the reverse)
+
 ### L1: Main Bubbles
 
 ```
 S3M2P/
-├── DNA/          # Core engine (algorithms, schemas, GPU)
-├── MCAD/         # Mechanical CAD (open-source NX)
-├── ECAD/         # Electronics CAD (open-source Altium)
+├── DNA/          # Foundation (algorithms, physics, math)
+├── CORE/         # Domain engines (7 engines)
+├── WELCOME/      # Landing page (too.foo)
 ├── HELIOS/       # Solar system simulation
-├── SIMULATIONS/  # Other simulations (Chladni, Boids)
-├── SHIVAM/       # About Me timeline
-├── BLOG/         # Blog platform
-└── LEARN/        # Interactive lessons
+├── ARCH/         # Architecture visualizer
+├── SIMULATIONS/  # Simulations (Chladni patterns)
+├── TOOLS/        # User tools (PLL, Autocrate, Sensors, etc.)
+├── LEARN/        # Learning platform (AI, Ubuntu, etc.)
+└── BLOG/         # Blog platform
 ```
 
-### L2: Projects per Bubble
+### CORE Engines
 
 ```
-MCAD/                       # Open-source NX in Rust
-├── CORE/                   # B-rep kernel (from scratch)
-├── AUTOCRATE/              # Shipping crate generator
-├── GEARS/                  # Gear designer [scaffold]
-├── CFD/                    # Fluid dynamics [scaffold, GPU]
-├── STRESS/                 # FEA analysis [scaffold, GPU]
-├── THERMAL/                # Thermal sim [scaffold, GPU]
-├── CAM/                    # Toolpath/G-code gen
-├── EXPORT/                 # STEP writer
-├── CLI/                    # sbl-mcad command
-└── WEB/                    # WASM viewer
+CORE/
+├── SIMULATION_ENGINE/   # Boid arena, spatial grid, state machines
+├── SPICE_ENGINE/        # Circuit simulation (AC, transient)
+├── PLL_ENGINE/          # Phase-locked loop design
+├── EXPORT_ENGINE/       # PDF, Gerber X2 export
+├── WAVE_ENGINE/         # Wave simulation (Chladni)
+├── AUTOCRATE_ENGINE/    # Shipping crate designer
+└── CAD_ENGINE/          # B-rep solid modeling (box, cylinder, sphere)
+```
 
-ECAD/                       # Open-source Altium in Rust
-├── CORE/                   # Schematic + PCB (from scratch)
-├── POWER_SUPPLY/           # Power circuits [scaffold]
-├── AMPLIFIERS/             # Amplifiers [scaffold]
-├── EXPORT/                 # Gerber X2 writer (from scratch)
-├── DRC/                    # Design rule checker
-├── CLI/                    # sbl-ecad command
-└── WEB/                    # WASM editor
+### DNA Foundation
 
+```
 DNA/src/
-├── lib.rs                  # Core types
-├── schema/                 # DNA code parser (.dna.toml files)
-├── sim/                    # Simulation algorithms (boids, etc.)
-├── compute/                # GPU abstraction (wgpu)
-├── responsive.rs           # Mobile-first view rules
-└── export/                 # STEP/Gerber serializers
+├── lib.rs              # Public API exports
+├── physics/            # Physics modules
+│   ├── electro.../     # Lumped elements, circuit theory
+│   │   └── lumped.rs   # R, L, C, Diode, OpAmp
+│   └── solvers/        # Numerical solvers
+│       ├── rk45.rs     # Runge-Kutta integration
+│       └── filters.rs  # EKF, smoothing
+├── cad/                # CAD kernel
+│   ├── geometry.rs     # Point3, Vector3, Transform3
+│   ├── topology.rs     # Vertex, Edge, Face, Solid
+│   └── primitives.rs   # make_box, make_cylinder, etc.
+├── pll/                # PLL components
+│   ├── components.rs   # VCO, PFD, ChargePump
+│   ├── loop_filter.rs  # Active/passive filters
+│   └── stability.rs    # Phase margin, bandwidth
+├── sim/                # Simulation algorithms
+│   ├── boid_arena.rs   # Fixed-capacity entity storage
+│   ├── spatial_grid.rs # O(1) neighbor queries
+│   └── state_machine.rs # Behavior states
+├── export/             # File exporters
+│   ├── pdf.rs          # PDF generation
+│   └── gerber.rs       # Gerber X2 format
+└── autocrate/          # Crate design algorithms
+```
 
-SHIVAM/
-├── CORE/                   # Timeline engine
-├── quarters/               # 128 quarters of life data
-└── WEB/                    # shivambhardwaj.com deploy
+### L2: Projects
+
+```
+TOOLS/
+├── PLL/              # PLL designer UI (pll.too.foo)
+├── AUTOCRATE/        # Shipping crate generator
+├── SENSORS/          # Sensor test platform
+├── CRM/              # CRM application
+└── POWER_CIRCUITS/   # Power circuit designer
+
+LEARN/
+├── AI/               # AI tutorials
+├── UBUNTU/           # Ubuntu tutorials
+├── OPENCV/           # OpenCV tutorials
+├── ARDUINO/          # Arduino tutorials
+├── ESP32/            # ESP32 tutorials
+├── SWARM_ROBOTICS/   # Swarm robotics
+└── SLAM/             # SLAM tutorials
 ```
 
 ---
@@ -177,6 +211,12 @@ firmware = "grbl"
 - Spatial partitioning
 - Energy systems
 
+### Chladni Wave (DNA/src/sim/chladni.rs)
+- 2D Wave Equation
+- Modal excitation (m, n)
+- Interaction with particles
+- Reusable for any visualization
+
 ---
 
 ## Development Workflow
@@ -222,24 +262,24 @@ trunk build --release SIM/TOOFOO/index.html
 
 ---
 
-## Run Commands (Case Insensitive)
+## Dev Server Ports
 
-```bash
-run toofoo        # too.foo landing (port 3000)
-run helios        # Solar system (port 3001)
-run mcad          # MCAD viewer (port 3002)
-run ecad          # ECAD editor (port 3003)
-run simulations   # Simulations (port 3004)
-run blog          # Blog (port 3005)
-run learn         # Learning platform (port 3006)
-run website       # shivambhardwaj.com (port 3030)
-run list          # Show all projects
-```
+Each project has a dedicated port. Use `./SCRIPTS/dev-serve.sh <project>`:
 
-**Features:**
-- Auto port selection (finds next free if busy)
-- Case insensitive (`run TOOFOO` works)
-- Opens browser automatically
+| Project | Port | URL | Description |
+|---------|------|-----|-------------|
+| welcome | 8080 | http://127.0.0.1:8080 | too.foo landing page |
+| helios | 8081 | http://127.0.0.1:8081 | Solar system |
+| chladni | 8082 | http://127.0.0.1:8082 | Chladni patterns |
+| autocrate | 8083 | http://127.0.0.1:8083 | Crate generator |
+| sensors | 8084 | http://127.0.0.1:8084 | Sensor test (LEARN) |
+| blog | 8085 | http://127.0.0.1:8085 | Blog platform |
+| learn | 8086 | http://127.0.0.1:8086 | Learning hub |
+| arch | 8087 | http://127.0.0.1:8087 | Architecture explorer |
+| pll | 8090 | http://127.0.0.1:8090 | PLL designer |
+| power | 8091 | http://127.0.0.1:8091 | Power circuits |
+
+**Manual start:** `cd PROJECT && trunk serve index.html --port XXXX --open`
 
 ---
 
@@ -259,14 +299,9 @@ Ctrl+Shift+T     New tab
 ### btop (System Monitor)
 
 ```bash
-mon              # Launch btop
+btop             # Launch system monitor
 q                # Quit btop
 ```
-
-### Copy/Paste (X11 Selection)
-
-- **Select with mouse** → Auto-copies
-- **Middle-click** → Pastes (Ubuntu default)
 
 ---
 
@@ -282,7 +317,7 @@ cargo check --workspace
 trunk build SIM/TOOFOO/index.html
 
 # Serve with hot reload
-trunk serve SIM/TOOFOO/index.html --port 3000 --open
+trunk serve WELCOME/index.html --port 3000 --open
 
 # Run tests
 cargo test --workspace
@@ -454,23 +489,13 @@ git worktree prune
 
 ## Keyboard Shortcuts Summary
 
-### Zellij
-
-| Key | Action |
-|-----|--------|
-| `Alt+t` | New tab |
-| `Alt+n` | New pane |
-| `Alt+d` | Detach |
-| `Alt+h/j/k/l` | Navigate |
-| `Alt+1/2/3` | Switch tabs |
-
-### Run Script
+### Dev Server
 
 | Command | Opens |
 |---------|-------|
-| `run toofoo` | http://localhost:3000 |
-| `run website` | http://localhost:3030 |
-| `run list` | Show all projects |
+| `./SCRIPTS/dev-serve.sh welcome` | http://127.0.0.1:8080 |
+| `./SCRIPTS/dev-serve.sh arch` | http://127.0.0.1:8087 |
+| `cd PROJECT && trunk serve` | Manual start |
 
 ### Git Workflow
 
@@ -559,15 +584,10 @@ When told "work on issue X":
 
 ```bash
 # Development
-run <project>              # Start dev server
-cargo check --workspace    # Type check
-cargo test --workspace     # Run tests
-trunk build --release      # Production build
-
-# Session
-zellij                     # Start multiplexer
-Alt+d                      # Detach
-zellij attach              # Reattach
+./SCRIPTS/dev-serve.sh <project>  # Start dev server
+cargo check --workspace           # Type check
+cargo test --workspace            # Run tests
+trunk build --release             # Production build
 
 # Git
 git worktree add ~/worktrees/issue-X -b issue-X
@@ -587,7 +607,6 @@ cargo outdated             # Check versions
 - Rust Book: https://doc.rust-lang.org/book/
 - wgpu Guide: https://wgpu.rs/
 - Trunk Docs: https://trunkrs.dev/
-- Zellij Docs: https://zellij.dev/
 
 ---
 

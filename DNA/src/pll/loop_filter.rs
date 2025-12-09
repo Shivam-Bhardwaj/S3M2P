@@ -73,9 +73,9 @@ pub fn create_loop_filter_design(
 
     // C1 (main integrating capacitor) - use exact value or nearest
     let c1_actual = if c1 < 1e-9 {
-        c1  // Small caps, use ideal
+        c1 // Small caps, use ideal
     } else {
-        nearest_e96(c1 / 1e-9) * 1e-9  // Normalize to nF
+        nearest_e96(c1 / 1e-9) * 1e-9 // Normalize to nF
     };
 
     components.push(FilterComponent {
@@ -112,7 +112,11 @@ pub fn create_loop_filter_design(
     });
 
     let (c3_val, r2_val, topology) = if let (Some(c3), Some(r2)) = (c3, r2) {
-        let c3_actual = if c3 < 1e-9 { c3 } else { nearest_e96(c3 / 1e-9) * 1e-9 };
+        let c3_actual = if c3 < 1e-9 {
+            c3
+        } else {
+            nearest_e96(c3 / 1e-9) * 1e-9
+        };
         let r2_actual = nearest_e96(r2);
 
         components.push(FilterComponent {
@@ -131,7 +135,11 @@ pub fn create_loop_filter_design(
             tolerance_pct: 1.0,
         });
 
-        (Some(c3_actual), Some(r2_actual), LoopFilterTopology::PassiveThirdOrder)
+        (
+            Some(c3_actual),
+            Some(r2_actual),
+            LoopFilterTopology::PassiveThirdOrder,
+        )
     } else {
         (None, None, LoopFilterTopology::PassiveSecondOrder)
     };
@@ -154,10 +162,10 @@ mod tests {
     #[test]
     fn test_second_order_design() {
         // Typical values for 2.4 GHz PLL
-        let k_phi = 1e-3;  // 1 mA charge pump
-        let k_vco = 10e6;  // 10 MHz/V
+        let k_phi = 1e-3; // 1 mA charge pump
+        let k_vco = 10e6; // 10 MHz/V
         let n = 240.0;
-        let f_c = 100e3;   // 100 kHz bandwidth
+        let f_c = 100e3; // 100 kHz bandwidth
         let omega_c = 2.0 * PI * f_c;
         let pm = 45.0;
 
@@ -182,12 +190,12 @@ mod tests {
         let omega_c = 2.0 * PI * f_c;
         let pm = 45.0;
 
-        let (c1, r1, c2, r2, c3) = design_passive_third_order(k_phi, k_vco, n, omega_c, pm);
+        let (_c1, _r1, c2, r2, c3) = design_passive_third_order(k_phi, k_vco, n, omega_c, pm);
 
         // Verify 3rd order components
         assert!(c3 > 0.0);
         assert!(r2 > 0.0);
-        assert!(c3 < c2);  // C3 typically smaller than C2
+        assert!(c3 < c2); // C3 typically smaller than C2
     }
 
     #[test]

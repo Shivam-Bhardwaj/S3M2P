@@ -4,8 +4,9 @@
 //! LAYER: DNA → PHYSICS → FIELDS
 //! ═══════════════════════════════════════════════════════════════════════════════
 
-/// Wave equation solver
+/// Wave equation solver and Chladni patterns
 pub mod wave;
+pub use wave::{ChladniMode, PlateMode, WaveSimulation};
 
 // pub mod scalar;  // TODO: Temperature, pressure, potential
 // pub mod vector;  // TODO: Velocity, force, E/B fields

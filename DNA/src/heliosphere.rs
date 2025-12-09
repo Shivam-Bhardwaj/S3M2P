@@ -285,3 +285,63 @@ pub fn interpolate_parameters(
         shape_params,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_default_params() -> HeliosphereParameters {
+        HeliosphereParameters::new(
+            100.0,
+            0.8,
+            vec![1.0, 0.0, 0.0],
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            HeliosphereMorphology::Bubble,
+            vec![0.1],
+        )
+    }
+
+    #[test]
+    fn test_heliosphere_parameters_creation() {
+        let params = create_default_params();
+        assert_eq!(params.r_hp_nose, 100.0);
+        assert_eq!(params.morphology, HeliosphereMorphology::Bubble);
+    }
+
+    #[test]
+    fn test_heliopause_radius_nose() {
+        let params = create_default_params();
+        let surface = HeliosphereSurface::new(params);
+
+        // At theta=pi/2, phi=pi (nose direction if nose_vec is +X and we look from origin towards -X)
+        let r = surface.heliopause_radius(PI / 2.0, PI);
+        // Bubble shape at nose (alpha=0) is r_nose * (1 + param)
+        // 100 * (1 + 0.1 * 1) = 110
+        assert!((r - 110.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_termination_shock_ratio() {
+        let params = create_default_params();
+        let surface = HeliosphereSurface::new(params);
+
+        let r_hp = surface.heliopause_radius(PI / 2.0, PI);
+        let r_ts = surface.termination_shock_radius(PI / 2.0, PI);
+
+        assert!((r_ts / r_hp - 0.8).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_interpolation() {
+        let p0 = create_default_params();
+        let mut p1 = create_default_params();
+        p1.r_hp_nose = 200.0;
+
+        let p_mid = interpolate_parameters(&p0, &p1, 0.5);
+        assert!((p_mid.r_hp_nose - 150.0).abs() < 0.01);
+    }
+}

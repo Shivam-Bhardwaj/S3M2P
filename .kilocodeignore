@@ -1,0 +1,46 @@
+# Build artifacts
+target/
+dist/
+**/*.wasm
+
+# Dependencies
+node_modules/
+Cargo.lock
+package-lock.json
+
+# Git
+.git/
+.githooks/
+
+# Test & Coverage
+test-results/
+playwright-report/
+coverage_full.txt
+coverage_summary.txt
+
+# Logs & Temp
+*.log
+temp/
+TOOLS/CLAUDE_AUTOMATION/.data/
+TOOLS/CLAUDE_AUTOMATION/__pycache__/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Large/Binary Assets (unless specifically needed)
+*.zip
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.ttf
+*.woff
+*.woff2

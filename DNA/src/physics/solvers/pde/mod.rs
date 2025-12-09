@@ -4,6 +4,9 @@
 //! LAYER: DNA → PHYSICS → SOLVERS → PDE
 //! ═══════════════════════════════════════════════════════════════════════════════
 
+/// FFT-based spectral methods (Cooley-Tukey)
+pub mod spectral;
+pub use spectral::FFT2D;
+
 // pub mod fdm;       // TODO: Finite Difference Method
 // pub mod fem;       // TODO: Finite Element Method
-// pub mod spectral;  // TODO: FFT-based spectral methods (migrate wave_field/fft.rs)

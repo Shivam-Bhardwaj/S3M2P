@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Coming Soon | too.foo</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    html, body {
+    html,
+    body {
       width: 100%;
       height: 100%;
       background: #050508;
@@ -35,10 +41,10 @@
       padding: 60px;
       z-index: 10;
       background: linear-gradient(90deg,
-        rgba(5,5,8,1) 0%,
-        rgba(5,5,8,0.98) 60%,
-        rgba(5,5,8,0.7) 85%,
-        transparent 100%);
+          rgba(5, 5, 8, 1) 0%,
+          rgba(5, 5, 8, 0.98) 60%,
+          rgba(5, 5, 8, 0.7) 85%,
+          transparent 100%);
     }
 
     .status-code {
@@ -84,13 +90,15 @@
       transition: opacity 0.2s;
     }
 
-    .description a:hover { opacity: 0.7; }
+    .description a:hover {
+      opacity: 0.7;
+    }
 
     .rule-display {
       margin-top: 50px;
       padding: 20px;
-      background: rgba(255,102,0,0.03);
-      border-left: 2px solid rgba(255,102,0,0.3);
+      background: rgba(255, 102, 0, 0.03);
+      border-left: 2px solid rgba(255, 102, 0, 0.3);
     }
 
     .rule-label {
@@ -128,8 +136,14 @@
       letter-spacing: 1px;
     }
 
-    .stats div { margin-bottom: 3px; }
-    .stats span { color: #fff; opacity: 0.6; }
+    .stats div {
+      margin-bottom: 3px;
+    }
+
+    .stats span {
+      color: #fff;
+      opacity: 0.6;
+    }
 
     .nav-hint {
       position: absolute;
@@ -147,22 +161,36 @@
       transition: opacity 0.2s;
     }
 
-    .nav-hint a:hover { opacity: 0.8; }
+    .nav-hint a:hover {
+      opacity: 0.8;
+    }
 
     @media (max-width: 768px) {
       .message-panel {
         width: 100%;
-        background: rgba(5,5,8,0.92);
+        background: rgba(5, 5, 8, 0.92);
         padding: 30px;
         justify-content: flex-start;
         padding-top: 100px;
       }
-      .status-code { font-size: 80px; left: 30px; top: 20px; }
-      .title { font-size: 28px; }
-      .rule-display { display: none; }
+
+      .status-code {
+        font-size: 80px;
+        left: 30px;
+        top: 20px;
+      }
+
+      .title {
+        font-size: 28px;
+      }
+
+      .rule-display {
+        display: none;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <canvas id="canvas"></canvas>
@@ -210,9 +238,9 @@
     let bornTotal = 0;
     let diedTotal = 0;
 
-    let PARTICLE_COUNT;
+    const PARTICLE_COUNT = Math.floor((width * height) / 150);
     const SCALE = 2;
-    const MAX_AGE = 250;
+    const MAX_AGE = 500;
     const DECAY_START = 125;
 
     // Two colors only: bright orange and bright blue (high contrast)
@@ -357,7 +385,7 @@
           if (Math.random() < stickiness) {
             const idx = Math.floor(p.y) * width + Math.floor(p.x);
             if (grid[idx] === 0) {
-              grid[idx] = 1;
+              grid[idx] = 1 + Math.floor(Math.random() * 50);
               aliveCount++;
               bornTotal++;
             }
@@ -419,7 +447,7 @@
             if (age < 50) {
               ctx.fillStyle = 'rgba(255, 102, 0, 0.2)';
               ctx.beginPath();
-              ctx.arc(x * SCALE + SCALE/2, y * SCALE + SCALE/2, SCALE * 4, 0, Math.PI * 2);
+              ctx.arc(x * SCALE + SCALE / 2, y * SCALE + SCALE / 2, SCALE * 4, 0, Math.PI * 2);
               ctx.fill();
             }
           }
@@ -439,8 +467,8 @@
     }
 
     function animate() {
-      // Many updates per frame for fast, dynamic simulation
-      for (let i = 0; i < 8; i++) {
+      // Reduced updates per frame for smoother, more stable simulation
+      for (let i = 0; i < 2; i++) {
         update();
       }
       draw();
@@ -452,4 +480,5 @@
     animate();
   </script>
 </body>
+
 </html>

@@ -1,6 +1,6 @@
-use anyhow::Result;
 use crate::github::Comment;
 use crate::state::Database;
+use anyhow::Result;
 
 pub enum Agent {
     Planner,  // Opus - for complex reasoning and architecture
@@ -90,7 +90,7 @@ mod tests {
     fn test_executor_keywords() {
         let (db, _temp) = create_test_db();
         db.create_automation(1, "/tmp/test").unwrap();
-        db.set_has_plan(1).unwrap();
+        db._set_has_plan(1).unwrap();
 
         let test_cases = vec![
             "implement this",
@@ -142,7 +142,7 @@ mod tests {
     fn test_with_plan_defaults_executor() {
         let (db, _temp) = create_test_db();
         db.create_automation(1, "/tmp/test").unwrap();
-        db.set_has_plan(1).unwrap();
+        db._set_has_plan(1).unwrap();
 
         let comments = vec![make_comment(1, "some regular feedback")];
         let agent = decide(&comments, &db).unwrap();

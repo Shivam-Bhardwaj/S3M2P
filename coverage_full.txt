@@ -1,0 +1,576 @@
+info: cargo-llvm-cov currently setting cfg(coverage); you can opt-out it by passing --no-cfg-coverage
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/curious/S3M2P/BLOG/Cargo.toml
+workspace: /home/curious/S3M2P/Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/curious/S3M2P/SIMULATIONS/CHLADNI/Cargo.toml
+workspace: /home/curious/S3M2P/Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/curious/S3M2P/TOOLS/SENSORS/Cargo.toml
+workspace: /home/curious/S3M2P/Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/curious/S3M2P/TOOLS/PLL/Cargo.toml
+workspace: /home/curious/S3M2P/Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/curious/S3M2P/TOOLS/POWER_CIRCUITS/Cargo.toml
+workspace: /home/curious/S3M2P/Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/curious/S3M2P/LEARN/AI/Cargo.toml
+workspace: /home/curious/S3M2P/Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/curious/S3M2P/LEARN/UBUNTU/Cargo.toml
+workspace: /home/curious/S3M2P/Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/curious/S3M2P/LEARN/OPENCV/Cargo.toml
+workspace: /home/curious/S3M2P/Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/curious/S3M2P/LEARN/ARDUINO/Cargo.toml
+workspace: /home/curious/S3M2P/Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/curious/S3M2P/LEARN/ESP32/Cargo.toml
+workspace: /home/curious/S3M2P/Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/curious/S3M2P/LEARN/SWARM_ROBOTICS/Cargo.toml
+workspace: /home/curious/S3M2P/Cargo.toml
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /home/curious/S3M2P/LEARN/SLAM/Cargo.toml
+workspace: /home/curious/S3M2P/Cargo.toml
+   Compiling welcome v0.1.0 (/home/curious/S3M2P/WELCOME)
+   Compiling helios v0.1.0 (/home/curious/S3M2P/HELIOS)
+   Compiling dna v0.1.0 (/home/curious/S3M2P/DNA)
+   Compiling blog v0.1.0 (/home/curious/S3M2P/BLOG)
+   Compiling ai-learn v0.1.0 (/home/curious/S3M2P/LEARN/AI)
+   Compiling esp32-learn v0.1.0 (/home/curious/S3M2P/LEARN/ESP32)
+   Compiling sensors v0.1.0 (/home/curious/S3M2P/TOOLS/SENSORS)
+   Compiling arduino-learn v0.1.0 (/home/curious/S3M2P/LEARN/ARDUINO)
+   Compiling swarm-learn v0.1.0 (/home/curious/S3M2P/LEARN/SWARM_ROBOTICS)
+   Compiling power-circuits v0.1.0 (/home/curious/S3M2P/TOOLS/POWER_CIRCUITS)
+   Compiling slam-learn v0.1.0 (/home/curious/S3M2P/LEARN/SLAM)
+   Compiling ubuntu-learn v0.1.0 (/home/curious/S3M2P/LEARN/UBUNTU)
+   Compiling opencv-learn v0.1.0 (/home/curious/S3M2P/LEARN/OPENCV)
+   Compiling claude-automation v0.1.0 (/home/curious/S3M2P/DNA/CLAUDE_AUTOMATION)
+warning: unexpected `cfg` condition name: `wasm_bindgen_unstable_test_coverage`
+ --> LEARN/AI/src/lib.rs:3:1
+  |
+3 | #[wasm_bindgen(start)]
+  | ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: expected names are: `docsrs`, `feature`, and `test` and 31 more
+  = note: using a cfg inside a attribute macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `wasm_bindgen` crate for guidance on how handle this unexpected cfg
+  = help: the attribute macro `wasm_bindgen` may come from an old version of the `wasm_bindgen_macro` crate, try updating your dependency with `cargo update -p wasm_bindgen_macro`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: `#[warn(unexpected_cfgs)]` on by default
+  = note: this warning originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition name: `wasm_bindgen_unstable_test_coverage`
+ --> LEARN/SLAM/src/lib.rs:3:1
+  |
+3 | #[wasm_bindgen(start)]
+  | ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: expected names are: `docsrs`, `feature`, and `test` and 31 more
+  = note: using a cfg inside a attribute macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `wasm_bindgen` crate for guidance on how handle this unexpected cfg
+  = help: the attribute macro `wasm_bindgen` may come from an old version of the `wasm_bindgen_macro` crate, try updating your dependency with `cargo update -p wasm_bindgen_macro`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: `#[warn(unexpected_cfgs)]` on by default
+  = note: this warning originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition name: `wasm_bindgen_unstable_test_coverage`
+ --> LEARN/ESP32/src/lib.rs:3:1
+  |
+3 | #[wasm_bindgen(start)]
+  | ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: expected names are: `docsrs`, `feature`, and `test` and 31 more
+  = note: using a cfg inside a attribute macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `wasm_bindgen` crate for guidance on how handle this unexpected cfg
+  = help: the attribute macro `wasm_bindgen` may come from an old version of the `wasm_bindgen_macro` crate, try updating your dependency with `cargo update -p wasm_bindgen_macro`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: `#[warn(unexpected_cfgs)]` on by default
+  = note: this warning originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition name: `wasm_bindgen_unstable_test_coverage`
+  --> TOOLS/SENSORS/src/lib.rs:70:1
+   |
+70 | #[wasm_bindgen(start)]
+   | ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: expected names are: `docsrs`, `feature`, and `test` and 31 more
+   = note: using a cfg inside a attribute macro will use the cfgs from the destination crate and not the ones from the defining crate
+   = help: try referring to `wasm_bindgen` crate for guidance on how handle this unexpected cfg
+   = help: the attribute macro `wasm_bindgen` may come from an old version of the `wasm_bindgen_macro` crate, try updating your dependency with `cargo update -p wasm_bindgen_macro`
+   = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+   = note: `#[warn(unexpected_cfgs)]` on by default
+   = note: this warning originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition name: `wasm_bindgen_unstable_test_coverage`
+ --> LEARN/ARDUINO/src/lib.rs:3:1
+  |
+3 | #[wasm_bindgen(start)]
+  | ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: expected names are: `docsrs`, `feature`, and `test` and 31 more
+  = note: using a cfg inside a attribute macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `wasm_bindgen` crate for guidance on how handle this unexpected cfg
+  = help: the attribute macro `wasm_bindgen` may come from an old version of the `wasm_bindgen_macro` crate, try updating your dependency with `cargo update -p wasm_bindgen_macro`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: `#[warn(unexpected_cfgs)]` on by default
+  = note: this warning originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition name: `wasm_bindgen_unstable_test_coverage`
+ --> LEARN/UBUNTU/src/lib.rs:3:1
+  |
+3 | #[wasm_bindgen(start)]
+  | ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: expected names are: `docsrs`, `feature`, and `test` and 31 more
+  = note: using a cfg inside a attribute macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `wasm_bindgen` crate for guidance on how handle this unexpected cfg
+  = help: the attribute macro `wasm_bindgen` may come from an old version of the `wasm_bindgen_macro` crate, try updating your dependency with `cargo update -p wasm_bindgen_macro`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: `#[warn(unexpected_cfgs)]` on by default
+  = note: this warning originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition name: `wasm_bindgen_unstable_test_coverage`
+ --> TOOLS/POWER_CIRCUITS/src/lib.rs:3:1
+  |
+3 | #[wasm_bindgen(start)]
+  | ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: expected names are: `docsrs`, `feature`, and `test` and 31 more
+  = note: using a cfg inside a attribute macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `wasm_bindgen` crate for guidance on how handle this unexpected cfg
+  = help: the attribute macro `wasm_bindgen` may come from an old version of the `wasm_bindgen_macro` crate, try updating your dependency with `cargo update -p wasm_bindgen_macro`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: `#[warn(unexpected_cfgs)]` on by default
+  = note: this warning originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition name: `wasm_bindgen_unstable_test_coverage`
+ --> LEARN/OPENCV/src/lib.rs:3:1
+  |
+3 | #[wasm_bindgen(start)]
+  | ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: expected names are: `docsrs`, `feature`, and `test` and 31 more
+  = note: using a cfg inside a attribute macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `wasm_bindgen` crate for guidance on how handle this unexpected cfg
+  = help: the attribute macro `wasm_bindgen` may come from an old version of the `wasm_bindgen_macro` crate, try updating your dependency with `cargo update -p wasm_bindgen_macro`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: `#[warn(unexpected_cfgs)]` on by default
+  = note: this warning originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition name: `wasm_bindgen_unstable_test_coverage`
+ --> LEARN/SWARM_ROBOTICS/src/lib.rs:3:1
+  |
+3 | #[wasm_bindgen(start)]
+  | ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: expected names are: `docsrs`, `feature`, and `test` and 31 more
+  = note: using a cfg inside a attribute macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `wasm_bindgen` crate for guidance on how handle this unexpected cfg
+  = help: the attribute macro `wasm_bindgen` may come from an old version of the `wasm_bindgen_macro` crate, try updating your dependency with `cargo update -p wasm_bindgen_macro`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: `#[warn(unexpected_cfgs)]` on by default
+  = note: this warning originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: `ai-learn` (lib test) generated 1 warning
+warning: `esp32-learn` (lib test) generated 1 warning
+warning: `arduino-learn` (lib test) generated 1 warning
+warning: `slam-learn` (lib test) generated 1 warning
+warning: `power-circuits` (lib test) generated 1 warning
+warning: `ubuntu-learn` (lib test) generated 1 warning
+warning: `opencv-learn` (lib test) generated 1 warning
+warning: `sensors` (lib test) generated 1 warning
+warning: `swarm-learn` (lib test) generated 1 warning
+warning: unused variable: `pr`
+  --> DNA/CLAUDE_AUTOMATION/src/github.rs:92:13
+   |
+92 |         let pr = self.client
+   |             ^^ help: if this is intentional, prefix it with an underscore: `_pr`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `limits`, `brain`, and `logging` are never read
+  --> DNA/CLAUDE_AUTOMATION/src/config.rs:11:9
+   |
+ 6 | pub struct Config {
+   |            ------ fields in this struct
+...
+11 |     pub limits: LimitsConfig,
+   |         ^^^^^^
+12 |     pub brain: BrainConfig,
+   |         ^^^^^
+13 |     pub logging: LoggingConfig,
+   |         ^^^^^^^
+   |
+   = note: `Config` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `max_concurrent_automations` and `session_timeout_hours` are never read
+  --> DNA/CLAUDE_AUTOMATION/src/config.rs:19:9
+   |
+17 | pub struct DaemonConfig {
+   |            ------------ fields in this struct
+18 |     pub poll_interval_secs: u64,
+19 |     pub max_concurrent_automations: usize,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+20 |     pub session_timeout_hours: u64,
+   |         ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `DaemonConfig` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: fields `planner_agent`, `executor_agent`, and `bypass_permissions` are never read
+  --> DNA/CLAUDE_AUTOMATION/src/config.rs:40:9
+   |
+39 | pub struct AgentsConfig {
+   |            ------------ fields in this struct
+40 |     pub planner_agent: String,
+   |         ^^^^^^^^^^^^^
+41 |     pub planner_model: String,
+42 |     pub executor_agent: String,
+   |         ^^^^^^^^^^^^^^
+43 |     pub executor_model: String,
+44 |     pub bypass_permissions: bool,
+   |         ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `AgentsConfig` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: multiple fields are never read
+  --> DNA/CLAUDE_AUTOMATION/src/config.rs:49:9
+   |
+48 | pub struct LimitsConfig {
+   |            ------------ fields in this struct
+49 |     pub max_cost_per_issue_usd: f64,
+   |         ^^^^^^^^^^^^^^^^^^^^^^
+50 |     pub max_planner_cost_usd: f64,
+   |         ^^^^^^^^^^^^^^^^^^^^
+51 |     pub max_executor_cost_usd: f64,
+   |         ^^^^^^^^^^^^^^^^^^^^^
+52 |     pub max_tokens_planner: usize,
+   |         ^^^^^^^^^^^^^^^^^^
+53 |     pub max_tokens_executor: usize,
+   |         ^^^^^^^^^^^^^^^^^^^
+54 |     pub daily_automation_limit: usize,
+   |         ^^^^^^^^^^^^^^^^^^^^^^
+55 |     pub max_concurrent: usize,
+   |         ^^^^^^^^^^^^^^
+   |
+   = note: `LimitsConfig` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: fields `enabled`, `sync_on_pr_merge`, `architecture_regeneration_interval_days`, and `max_recent_changes` are never read
+  --> DNA/CLAUDE_AUTOMATION/src/config.rs:60:9
+   |
+59 | pub struct BrainConfig {
+   |            ----------- fields in this struct
+60 |     pub enabled: bool,
+   |         ^^^^^^^
+61 |     pub sync_on_pr_merge: bool,
+   |         ^^^^^^^^^^^^^^^^
+62 |     pub architecture_regeneration_interval_days: u64,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+63 |     pub max_recent_changes: usize,
+   |         ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `BrainConfig` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: fields `level` and `file` are never read
+  --> DNA/CLAUDE_AUTOMATION/src/config.rs:68:9
+   |
+67 | pub struct LoggingConfig {
+   |            ------------- fields in this struct
+68 |     pub level: String,
+   |         ^^^^^
+69 |     pub file: String,
+   |         ^^^^
+   |
+   = note: `LoggingConfig` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: method `complete_automation` is never used
+   --> DNA/CLAUDE_AUTOMATION/src/state.rs:146:12
+    |
+  9 | impl Database {
+    | ------------- method in this implementation
+...
+146 |     pub fn complete_automation(&self, issue_number: u64, cost_usd: f64, tokens_used: usize) -> Result<()> {
+    |            ^^^^^^^^^^^^^^^^^^^
+
+warning: `claude-automation` (bin "claude-automation" test) generated 8 warnings
+   Compiling simulation-cli v0.1.0 (/home/curious/S3M2P/DNA/SIMULATION_CLI)
+   Compiling chladni v0.1.0 (/home/curious/S3M2P/SIMULATIONS/CHLADNI)
+   Compiling pll v0.1.0 (/home/curious/S3M2P/TOOLS/PLL)
+   Compiling crm v0.1.0 (/home/curious/S3M2P/TOOLS/CRM)
+   Compiling storage-server v0.1.0 (/home/curious/S3M2P/DNA/STORAGE_SERVER)
+   Compiling autocrate v0.1.0 (/home/curious/S3M2P/TOOLS/AUTOCRATE)
+warning: unused imports: `Deserialize` and `Serialize`
+ --> TOOLS/AUTOCRATE/src/lib.rs:5:13
+  |
+5 | use serde::{Deserialize, Serialize};
+  |             ^^^^^^^^^^^  ^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unexpected `cfg` condition name: `wasm_bindgen_unstable_test_coverage`
+ --> TOOLS/PLL/src/lib.rs:9:1
+  |
+9 | #[wasm_bindgen(start)]
+  | ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: expected names are: `docsrs`, `feature`, and `test` and 31 more
+  = note: using a cfg inside a attribute macro will use the cfgs from the destination crate and not the ones from the defining crate
+  = help: try referring to `wasm_bindgen` crate for guidance on how handle this unexpected cfg
+  = help: the attribute macro `wasm_bindgen` may come from an old version of the `wasm_bindgen_macro` crate, try updating your dependency with `cargo update -p wasm_bindgen_macro`
+  = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+  = note: `#[warn(unexpected_cfgs)]` on by default
+  = note: this warning originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused variable: `report`
+  --> DNA/tests/ecosystem_stability.rs:70:9
+   |
+70 |     let report = analyze_stability(&history, 15000);
+   |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_report`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `report`
+  --> DNA/tests/ecosystem_stability.rs:97:9
+   |
+97 |     let report = analyze_stability(&history, 15000);
+   |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_report`
+
+warning: `autocrate` (lib test) generated 1 warning (run `cargo fix --lib -p autocrate --tests` to apply 1 suggestion)
+warning: `pll` (lib test) generated 1 warning
+warning: `dna` (test "ecosystem_stability") generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.26s
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/ai_learn-ce8b3b5c1e7e75ed)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/arduino_learn-65ad468221a67107)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/autocrate-84f5dc4f21fee719)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/blog-a2a9f7c05f49c9f3)
+
+running 2 tests
+test tests::test_parse_frontmatter ... ok
+test tests::test_render_html ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/chladni-29b8247bdb3c77d2)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/llvm-cov-target/debug/deps/claude_automation-5a2bc3186d78fa5d)
+
+running 4 tests
+test agent_router::tests::test_no_plan_triggers_planner ... ok
+test agent_router::tests::test_planner_keywords ... ok
+test agent_router::tests::test_executor_keywords ... ok
+test agent_router::tests::test_with_plan_defaults_executor ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/crm-bb9b5106c7e76e32)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/dna-2b64e9d1eeff9881)
+
+running 134 tests
+test autocrate::calculator::tests::test_basic_calculation ... ok
+test autocrate::calculator::tests::test_skid_count ... ok
+test autocrate::constants::tests::test_fractional_inches ... ok
+test autocrate::constants::tests::test_lumber_dimensions ... ok
+test autocrate::constants::tests::test_skid_count ... ok
+test color::tests::test_color_interpolation ... ok
+test color::tests::test_gradient_sampling ... ok
+test color::tests::test_hsl_lerp_wrapping ... ok
+test color::tests::test_hsl_rgb_conversion ... ok
+test color::tests::test_rgb_hex_roundtrip ... ok
+test color::tests::test_rgb_to_hsl_roundtrip ... ok
+test color::tests::test_temperature_to_color ... ok
+test coordinates::tests::test_angular_separation ... ok
+test coordinates::tests::test_ecliptic_to_equatorial ... ok
+test coordinates::tests::test_hee_to_hgi_identity_at_epoch ... ok
+test ekf::tests::test_basic_filter ... ok
+test ekf::tests::test_noise_rejection ... ok
+test ekf::tests::test_smooth_trajectory ... ok
+test ekf::tests::test_uncertainty_decreases ... ok
+test export::gerber::tests::test_coordinate_conversion ... ok
+test export::gerber::tests::test_gerber_creation ... ok
+test export::pdf::tests::test_escape_pdf_string ... ok
+test export::pdf::tests::test_pdf_creation ... ok
+test heliosphere::tests::test_heliopause_radius_nose ... ok
+test heliosphere::tests::test_heliosphere_parameters_creation ... ok
+test heliosphere::tests::test_interpolation ... ok
+test heliosphere::tests::test_termination_shock_ratio ... ok
+test heliosphere_model::tests::test_boundary_calculations ... ok
+test heliosphere_model::tests::test_pressure_balance ... ok
+test interaction::tests::test_batch_processing ... ok
+test interaction::tests::test_interaction_result_variants ... ok
+test mat2::tests::test_determinant ... ok
+test mat2::tests::test_identity ... ok
+test mat2::tests::test_rotation ... ok
+test mat2::tests::test_singular_no_inverse ... ok
+test mat2::tests::test_inverse ... ok
+test pathfinding::tests::test_diagonal_movement ... ok
+test pathfinding::tests::test_empty_grid ... ok
+test pathfinding::tests::test_no_path ... ok
+test pll::components::tests::test_pll_ic_library ... ok
+test pll::components::tests::test_score_vco ... ok
+test pathfinding::tests::test_obstacle_avoidance ... ok
+test pll::components::tests::test_select_pll_ic ... ok
+test pll::components::tests::test_select_vco_2_4ghz ... ok
+test pll::components::tests::test_vco_library ... ok
+test pll::fractional_n::tests::test_bandwidth_adjustment ... ok
+test pll::fractional_n::tests::test_calculate_fractional_divider ... ok
+test pll::components::tests::test_nearest_e24 ... ok
+test pll::components::tests::test_nearest_e96 ... ok
+test pll::fractional_n::tests::test_create_fractional_n_config ... ok
+test pll::fractional_n::tests::test_quantization_noise ... ok
+test pll::integer_n::tests::test_calculate_dividers ... ok
+test pll::integer_n::tests::test_prescaler_selection ... ok
+test pll::components::tests::test_format_capacitance ... ok
+test pll::integer_n::tests::test_low_output_frequency ... ok
+test pll::components::tests::test_format_resistance ... ok
+test pll::loop_filter::tests::test_create_loop_filter_design ... ok
+test pll::loop_filter::tests::test_second_order_design ... ok
+test pll::loop_filter::tests::test_third_order_design ... ok
+test pll::stability::tests::test_complex_operations ... ok
+test pll::stability::tests::test_bode_plot_generation ... ok
+test pll::stability::tests::test_stability_analysis ... ok
+test pathfinding::tests::test_start_equals_goal ... ok
+test sim::chladni::tests::test_simulation_initialization ... ok
+test random::tests::test_random_in_rect ... ok
+test pll::transient::tests::test_step_response ... ok
+test sim::chladni::tests::test_update_modifies_state ... ok
+test solar_wind::tests::test_magnetic_field_direction ... ok
+test random::tests::test_random_velocity ... ok
+test spatial::tests::test_children_generation ... ok
+test random::tests::test_roll_chance ... ok
+test spice::matrix::tests::test_voltage_divider ... ok
+test statistics::tests::test_dominant_role ... ok
+test statistics::tests::test_population_metrics_balanced ... ok
+test spice::netlist::tests::test_netlist_creation ... ok
+test statistics::tests::test_metrics_history ... ok
+test statistics::tests::test_population_metrics_empty ... ok
+test sim::chladni::tests::test_plate_mode_frequency ... ok
+test spatial::tests::test_spherical_cartesian_roundtrip ... ok
+test spice::matrix::tests::test_voltage_source_stamp ... ok
+test spice::netlist::tests::test_voltage_source_count ... ok
+test spatial::tests::test_store_query ... ok
+test spice::matrix::tests::test_simple_circuit_solve ... ok
+test pll::noise::tests::test_phase_noise_calculation ... ok
+test pll::tests::test_design_pll_validation ... ok
+test random::tests::test_random_angle_range ... ok
+test random::tests::test_random_direction_unit ... ok
+test sim::chladni::tests::test_amplitude_at_bounds ... ok
+test solar_wind::tests::test_vector_timeseries_interpolation ... ok
+test spatial::tests::test_spatial_key_hierarchy ... ok
+test spatial::tests::test_spatial_key_mapping ... ok
+test solar_wind::tests::test_timeseries_interpolation ... ok
+test tests::test_arena_spawn_kill ... ok
+test tests::test_death_cleanup ... ok
+test spice::matrix::tests::test_resistor_stamp ... ok
+test sim::chladni::tests::test_dirty_flag_optimization ... ok
+test tests::test_state_transition_flee ... ok
+test tests::test_state_transition_hunt ... ok
+test random::tests::test_random_in_annulus ... ok
+test random::tests::test_random_in_circle ... ok
+test solar_wind::tests::test_parker_spiral_angle ... ok
+test spice::ac::tests::test_complex_arithmetic ... ok
+test tests::test_predation_damage ... ok
+test spice::ac::tests::test_rc_lowpass ... ok
+test wave_field::wave_field::tests::test_wave_field_creation ... ok
+test zones::tests::test_is_in_any_exclusion ... ok
+test zones::tests::test_nearest_exclusion_zone ... ok
+test tests::test_spatial_grid ... ok
+test wave_field::ecosystem::tests::test_wave_value ... ok
+test zones::tests::test_exclusion_zone_with_margin ... ok
+test statistics::tests::test_population_metrics_monoculture ... ok
+test wave_field::fft::tests::test_fft_roundtrip ... ok
+test wave_field::ecosystem::tests::test_pid_controller ... ok
+test zones::tests::test_exclusion_zone_contains ... ok
+test tests::test_genome_defaults ... ok
+test tests::test_role_inheritance ... ok
+test tests::test_mutation_gigantism ... ok
+test tests::test_state_forage ... ok
+test pll::circuit::tests::test_build_pll_netlist ... ok
+test zones::tests::test_distance_to_edge ... ok
+test wave_field::ecosystem::tests::test_stability_report ... ok
+test wave_field::ecosystem::tests::test_hyperparams_apply ... ok
+test wave_field::ecosystem::tests::test_ecosystem_creation ... ok
+test wave_field::wave_field::tests::test_add_wave_and_sample ... ok
+test export::pdf::tests::test_pll_report_generation ... ok
+test pll::tests::test_design_pll_basic ... ok
+test export::gerber::tests::test_loop_filter_gerber ... ok
+test pll::circuit::tests::test_simulate_pll_circuit ... ok
+test wave_field::ecosystem::tests::test_determinism ... ok
+test wave_field::ecosystem::tests::test_seed_population ... ok
+test tests::test_arena_capacity_4096 ... ok
+test wave_field::ecosystem::tests::test_extinction_prevention ... ok
+test wave_field::ecosystem::tests::test_update_runs ... ok
+test wave_field::ecosystem::tests::test_stability_20_seconds ... ok
+
+test result: ok. 134 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.29s
+
+     Running tests/comprehensive_tests.rs (target/llvm-cov-target/debug/deps/comprehensive_tests-31910cbbbc99522b)
+
+running 23 tests
+test test_boid_color_bounds ... ok
+test test_all_state_transitions ... ok
+test test_diversity_balanced_ecosystem ... ok
+test test_empty_arena_operations ... ok
+test test_flee_priority_over_other_states ... ok
+test test_food_source_depletion ... ok
+test test_diversity_monoculture ... ok
+test test_food_source_regeneration ... ok
+test test_full_capacity_arena ... ok
+test test_earthquake_randomizes_velocity ... ok
+test test_inactive_predator_zone ... ok
+test test_migration_applies_velocity ... ok
+test test_predator_zone_damage_scaling ... ok
+test test_spatial_grid_boundary_boids ... ok
+test test_spatial_grid_zero_radius_query ... ok
+test test_spatial_grid_large_radius_query ... ok
+test test_zero_division_safety ... ok
+test test_spawn_recycle_slots ... ok
+test test_season_food_multiplier_range ... ok
+test test_season_cycle_bounds ... ok
+test test_velocity_bounds ... ok
+test test_mass_extinction_survival ... ok
+test test_position_nan_handling ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/ecosystem_stability.rs (target/llvm-cov-target/debug/deps/ecosystem_stability-c364b44460170bf9)
+
+running 10 tests
+test test_stability_10_minutes ... ignored
+test test_adaptive_sampling has been running for over 60 seconds
+test test_direct_spawn_stability has been running for over 60 seconds
+test test_high_predator_energy has been running for over 60 seconds
+test test_no_excessive_oscillation has been running for over 60 seconds
+test test_population_convergence has been running for over 60 seconds
+test test_prey_predator_ratio has been running for over 60 seconds
+test test_robustness_multiple_seeds has been running for over 60 seconds
+test test_stability_1_minute has been running for over 60 seconds
+test test_stability_20_seconds has been running for over 60 seconds
+test test_stability_20_seconds ... ok

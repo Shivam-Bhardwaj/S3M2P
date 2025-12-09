@@ -1,0 +1,11 @@
+[package]
+name = "wave-engine"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+dna.workspace = true
+glam.workspace = true
+
+[lints]
+workspace = true

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,14 +9,18 @@
     <link data-trunk rel="copy-dir" href="assets" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Rajdhani:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        html, body {
+
+        html,
+        body {
             width: 100%;
             height: 100%;
             overflow: hidden;
@@ -89,7 +94,7 @@
         #center-text-container {
             display: none;
         }
-        
+
         /* Monolith Icons - All sizes calculated */
         .monolith {
             pointer-events: auto;
@@ -116,11 +121,25 @@
             /* NO CSS transform - inline style handles rotation & translation */
         }
 
+        /* Antimony Bubble (Center) */
+        #antimony-bubble {
+            width: 120px;
+            height: 120px;
+            cursor: pointer;
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.3));
+        }
+
+        #antimony-bubble:hover {
+            transform: scale(1.15) rotate(5deg);
+            filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.6));
+        }
+
         .monolith img {
             width: 60%;
             height: 60%;
         }
-        
+
         .monolith::before {
             content: '';
             position: absolute;
@@ -129,14 +148,14 @@
             border: 1px solid rgba(0, 255, 255, 0.1);
             pointer-events: none;
         }
-        
+
         .monolith img {
             width: 70%;
             height: 70%;
             filter: drop-shadow(0 0 2px rgba(0, 255, 255, 0.5));
             transition: transform 0.2s;
         }
-        
+
         .monolith span {
             position: absolute;
             bottom: -25px;
@@ -144,30 +163,30 @@
             color: rgba(255, 255, 255, 0.8);
             font-size: 0.7rem;
             font-weight: 600;
-            text-shadow: 0 0 5px rgba(0,0,0,0.8);
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
             opacity: 0;
             letter-spacing: 1px;
             transition: all 0.3s;
             white-space: nowrap;
             text-transform: uppercase;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0, 0, 0, 0.6);
             padding: 2px 6px;
             border-radius: 4px;
             border: 1px solid rgba(0, 255, 255, 0.1);
         }
-        
+
         .monolith:hover {
             border-color: rgba(0, 255, 255, 0.6);
             background: rgba(0, 20, 30, 0.9);
             box-shadow: 0 0 25px rgba(0, 255, 255, 0.4), inset 0 0 15px rgba(0, 255, 255, 0.1);
             z-index: 200;
         }
-        
+
         .monolith:hover img {
             transform: scale(1.2);
             filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.8));
         }
-        
+
         .monolith:hover span {
             opacity: 1;
             transform: translateY(5px);
@@ -231,6 +250,7 @@
 
         /* Desktop Adjustments */
         @media (min-width: 768px) {
+
             /* Constellation size handled by viewport units above */
             #center-text-container {
                 font-size: 2rem;
@@ -292,6 +312,7 @@
             color: #00ffff;
             font-size: 0.7rem;
         }
+
         #stats-row span {
             display: flex;
             align-items: center;
@@ -307,20 +328,26 @@
             display: flex;
             align-items: center;
         }
+
         #log-row::before {
             content: '>';
             margin-right: 8px;
             color: #00ff00;
             animation: blink 1s infinite;
         }
-        
-        @keyframes blink { 50% { opacity: 0; } }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
 
         #tech-info {
             font-size: 0.6rem;
             color: rgba(255, 255, 255, 0.4);
             text-align: right;
         }
+
         #whitepaper-link {
             color: #00ffff;
             text-decoration: none;
@@ -336,10 +363,12 @@
                 padding: 8px;
                 gap: 4px;
             }
+
             #log-row {
                 position: static;
                 transform: none;
             }
+
             #tech-info {
                 display: none;
             }
@@ -360,6 +389,7 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
+
         #whitepaper-overlay.visible {
             display: flex;
             opacity: 1;
@@ -389,13 +419,36 @@
             cursor: pointer;
         }
 
-        #whitepaper-content h1 { color: #00ffff; font-family: 'Rajdhani', sans-serif; margin-bottom: 20px; }
-        #whitepaper-content h2 { color: #ffffff; font-family: 'Rajdhani', sans-serif; margin-top: 30px; border-bottom: 1px solid #333; padding-bottom: 5px;}
-        #whitepaper-content p { margin-bottom: 15px; line-height: 1.6; }
-        #whitepaper-content ul { margin-left: 20px; margin-bottom: 15px; }
-        #whitepaper-content li { margin-bottom: 5px; }
+        #whitepaper-content h1 {
+            color: #00ffff;
+            font-family: 'Rajdhani', sans-serif;
+            margin-bottom: 20px;
+        }
+
+        #whitepaper-content h2 {
+            color: #ffffff;
+            font-family: 'Rajdhani', sans-serif;
+            margin-top: 30px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        #whitepaper-content p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        #whitepaper-content ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        #whitepaper-content li {
+            margin-bottom: 5px;
+        }
     </style>
 </head>
+
 <body>
     <div id="app-container">
         <div id="simulation-area">
@@ -426,11 +479,13 @@
                 <span id="console-log">System Online...</span>
             </div>
             <div id="tech-info">
-                <span style="font-size: 0.9rem; color: rgba(0, 255, 255, 0.8); margin-right: 1rem;">शिवम् भारद्वाज</span>
+                <span style="font-size: 0.9rem; color: rgba(0, 255, 255, 0.8); margin-right: 1rem;">शिवम्
+                    भारद्वाज</span>
                 RUST • WASM • WGPU
                 <a id="whitepaper-link">FIELD MANUAL</a>
                 <br>
-                <a id="commit-link" href="#" target="_blank" style="font-size: 0.55rem; opacity: 0.6; color: #00ffff; text-decoration: none; margin-top: 2px; display: inline-block;">Loading...</a>
+                <a id="commit-link" href="#" target="_blank"
+                    style="font-size: 0.55rem; opacity: 0.6; color: #00ffff; text-decoration: none; margin-top: 2px; display: inline-block;">Loading...</a>
             </div>
         </div>
     </div>
@@ -498,18 +553,23 @@ S3M2P/
         </div>
     </div>
 
+    <!-- Architecture Diagram Container -->
+    <div id="arch-container"
+        style="display: none; position: fixed; inset: 0; background: rgba(5, 5, 8, 0.95); z-index: 5000; justify-content: center; align-items: center;">
+    </div>
+
     <!-- JS Helper for Rust -->
     <script>
         const textEl = document.getElementById('center-text-container');
 
-        window.updateCenterText = function(text, opacity, logoOpacity, useGlitch) {
+        window.updateCenterText = function (text, opacity, logoOpacity, useGlitch) {
             if (textEl) {
                 textEl.innerText = text;
                 textEl.style.opacity = opacity;
                 if (useGlitch) {
                     // Apply random transform jitter
                     const jitter = 2.0;
-                    textEl.style.transform = `translate(${(Math.random()-0.5)*jitter}px, ${(Math.random()-0.5)*jitter}px)`;
+                    textEl.style.transform = `translate(${(Math.random() - 0.5) * jitter}px, ${(Math.random() - 0.5) * jitter}px)`;
                     textEl.style.filter = 'blur(0.5px)';
                 } else {
                     textEl.style.transform = 'none';
@@ -537,10 +597,11 @@ S3M2P/
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) overlay.classList.remove('visible');
         });
-        
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') overlay.classList.remove('visible');
         });
     </script>
 </body>
+
 </html>

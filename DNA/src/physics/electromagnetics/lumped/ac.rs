@@ -1,3 +1,48 @@
+//! ═══════════════════════════════════════════════════════════════════════════════
+//! FILE: ac.rs
+//! PATH: DNA/src/physics/electromagnetics/lumped/ac.rs
+//! ═══════════════════════════════════════════════════════════════════════════════
+//!
+//! PURPOSE: AC (frequency-domain) circuit analysis using complex MNA
+//!
+//! LAYER: DNA → PHYSICS → ELECTROMAGNETICS → LUMPED
+//!
+//! ┌─────────────────────────────────────────────────────────────────────────────┐
+//! │ ALGORITHM: Complex Modified Nodal Analysis                                  │
+//! ├─────────────────────────────────────────────────────────────────────────────┤
+//! │ AC analysis extends MNA with complex numbers:                               │
+//! │ [G + sC] [V] = [I]                                                          │
+//! │                                                                             │
+//! │ Where s = jω for AC analysis                                                │
+//! │                                                                             │
+//! │ Reactive component admittances:                                             │
+//! │   Capacitor: Y = jωC                                                        │
+//! │   Inductor:  Y = 1/(jωL) = -j/(ωL)                                          │
+//! │                                                                             │
+//! │ Frequency sweep: Logarithmic spacing for Bode plots                         │
+//! └─────────────────────────────────────────────────────────────────────────────┘
+//!
+//! ┌─────────────────────────────────────────────────────────────────────────────┐
+//! │ DATA DEFINED                                                                │
+//! ├─────────────────────────────────────────────────────────────────────────────┤
+//! │ Complex             Complex number (real + imaginary)                       │
+//! │ ComplexMNAMatrix    Complex-valued MNA matrix for AC analysis               │
+//! │ ACResult            Frequency sweep results                                 │
+//! └─────────────────────────────────────────────────────────────────────────────┘
+//!
+//! DEPENDS ON:
+//!   • super::netlist → Netlist, Element, SourceValue
+//!
+//! USED BY:
+//!   • TOOLS/PLL → Frequency response, Bode plots
+//!   • CORE/SPICE_ENGINE → Full AC analysis
+//!
+//! ═══════════════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────────────────────────
+// CODE BELOW - Optimized for ML development
+// ─────────────────────────────────────────────────────────────────────────────────
+
 use super::netlist::{Element, Netlist, SourceValue};
 use std::f64::consts::PI;
 
@@ -14,7 +59,10 @@ impl Complex {
     }
 
     pub fn zero() -> Self {
-        Self { real: 0.0, imag: 0.0 }
+        Self {
+            real: 0.0,
+            imag: 0.0,
+        }
     }
 
     pub fn from_polar(magnitude: f64, phase_rad: f64) -> Self {
@@ -149,7 +197,7 @@ impl ComplexMNAMatrix {
     /// Stamp inductor: Y = 1/(jωL)
     pub fn stamp_inductor(&mut self, node_p: usize, node_n: usize, inductance: f64, omega: f64) {
         if omega == 0.0 {
-            return;  // DC: inductor is short circuit
+            return; // DC: inductor is short circuit
         }
 
         let y = Complex::new(0.0, -1.0 / (omega * inductance));
@@ -170,17 +218,27 @@ impl ComplexMNAMatrix {
     }
 
     /// Stamp voltage source
-    pub fn stamp_voltage_source(&mut self, node_p: usize, node_n: usize, vs_idx: usize, voltage: Complex) {
+    pub fn stamp_voltage_source(
+        &mut self,
+        node_p: usize,
+        node_n: usize,
+        vs_idx: usize,
+        voltage: Complex,
+    ) {
         let vs_row = self.num_nodes + vs_idx;
 
         if node_p > 0 {
-            self.matrix[node_p - 1][vs_row] = self.matrix[node_p - 1][vs_row] + Complex::new(1.0, 0.0);
-            self.matrix[vs_row][node_p - 1] = self.matrix[vs_row][node_p - 1] + Complex::new(1.0, 0.0);
+            self.matrix[node_p - 1][vs_row] =
+                self.matrix[node_p - 1][vs_row] + Complex::new(1.0, 0.0);
+            self.matrix[vs_row][node_p - 1] =
+                self.matrix[vs_row][node_p - 1] + Complex::new(1.0, 0.0);
         }
 
         if node_n > 0 {
-            self.matrix[node_n - 1][vs_row] = self.matrix[node_n - 1][vs_row] - Complex::new(1.0, 0.0);
-            self.matrix[vs_row][node_n - 1] = self.matrix[vs_row][node_n - 1] - Complex::new(1.0, 0.0);
+            self.matrix[node_n - 1][vs_row] =
+                self.matrix[node_n - 1][vs_row] - Complex::new(1.0, 0.0);
+            self.matrix[vs_row][node_n - 1] =
+                self.matrix[vs_row][node_n - 1] - Complex::new(1.0, 0.0);
         }
 
         self.rhs[vs_row] = voltage;
@@ -230,12 +288,16 @@ impl ComplexMNAMatrix {
 
         // KCL at output nodes (current flows through VCVS)
         if node_out_p > 0 {
-            self.matrix[node_out_p - 1][vs_row] = self.matrix[node_out_p - 1][vs_row] + Complex::new(1.0, 0.0);
-            self.matrix[vs_row][node_out_p - 1] = self.matrix[vs_row][node_out_p - 1] + Complex::new(1.0, 0.0);
+            self.matrix[node_out_p - 1][vs_row] =
+                self.matrix[node_out_p - 1][vs_row] + Complex::new(1.0, 0.0);
+            self.matrix[vs_row][node_out_p - 1] =
+                self.matrix[vs_row][node_out_p - 1] + Complex::new(1.0, 0.0);
         }
         if node_out_n > 0 {
-            self.matrix[node_out_n - 1][vs_row] = self.matrix[node_out_n - 1][vs_row] - Complex::new(1.0, 0.0);
-            self.matrix[vs_row][node_out_n - 1] = self.matrix[vs_row][node_out_n - 1] - Complex::new(1.0, 0.0);
+            self.matrix[node_out_n - 1][vs_row] =
+                self.matrix[node_out_n - 1][vs_row] - Complex::new(1.0, 0.0);
+            self.matrix[vs_row][node_out_n - 1] =
+                self.matrix[vs_row][node_out_n - 1] - Complex::new(1.0, 0.0);
         }
 
         // Voltage constraint: V_out = gain * V_ctrl
@@ -263,8 +325,8 @@ impl ComplexMNAMatrix {
             // Find pivot (row with largest element in column k)
             let mut max_val = a[k][k].magnitude();
             let mut max_row = k;
-            for i in (k + 1)..n {
-                let val = a[i][k].magnitude();
+            for (i, row) in a.iter().enumerate().skip(k + 1) {
+                let val = row[k].magnitude();
                 if val > max_val {
                     max_val = val;
                     max_row = i;
@@ -287,6 +349,7 @@ impl ComplexMNAMatrix {
                 let factor = a[i][k] / a[k][k];
                 a[i][k] = factor;
 
+                #[allow(clippy::needless_range_loop)]
                 for j in (k + 1)..n {
                     a[i][j] = a[i][j] - factor * a[k][j];
                 }
@@ -311,7 +374,10 @@ impl ComplexMNAMatrix {
                 sum = sum - a[i][j] * x[j];
             }
             if a[i][i].magnitude() < 1e-14 {
-                return Err(format!("Matrix is singular at row {} during back substitution", i));
+                return Err(format!(
+                    "Matrix is singular at row {} during back substitution",
+                    i
+                ));
             }
             x[i] = sum / a[i][i];
         }
@@ -324,7 +390,7 @@ impl ComplexMNAMatrix {
 #[derive(Clone, Debug)]
 pub struct ACResult {
     pub frequencies: Vec<f64>,
-    pub node_voltages: Vec<Vec<Complex>>,  // [frequency][node]
+    pub node_voltages: Vec<Vec<Complex>>, // [frequency][node]
 }
 
 /// Perform AC analysis
@@ -357,22 +423,42 @@ pub fn ac_analysis(
 
         for element in &netlist.elements {
             match element {
-                Element::Resistor { node_p, node_n, value, .. } => {
+                Element::Resistor {
+                    node_p,
+                    node_n,
+                    value,
+                    ..
+                } => {
                     let np = netlist.node_index(node_p).unwrap();
                     let nn = netlist.node_index(node_n).unwrap();
                     matrix.stamp_resistor(np, nn, *value);
                 }
-                Element::Capacitor { node_p, node_n, value, .. } => {
+                Element::Capacitor {
+                    node_p,
+                    node_n,
+                    value,
+                    ..
+                } => {
                     let np = netlist.node_index(node_p).unwrap();
                     let nn = netlist.node_index(node_n).unwrap();
                     matrix.stamp_capacitor(np, nn, *value, omega);
                 }
-                Element::Inductor { node_p, node_n, value, .. } => {
+                Element::Inductor {
+                    node_p,
+                    node_n,
+                    value,
+                    ..
+                } => {
                     let np = netlist.node_index(node_p).unwrap();
                     let nn = netlist.node_index(node_n).unwrap();
                     matrix.stamp_inductor(np, nn, *value, omega);
                 }
-                Element::VoltageSource { node_p, node_n, value, .. } => {
+                Element::VoltageSource {
+                    node_p,
+                    node_n,
+                    value,
+                    ..
+                } => {
                     let np = netlist.node_index(node_p).unwrap();
                     let nn = netlist.node_index(node_n).unwrap();
 
@@ -387,14 +473,28 @@ pub fn ac_analysis(
                     matrix.stamp_voltage_source(np, nn, vs_count, v_complex);
                     vs_count += 1;
                 }
-                Element::VCCS { node_out_p, node_out_n, node_ctrl_p, node_ctrl_n, transconductance, .. } => {
+                Element::VCCS {
+                    node_out_p,
+                    node_out_n,
+                    node_ctrl_p,
+                    node_ctrl_n,
+                    transconductance,
+                    ..
+                } => {
                     let nop = netlist.node_index(node_out_p).unwrap();
                     let non = netlist.node_index(node_out_n).unwrap();
                     let ncp = netlist.node_index(node_ctrl_p).unwrap();
                     let ncn = netlist.node_index(node_ctrl_n).unwrap();
                     matrix.stamp_vccs(nop, non, ncp, ncn, *transconductance);
                 }
-                Element::VCVS { node_out_p, node_out_n, node_ctrl_p, node_ctrl_n, gain, .. } => {
+                Element::VCVS {
+                    node_out_p,
+                    node_out_n,
+                    node_ctrl_p,
+                    node_ctrl_n,
+                    gain,
+                    ..
+                } => {
                     let nop = netlist.node_index(node_out_p).unwrap();
                     let non = netlist.node_index(node_out_n).unwrap();
                     let ncp = netlist.node_index(node_ctrl_p).unwrap();
@@ -450,7 +550,10 @@ mod tests {
             name: "V1".to_string(),
             node_p: "in".to_string(),
             node_n: "0".to_string(),
-            value: SourceValue::AC { magnitude: 1.0, phase: 0.0 },
+            value: SourceValue::AC {
+                magnitude: 1.0,
+                phase: 0.0,
+            },
         });
 
         netlist.add_element(Element::Resistor {
@@ -470,7 +573,7 @@ mod tests {
         let result = ac_analysis(&netlist, 10.0, 10000.0, 20).unwrap();
 
         // At low frequency, output should be close to input
-        let v_out_low = result.node_voltages[0][1];  // Node "out" at first frequency
+        let v_out_low = result.node_voltages[0][1]; // Node "out" at first frequency
         assert!(v_out_low.magnitude() > 0.9);
 
         // At high frequency, output should be attenuated

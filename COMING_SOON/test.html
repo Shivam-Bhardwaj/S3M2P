@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head><title>Wave Test</title></head>
+<body style="background: #000; color: #fff; font-family: monospace; padding: 20px;">
+<h2>Quantum Wave System Debug</h2>
+<canvas id="canvas" width="800" height="600" style="border: 1px solid #333;"></canvas>
+<div id="status">Loading...</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const status = document.getElementById('status');
+
+try {
+  // Test wave class
+  class Wave {
+    constructor(type) {
+      this.type = type;
+      this.amplitude = 1.0;
+    }
+    getValue(x, y, t) {
+      return this.amplitude * Math.sin(0.01 * x) * Math.sin(0.01 * y) * Math.sin(0.001 * t);
+    }
+  }
+
+  const waves = [new Wave('prey'), new Wave('predator')];
+
+  status.textContent = "Wave system OK! Drawing...";
+
+  let time = 0;
+  function draw() {
+    time++;
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, 800, 600);
+
+    // Sample 100 points
+    for (let i = 0; i < 100; i++) {
+      const x = Math.floor(Math.random() * 400);
+      const y = Math.floor(Math.random() * 300);
+
+      const val = waves[0].getValue(x, y, time);
+      const normalized = (val + 1) / 2;  // [0, 1]
+
+      if (normalized > 0.85) {
+        ctx.fillStyle = '#ff6600';
+        ctx.fillRect(x * 2, y * 2, 4, 4);
+      }
+    }
+
+    status.textContent = "Frame: " + time + " | Waves: " + waves.length;
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+
+} catch(e) {
+  status.textContent = "ERROR: " + e.message;
+  status.style.color = '#ff0000';
+}
+</script>
+</body>
+</html>

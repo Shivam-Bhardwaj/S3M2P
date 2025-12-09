@@ -1,5 +1,5 @@
+use crate::physics::electromagnetics::lumped::*;
 use crate::pll::*;
-use crate::spice::*;
 use std::f64::consts::PI;
 
 /// Build a SPICE netlist for the PLL circuit
@@ -134,7 +134,7 @@ pub fn build_pll_netlist(design: &PLLDesign) -> Netlist {
         name: "R_load".to_string(),
         node_p: "feedback".to_string(),
         node_n: "0".to_string(),
-        value: 1e12,  // 1 TOhm - effectively open but avoids singularity
+        value: 1e12, // 1 TOhm - effectively open but avoids singularity
     });
 
     netlist
@@ -155,7 +155,9 @@ pub fn simulate_pll_circuit(design: &PLLDesign) -> Result<BodePlot, String> {
     let ac_result = ac_analysis(&netlist, freq_start, freq_stop, points_per_decade)?;
 
     // Get node index for vco_out
-    let vco_out_node = netlist.node_index("vco_out").ok_or("vco_out node not found")?;
+    let vco_out_node = netlist
+        .node_index("vco_out")
+        .ok_or("vco_out node not found")?;
 
     // Extract open-loop transfer function: vco_out / phase_in
     let mut frequencies_hz = Vec::new();

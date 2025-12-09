@@ -2,6 +2,7 @@ use super::types::TransientResult;
 use std::f64::consts::PI;
 
 /// Simulate PLL step response using discrete time domain model
+#[allow(clippy::too_many_arguments)]
 pub fn simulate_step_response(
     k_phi: f64, // Charge pump current (A/rad)
     k_vco: f64, // VCO gain (Hz/V) -> will convert to rad/s/V
@@ -25,8 +26,8 @@ pub fn simulate_step_response(
 
     // Initial state
     let k_vco_hz = k_vco; // Hz/V
-    let mut v_c1 = start_freq_hz / k_vco_hz;
-    let mut v_c2 = v_c1; // Initially capacitors are equalized
+    let v_c1 = start_freq_hz / k_vco_hz;
+    let v_c2 = v_c1; // Initially capacitors are equalized
 
     let mut current_freq = start_freq_hz;
     let mut phase_ref = 0.0;

@@ -1,3 +1,4 @@
+#![allow(unexpected_cfgs)]
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(start)]

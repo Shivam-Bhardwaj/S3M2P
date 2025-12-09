@@ -1,3 +1,47 @@
+//! ═══════════════════════════════════════════════════════════════════════════════
+//! FILE: matrix.rs
+//! PATH: DNA/src/physics/electromagnetics/lumped/matrix.rs
+//! ═══════════════════════════════════════════════════════════════════════════════
+//!
+//! PURPOSE: Modified Nodal Analysis (MNA) matrix for DC circuit analysis
+//!
+//! LAYER: DNA → PHYSICS → ELECTROMAGNETICS → LUMPED
+//!
+//! ┌─────────────────────────────────────────────────────────────────────────────┐
+//! │ ALGORITHM: Modified Nodal Analysis                                          │
+//! ├─────────────────────────────────────────────────────────────────────────────┤
+//! │ MNA formulation: [G] [V] = [I]                                              │
+//! │                                                                             │
+//! │ G = Conductance matrix (includes voltage source stamps)                     │
+//! │ V = Unknown voltages and currents                                           │
+//! │ I = Known current sources                                                   │
+//! │                                                                             │
+//! │ For voltage sources:                                                        │
+//! │ [  G   B ] [ V ] = [ I ]                                                    │
+//! │ [ B^T  0 ] [ J ]   [ E ]                                                    │
+//! │                                                                             │
+//! │ Solved using LU decomposition with partial pivoting                         │
+//! └─────────────────────────────────────────────────────────────────────────────┘
+//!
+//! ┌─────────────────────────────────────────────────────────────────────────────┐
+//! │ DATA DEFINED                                                                │
+//! ├─────────────────────────────────────────────────────────────────────────────┤
+//! │ MNAMatrix          Real-valued MNA matrix for DC analysis                   │
+//! └─────────────────────────────────────────────────────────────────────────────┘
+//!
+//! DEPENDS ON:
+//!   • std → Basic types
+//!
+//! USED BY:
+//!   • physics/electromagnetics/lumped/ac.rs → Extends for AC
+//!   • TOOLS/PLL → DC operating point
+//!
+//! ═══════════════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────────────────────────
+// CODE BELOW - Optimized for ML development
+// ─────────────────────────────────────────────────────────────────────────────────
+
 /// Modified Nodal Analysis (MNA) Matrix
 ///
 /// The MNA formulation creates a system of linear equations:
@@ -44,7 +88,7 @@ impl MNAMatrix {
     /// G[n2][n1] -= G    G[n2][n2] += G
     pub fn stamp_resistor(&mut self, node_p: usize, node_n: usize, resistance: f64) {
         if resistance == 0.0 {
-            return;  // Skip zero resistance (short circuit handled separately)
+            return; // Skip zero resistance (short circuit handled separately)
         }
 
         let g = 1.0 / resistance;
@@ -194,18 +238,15 @@ impl MNAMatrix {
         let n = self.size;
 
         // LU decomposition with partial pivoting
-        let mut pivot = vec![0usize; n];
-        for i in 0..n {
-            pivot[i] = i;
-        }
+        let mut pivot: Vec<usize> = (0..n).collect();
 
         for k in 0..n {
             // Find pivot
             let mut max_val = a[k][k].abs();
             let mut max_row = k;
 
-            for i in (k + 1)..n {
-                let val = a[i][k].abs();
+            for (i, row) in a.iter().enumerate().skip(k + 1) {
+                let val = row[k].abs();
                 if val > max_val {
                     max_val = val;
                     max_row = i;
@@ -227,6 +268,7 @@ impl MNAMatrix {
                 let factor = a[i][k] / a[k][k];
                 a[i][k] = factor;
 
+                #[allow(clippy::needless_range_loop)]
                 for j in (k + 1)..n {
                     a[i][j] -= factor * a[k][j];
                 }
@@ -311,12 +353,6 @@ mod tests {
         // Circuit: V1 (10V) -> R1 (1k) -> node 1 -> R2 (1k) -> GND
         // Expected: V_node1 = 5V
 
-        let mut matrix = MNAMatrix::new(1, 1);
-        matrix.stamp_voltage_source(2, 0, 0, 10.0);  // V source at node 2
-        matrix.stamp_resistor(2, 1, 1000.0);  // R1
-        matrix.stamp_resistor(1, 0, 1000.0);  // R2
-
-        // Wait, this needs 2 nodes (node 1 and node 2)
         let mut matrix = MNAMatrix::new(2, 1);
         matrix.stamp_voltage_source(2, 0, 0, 10.0);
         matrix.stamp_resistor(2, 1, 1000.0);

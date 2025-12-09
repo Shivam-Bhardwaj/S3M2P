@@ -1,0 +1,193 @@
+{
+  "crates": [
+    {
+      "name": "dna",
+      "path": "DNA",
+      "layer": "Dna",
+      "dependencies": []
+    },
+    {
+      "name": "simulation-cli",
+      "path": "DNA/SIMULATION_CLI",
+      "layer": "Dna",
+      "dependencies": [
+        "dna"
+      ]
+    },
+    {
+      "name": "storage-server",
+      "path": "DNA/STORAGE_SERVER",
+      "layer": "Dna",
+      "dependencies": [
+        "dna"
+      ]
+    },
+    {
+      "name": "claude-automation",
+      "path": "DNA/CLAUDE_AUTOMATION",
+      "layer": "Dna",
+      "dependencies": []
+    },
+    {
+      "name": "simulation-engine",
+      "path": "CORE/SIMULATION_ENGINE",
+      "layer": "Core",
+      "dependencies": [
+        "dna"
+      ]
+    },
+    {
+      "name": "spice-engine",
+      "path": "CORE/SPICE_ENGINE",
+      "layer": "Core",
+      "dependencies": [
+        "dna"
+      ]
+    },
+    {
+      "name": "pll-engine",
+      "path": "CORE/PLL_ENGINE",
+      "layer": "Core",
+      "dependencies": [
+        "dna",
+        "spice-engine"
+      ]
+    },
+    {
+      "name": "export-engine",
+      "path": "CORE/EXPORT_ENGINE",
+      "layer": "Core",
+      "dependencies": [
+        "dna"
+      ]
+    },
+    {
+      "name": "wave-engine",
+      "path": "CORE/WAVE_ENGINE",
+      "layer": "Core",
+      "dependencies": [
+        "dna"
+      ]
+    },
+    {
+      "name": "autocrate-engine",
+      "path": "CORE/AUTOCRATE_ENGINE",
+      "layer": "Core",
+      "dependencies": [
+        "dna"
+      ]
+    },
+    {
+      "name": "cad-engine",
+      "path": "CORE/CAD_ENGINE",
+      "layer": "Core",
+      "dependencies": [
+        "dna"
+      ]
+    },
+    {
+      "name": "welcome",
+      "path": "WELCOME",
+      "layer": "Project",
+      "dependencies": [
+        "simulation-engine"
+      ]
+    },
+    {
+      "name": "helios",
+      "path": "HELIOS",
+      "layer": "Project",
+      "dependencies": []
+    },
+    {
+      "name": "blog",
+      "path": "BLOG",
+      "layer": "Project",
+      "dependencies": []
+    },
+    {
+      "name": "chladni",
+      "path": "SIMULATIONS/CHLADNI",
+      "layer": "Tool",
+      "dependencies": [
+        "wave-engine"
+      ]
+    },
+    {
+      "name": "sensors",
+      "path": "LEARN/SENSORS",
+      "layer": "Tool",
+      "dependencies": []
+    },
+    {
+      "name": "autocrate",
+      "path": "TOOLS/AUTOCRATE",
+      "layer": "Tool",
+      "dependencies": [
+        "autocrate-engine"
+      ]
+    },
+    {
+      "name": "crm",
+      "path": "TOOLS/CRM",
+      "layer": "Tool",
+      "dependencies": []
+    },
+    {
+      "name": "pll",
+      "path": "TOOLS/PLL",
+      "layer": "Tool",
+      "dependencies": [
+        "pll-engine"
+      ]
+    },
+    {
+      "name": "power-circuits",
+      "path": "TOOLS/POWER_CIRCUITS",
+      "layer": "Tool",
+      "dependencies": []
+    },
+    {
+      "name": "ai-learn",
+      "path": "LEARN/AI",
+      "layer": "Tool",
+      "dependencies": []
+    },
+    {
+      "name": "ubuntu-learn",
+      "path": "LEARN/UBUNTU",
+      "layer": "Tool",
+      "dependencies": []
+    },
+    {
+      "name": "opencv-learn",
+      "path": "LEARN/OPENCV",
+      "layer": "Tool",
+      "dependencies": []
+    },
+    {
+      "name": "arduino-learn",
+      "path": "LEARN/ARDUINO",
+      "layer": "Tool",
+      "dependencies": []
+    },
+    {
+      "name": "esp32-learn",
+      "path": "LEARN/ESP32",
+      "layer": "Tool",
+      "dependencies": []
+    },
+    {
+      "name": "swarm-learn",
+      "path": "LEARN/SWARM_ROBOTICS",
+      "layer": "Tool",
+      "dependencies": []
+    },
+    {
+      "name": "slam-learn",
+      "path": "LEARN/SLAM",
+      "layer": "Tool",
+      "dependencies": []
+    }
+  ]
+}

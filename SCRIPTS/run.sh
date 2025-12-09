@@ -13,18 +13,20 @@ declare -A PORTS=(
     [simulations]=3004
     [blog]=3005
     [learn]=3006
+    [arch]=3007
     [website]=3030
 )
 
 # Project paths and commands
 declare -A PROJECTS=(
     [welcome]="WELCOME/index.html|trunk"
-    [helios]="SIM/HELIOS/index.html|trunk"
-    [mcad]="MCAD/WEB/index.html|trunk"
-    [ecad]="ECAD/WEB/index.html|trunk"
-    [simulations]="SIMULATIONS/WEB/index.html|trunk"
+    [helios]="HELIOS/index.html|trunk"
+    #[mcad]="MCAD/WEB/index.html|trunk"
+    #[ecad]="ECAD/WEB/index.html|trunk"
+    [simulations]="SIMULATIONS/CHLADNI/index.html|trunk"
     [blog]="BLOG/index.html|trunk"
     [learn]="LEARN/index.html|trunk"
+    [arch]="ARCH/index.html|trunk"
     [website]="/home/curious/workspace/shivambhardwaj.com|leptos"
 )
 
@@ -80,7 +82,7 @@ if [[ ! -v PROJECTS[$PROJECT] ]]; then
 fi
 
 # Parse project config
-IFS='|' read -r PATH TYPE <<< "${PROJECTS[$PROJECT]}"
+IFS='|' read -r PROJECT_PATH TYPE <<< "${PROJECTS[$PROJECT]}"
 BASE_PORT=${PORTS[$PROJECT]}
 
 # Find available port
@@ -94,14 +96,18 @@ echo ""
 
 # Change to appropriate directory
 if [[ "$TYPE" == "trunk" ]]; then
-    cd ~/S3M2P
-    echo "📂 Working directory: ~/S3M2P"
+    # Extract directory from PROJECT_PATH
+    PROJECT_DIR=$(dirname "$PROJECT_PATH")
+    PROJECT_FILE=$(basename "$PROJECT_PATH")
+    
+    cd ~/S3M2P/"$PROJECT_DIR"
+    echo "📂 Working directory: ~/S3M2P/$PROJECT_DIR"
     echo "🌐 URL: http://localhost:$PORT"
     echo ""
-    exec trunk serve "$PATH" --port $PORT --open
+    exec trunk serve "$PROJECT_FILE" --port $PORT --open
 elif [[ "$TYPE" == "leptos" ]]; then
-    cd "$PATH"
-    echo "📂 Working directory: $PATH"
+    cd "$PROJECT_PATH"
+    echo "📂 Working directory: $PROJECT_PATH"
     echo "🌐 URL: http://localhost:$PORT"
     echo ""
     exec cargo leptos watch --port $PORT

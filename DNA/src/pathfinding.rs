@@ -208,7 +208,7 @@ pub fn astar(
     heuristic: Heuristic,
     use_diagonals: bool,
 ) -> PathResult {
-    use std::collections::{BinaryHeap, HashMap};
+    use std::collections::BinaryHeap;
 
     if !map.is_passable(start.0, start.1) || !map.is_passable(goal.0, goal.1) {
         return PathResult {
@@ -226,29 +226,53 @@ pub fn astar(
         };
     }
 
-    let mut open = BinaryHeap::new();
-    let mut came_from: HashMap<(i32, i32), (i32, i32)> = HashMap::new();
-    let mut g_score: HashMap<(i32, i32), f32> = HashMap::new();
+    let width = map.width;
+    let size = width * map.height;
 
+    // Optimization: Use flat vectors instead of HashMaps for O(1) access
+    // Index = y * width + x
+    let mut g_score = vec![f32::INFINITY; size];
+    let mut came_from = vec![None; size]; // Stores parent index
+
+    let start_idx = (start.1 as usize) * width + (start.0 as usize);
+    let goal_idx = (goal.1 as usize) * width + (goal.0 as usize);
+
+    g_score[start_idx] = 0.0;
+
+    let mut open = BinaryHeap::new();
     let h = heuristic.compute(start.0, start.1, goal.0, goal.1);
     open.push(PathNode::new(start.0, start.1, 0.0, h));
-    g_score.insert(start, 0.0);
 
     let mut nodes_explored = 0;
 
     while let Some(current) = open.pop() {
         nodes_explored += 1;
-        let pos = (current.x, current.y);
+        let cx = current.x;
+        let cy = current.y;
+        let c_idx = (cy as usize) * width + (cx as usize);
 
-        if pos == goal {
+        if c_idx == goal_idx {
             // Reconstruct path
             let mut path = Vec::new();
-            let mut curr = goal;
-            while curr != start {
-                path.push(curr);
-                curr = came_from[&curr];
+            let mut curr_idx = goal_idx;
+
+            // Reconstruct from end to start
+            path.push((
+                curr_idx as i32 % width as i32,
+                curr_idx as i32 / width as i32,
+            ));
+
+            while curr_idx != start_idx {
+                if let Some(parent_idx) = came_from[curr_idx] {
+                    curr_idx = parent_idx;
+                    path.push((
+                        curr_idx as i32 % width as i32,
+                        curr_idx as i32 / width as i32,
+                    ));
+                } else {
+                    break; // Should not happen if path found
+                }
             }
-            path.push(start);
             path.reverse();
 
             return PathResult {
@@ -258,29 +282,32 @@ pub fn astar(
             };
         }
 
-        let current_g = g_score.get(&pos).copied().unwrap_or(f32::INFINITY);
-        if current.g > current_g {
-            continue; // Already found better path
+        // If we found a shorter path to this node already, skip
+        if current.g > g_score[c_idx] {
+            continue;
         }
 
         let neighbors: Vec<_> = if use_diagonals {
-            map.neighbors_8(pos.0, pos.1).collect()
+            map.neighbors_8(cx, cy).collect()
         } else {
-            map.neighbors_4(pos.0, pos.1).collect()
+            map.neighbors_4(cx, cy).collect()
         };
 
         for (nx, ny) in neighbors {
-            let move_cost = if use_diagonals && (nx - pos.0).abs() + (ny - pos.1).abs() == 2 {
+            let n_idx = (ny as usize) * width + (nx as usize);
+
+            let move_cost = if use_diagonals && (nx - cx).abs() + (ny - cy).abs() == 2 {
                 std::f32::consts::SQRT_2 // Diagonal
             } else {
                 1.0
             };
-            let cell_cost = map.cost(nx as usize, ny as usize);
-            let tentative_g = current_g + move_cost * cell_cost;
 
-            if tentative_g < g_score.get(&(nx, ny)).copied().unwrap_or(f32::INFINITY) {
-                came_from.insert((nx, ny), pos);
-                g_score.insert((nx, ny), tentative_g);
+            let cell_cost = map.cost(nx as usize, ny as usize);
+            let tentative_g = g_score[c_idx] + move_cost * cell_cost;
+
+            if tentative_g < g_score[n_idx] {
+                came_from[n_idx] = Some(c_idx);
+                g_score[n_idx] = tentative_g;
                 let h = heuristic.compute(nx, ny, goal.0, goal.1);
                 open.push(PathNode::new(nx, ny, tentative_g, h));
             }

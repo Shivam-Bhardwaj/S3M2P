@@ -8,16 +8,16 @@ pub struct Config {
     pub github: GitHubConfig,
     pub worktree: WorktreeConfig,
     pub agents: AgentsConfig,
-    pub limits: LimitsConfig,
-    pub brain: BrainConfig,
-    pub logging: LoggingConfig,
+    pub _limits: LimitsConfig,
+    pub _brain: BrainConfig,
+    pub _logging: LoggingConfig,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct DaemonConfig {
     pub poll_interval_secs: u64,
-    pub max_concurrent_automations: usize,
-    pub session_timeout_hours: u64,
+    pub _max_concurrent_automations: usize,
+    pub _session_timeout_hours: u64,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -37,36 +37,36 @@ pub struct WorktreeConfig {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct AgentsConfig {
-    pub planner_agent: String,
+    pub _planner_agent: String,
     pub planner_model: String,
-    pub executor_agent: String,
+    pub _executor_agent: String,
     pub executor_model: String,
-    pub bypass_permissions: bool,
+    pub _bypass_permissions: bool,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct LimitsConfig {
-    pub max_cost_per_issue_usd: f64,
-    pub max_planner_cost_usd: f64,
-    pub max_executor_cost_usd: f64,
-    pub max_tokens_planner: usize,
-    pub max_tokens_executor: usize,
-    pub daily_automation_limit: usize,
-    pub max_concurrent: usize,
+    pub _max_cost_per_issue_usd: f64,
+    pub _max_planner_cost_usd: f64,
+    pub _max_executor_cost_usd: f64,
+    pub _max_tokens_planner: usize,
+    pub _max_tokens_executor: usize,
+    pub _daily_automation_limit: usize,
+    pub _max_concurrent: usize,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct BrainConfig {
-    pub enabled: bool,
-    pub sync_on_pr_merge: bool,
-    pub architecture_regeneration_interval_days: u64,
-    pub max_recent_changes: usize,
+    pub _enabled: bool,
+    pub _sync_on_pr_merge: bool,
+    pub _architecture_regeneration_interval_days: u64,
+    pub _max_recent_changes: usize,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct LoggingConfig {
-    pub level: String,
-    pub file: String,
+    pub _level: String,
+    pub _file: String,
 }
 
 impl Config {

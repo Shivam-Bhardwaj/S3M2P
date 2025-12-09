@@ -1,11 +1,12 @@
+#![allow(unexpected_cfgs)]
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{
-    window, CanvasRenderingContext2d, DeviceOrientationEvent,
-    HtmlCanvasElement, HtmlVideoElement, MediaStreamConstraints,
+    window, CanvasRenderingContext2d, DeviceOrientationEvent, HtmlCanvasElement, HtmlVideoElement,
+    MediaStreamConstraints,
 };
 
 const GRAPH_HISTORY_SIZE: usize = 200;
@@ -171,7 +172,8 @@ fn request_motion_permission() {
                         } else {
                             update_sensor_status("error", "Permission Denied");
                         }
-                    }) as Box<dyn FnMut(JsValue)>);
+                    })
+                        as Box<dyn FnMut(JsValue)>);
 
                     let on_error = Closure::wrap(Box::new(move |_: JsValue| {
                         update_sensor_status("error", "Permission Error");
@@ -225,10 +227,8 @@ fn setup_motion_listeners() {
         }
     }) as Box<dyn Fn(JsValue)>);
 
-    let _ = window.add_event_listener_with_callback(
-        "devicemotion",
-        motion_closure.as_ref().unchecked_ref(),
-    );
+    let _ = window
+        .add_event_listener_with_callback("devicemotion", motion_closure.as_ref().unchecked_ref());
     motion_closure.forget();
 
     // Device Orientation
@@ -260,7 +260,7 @@ fn check_camera_support() {
     let navigator = window.navigator();
 
     // Check if mediaDevices exists
-    if let Some(_) = navigator.media_devices().ok() {
+    if navigator.media_devices().is_ok() {
         update_camera_status("waiting", "Ready");
         STATE.with(|s| s.borrow_mut().camera_available = true);
     } else {
@@ -308,7 +308,8 @@ async fn request_camera() {
                         }
 
                         // Hide placeholder via style
-                        if let Some(placeholder) = document.get_element_by_id("camera-placeholder") {
+                        if let Some(placeholder) = document.get_element_by_id("camera-placeholder")
+                        {
                             let _ = placeholder.set_attribute("style", "display: none;");
                         }
 
@@ -427,11 +428,7 @@ fn render_graph() {
     canvas.set_width((width as f64 * dpr) as u32);
     canvas.set_height((height as f64 * dpr) as u32);
 
-    let ctx: CanvasRenderingContext2d = canvas
-        .get_context("2d")
-        .unwrap()
-        .unwrap()
-        .unchecked_into();
+    let ctx: CanvasRenderingContext2d = canvas.get_context("2d").unwrap().unwrap().unchecked_into();
 
     let _ = ctx.scale(dpr, dpr);
 
@@ -483,7 +480,14 @@ fn render_graph() {
     let _ = ctx.fill_text("Z", 50.0, 16.0);
 }
 
-fn draw_line(ctx: &CanvasRenderingContext2d, data: &[f64], step: f64, center: f64, scale: f64, color: &str) {
+fn draw_line(
+    ctx: &CanvasRenderingContext2d,
+    data: &[f64],
+    step: f64,
+    center: f64,
+    scale: f64,
+    color: &str,
+) {
     ctx.set_stroke_style(&JsValue::from_str(color));
     ctx.set_line_width(2.0);
     ctx.begin_path();
