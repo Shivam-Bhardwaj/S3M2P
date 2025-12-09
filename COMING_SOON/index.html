@@ -210,9 +210,9 @@
     let bornTotal = 0;
     let diedTotal = 0;
 
-    let PARTICLE_COUNT;
+    const PARTICLE_COUNT = Math.floor((width * height) / 150);
     const SCALE = 2;
-    const MAX_AGE = 250;
+    const MAX_AGE = 500;
     const DECAY_START = 125;
 
     // Two colors only: bright orange and bright blue (high contrast)
@@ -357,7 +357,7 @@
           if (Math.random() < stickiness) {
             const idx = Math.floor(p.y) * width + Math.floor(p.x);
             if (grid[idx] === 0) {
-              grid[idx] = 1;
+              grid[idx] = 1 + Math.floor(Math.random() * 50);
               aliveCount++;
               bornTotal++;
             }
@@ -439,8 +439,8 @@
     }
 
     function animate() {
-      // Many updates per frame for fast, dynamic simulation
-      for (let i = 0; i < 8; i++) {
+      // Reduced updates per frame for smoother, more stable simulation
+      for (let i = 0; i < 2; i++) {
         update();
       }
       draw();
