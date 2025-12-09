@@ -108,6 +108,10 @@ publish_project() {
     fi
 
     if command -v wrangler &> /dev/null; then
+        # Ensure project exists (idempotent-ish check via creation attempt)
+        log "Ensuring Cloudflare project '$pages_project' exists..."
+        wrangler pages project create "$pages_project" --production-branch main >/dev/null 2>&1 || true
+
         wrangler pages deploy "$deploy_dir" --project-name="${pages_project}" --branch=main --commit-dirty=true
         success "Published $name"
     else
