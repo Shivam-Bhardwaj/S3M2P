@@ -25,6 +25,17 @@ declare -A PAGES_PROJECTS=(
     ["crm"]="crm-too-foo"
     ["pll"]="pll-too-foo"
     ["coming_soon"]="coming-soon-too-foo"
+    
+    # Missing added
+    ["ai"]="ai-too-foo"
+    ["arduino"]="arduino-too-foo"
+    ["esp32"]="esp32-too-foo"
+    ["ubuntu"]="ubuntu-too-foo"
+    ["opencv"]="opencv-too-foo"
+    ["swarm"]="swarm-too-foo"
+    ["slam"]="slam-too-foo"
+    ["power"]="power-too-foo"
+    ["arch"]="arch-too-foo"
 )
 
 # Static projects that don't need trunk build
