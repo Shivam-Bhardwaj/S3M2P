@@ -1,0 +1,135 @@
+#!/bin/bash
+# S3M2P Master Developer Tool
+# Usage: ./dev [command]
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+source "$SCRIPT_DIR/config.sh"
+
+# ------------------------------------------------------------------
+# Commands
+# ------------------------------------------------------------------
+
+cmd_up() {
+    local target="${1:-all}"
+    
+    mkdir -p "$LOG_DIR"
+    
+    if [[ "$target" == "all" ]]; then
+        echo "🚀 Starting ALL services..."
+        echo "Logs: $LOG_DIR"
+        echo ""
+        printf "%-15s %-10s %s\n" "PROJECT" "PORT" "STATUS"
+        echo "────────────────────────────────────────"
+
+        local pids=()
+
+        for project in "${!PROJECT_PORTS[@]}"; do
+            local port="${PROJECT_PORTS[$project]}"
+            local dir="${PROJECT_DIRS[$project]}"
+            local path="$REPO_ROOT/$dir"
+            local log="$LOG_DIR/$project.log"
+
+            # Kill existing
+            lsof -t -i :"$port" | xargs -r kill 2>/dev/null || true
+
+            if [[ -f "$path/Trunk.toml" ]] || [[ -f "$path/index.html" ]]; then
+                (cd "$path" && trunk serve index.html --port "$port" > "$log" 2>&1) &
+                pids+=($!)
+                printf "%-15s %-10s %s\n" "$project" "$port" "✅ Started"
+            else
+                 printf "%-15s %-10s %s\n" "$project" "$port" "⚠️  No Entry"
+            fi
+        done
+        echo ""
+        echo "Press Ctrl+C to stop all."
+        wait
+    else
+        # Single project
+        local port="${PROJECT_PORTS[$target]}"
+        local dir="${PROJECT_DIRS[$target]}"
+        
+        if [[ -z "$port" ]]; then
+            echo "❌ Unknown project: $target"
+            exit 1
+        fi
+        
+        echo "🚀 Starting $target on port $port..."
+        echo "Dir: $REPO_ROOT/$dir"
+        cd "$REPO_ROOT/$dir"
+        trunk serve index.html --port "$port" --open
+    fi
+}
+
+cmd_test() {
+    echo "🧪 Running Tests..."
+    
+    echo ">> Unit Tests (Workspace)..."
+    cargo test --workspace --exclude hw
+    
+    echo ">> Playwright..."
+    npx playwright test
+}
+
+cmd_deploy() {
+    echo "🚀 Deploying..."
+    "$SCRIPT_DIR/deploy.sh" "$@"
+}
+
+cmd_menu() {
+    echo ""
+    echo "🔮 S3M2P Developer Studio"
+    echo "─────────────────────"
+    echo "1) 🚀 Start ALL Servers"
+    echo "2) ☀️  Start Helios Only"
+    echo "3) 👋 Start Welcome Only"
+    echo "4) 🧪 Run Tests"
+    echo "5) 🚢 Deploy"
+    echo "0) Exit"
+    echo ""
+    read -p "Select option: " opt
+    
+    case $opt in
+        1) cmd_up all ;;
+        2) cmd_up helios ;;
+        3) cmd_up welcome ;;
+        4) cmd_test ;;
+        5) cmd_deploy all --publish ;;
+        0) exit 0 ;;
+        *) echo "Invalid option"; menu ;;
+    esac
+}
+
+# ------------------------------------------------------------------
+# Main Dispatch
+# ------------------------------------------------------------------
+
+case "${1:-}" in
+    up)
+        cmd_up "${2:-all}"
+        ;;
+    test)
+        cmd_test
+        ;;
+    deploy)
+        shift
+        cmd_deploy "$@"
+        ;;
+    check)
+        cargo check --workspace
+        ;;
+    help|--help|-h)
+        echo "Usage: ./dev [command]"
+        echo ""
+        echo "Commands:"
+        echo "  up [app]    Start dev servers (default: all)"
+        echo "  test        Run unit & integration tests"
+        echo "  deploy      Deploy to Cloudflare"
+        echo "  check       Run cargo check"
+        echo ""
+        ;;
+    *)
+        cmd_menu
+        ;;
+esac

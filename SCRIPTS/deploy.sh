@@ -1,14 +1,11 @@
 #!/bin/bash
 # Deploy script for too.foo projects
-# Usage: ./scripts/deploy.sh [project] [--publish]
-#
-# Projects: all, welcome, helios, chladni, blog, autocrate, portfolio
-# --publish: Actually deploy to Cloudflare (otherwise just builds)
+# Usage: ./SCRIPTS/deploy.sh [project] [--publish]
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+source "$SCRIPT_DIR/config.sh"
 
 # Colors
 RED='\033[0;31m'
@@ -17,30 +14,23 @@ CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# Project configurations - format: "path:domain:pages-project"
-# pages-project must match the names used in CI (.github/workflows/deploy.yml)
-declare -A PROJECTS=(
-    # L1 Bubbles
-    ["welcome"]="WELCOME:too.foo:too-foo"
-    ["helios"]="HELIOS:helios.too.foo:helios-too-foo"
-    ["blog"]="BLOG:blog.too.foo:blog-too-foo"
-
-    # Simulations
-    ["chladni"]="SIMULATIONS/CHLADNI:chladni.too.foo:chladni-too-foo"
-
-    # Tools
-    ["sensors"]="TOOLS/SENSORS:sensors.too.foo:sensors-too-foo"
-    ["autocrate"]="TOOLS/AUTOCRATE:autocrate.too.foo:autocrate-too-foo"
-    ["crm"]="TOOLS/CRM:crm.too.foo:crm-too-foo"
-    ["pll"]="TOOLS/PLL:pll.too.foo:pll-too-foo"
-
-    # Catch-all (wildcard subdomain handler)
-    ["coming-soon"]="COMING_SOON:*.too.foo:coming-soon-too-foo"
+# Cloudflare Pages Project Names (Mapping from Config Keys)
+declare -A PAGES_PROJECTS=(
+    ["welcome"]="too-foo"
+    ["helios"]="helios-too-foo"
+    ["blog"]="blog-too-foo"
+    ["chladni"]="chladni-too-foo"
+    ["sensors"]="sensors-too-foo"
+    ["autocrate"]="autocrate-too-foo"
+    ["crm"]="crm-too-foo"
+    ["pll"]="pll-too-foo"
+    ["coming_soon"]="coming-soon-too-foo"
 )
 
-# Static projects that don't need trunk build (just direct deploy)
+# Static projects that don't need trunk build
 declare -A STATIC_PROJECTS=(
-    ["coming-soon"]=1
+    ["coming_soon"]=1
+    ["arch"]=1
 )
 
 # Parse arguments
@@ -50,67 +40,53 @@ if [[ "$2" == "--publish" ]] || [[ "$1" == "--publish" ]]; then
     PUBLISH=true
 fi
 
-log() {
-    echo -e "${CYAN}[deploy]${NC} $1"
-}
-
-success() {
-    echo -e "${GREEN}[✓]${NC} $1"
-}
-
-warn() {
-    echo -e "${YELLOW}[!]${NC} $1"
-}
-
-error() {
-    echo -e "${RED}[✗]${NC} $1"
-    exit 1
-}
+log() { echo -e "${CYAN}[deploy]${NC} $1"; }
+success() { echo -e "${GREEN}[✓]${NC} $1"; }
+warn() { echo -e "${YELLOW}[!]${NC} $1"; }
+error() { echo -e "${RED}[✗]${NC} $1"; exit 1; }
 
 build_project() {
     local name=$1
-    local dir=$2
-    local domain=$3
+    local dir=${PROJECT_DIRS[$name]}
+    
+    if [[ -z "$dir" ]]; then
+        error "Unknown project: $name"
+    fi
 
     log "Building $name..."
-
-    cd "$ROOT_DIR/$dir"
+    cd "$REPO_ROOT/$dir"
 
     if [[ ! -f "index.html" ]]; then
         error "No index.html found in $dir"
     fi
 
-    # Check if this is a static project (no trunk build needed)
     if [[ -v "STATIC_PROJECTS[$name]" ]]; then
         log "Static project - no build needed"
         success "Ready $name -> $dir/"
-        cd "$ROOT_DIR"
         return
     fi
 
-    # Build with trunk
     trunk build --release
-
     if [[ -d "dist" ]]; then
         success "Built $name -> $dir/dist/"
     else
         error "Build failed for $name"
     fi
-
-    cd "$ROOT_DIR"
 }
 
 publish_project() {
     local name=$1
-    local dir=$2
-    local domain=$3
-    local pages_project=$4
+    local dir=${PROJECT_DIRS[$name]}
+    local pages_project=${PAGES_PROJECTS[$name]}
 
-    log "Publishing $name to $domain (project: $pages_project)..."
+    if [[ -z "$pages_project" ]]; then
+        warn "No Cloudflare project mapped for '$name', skipping publish."
+        return
+    fi
 
-    cd "$ROOT_DIR/$dir"
+    log "Publishing $name to Cloudflare ($pages_project)..."
+    cd "$REPO_ROOT/$dir"
 
-    # Determine deploy directory (static projects deploy from root, others from dist/)
     local deploy_dir="dist"
     if [[ -v "STATIC_PROJECTS[$name]" ]]; then
         deploy_dir="."
@@ -120,82 +96,43 @@ publish_project() {
         error "No dist folder. Run build first."
     fi
 
-    # Cloudflare Pages deploy via wrangler
-    # Requires: npm install -g wrangler && wrangler login
     if command -v wrangler &> /dev/null; then
         wrangler pages deploy "$deploy_dir" --project-name="${pages_project}" --branch=main --commit-dirty=true
-        success "Published $name to https://$domain"
+        success "Published $name"
     else
-        warn "wrangler not installed. Install with: npm install -g wrangler"
-        warn "Then run: wrangler login"
-        warn "Manual deploy: upload $dir/$deploy_dir to Cloudflare Pages dashboard"
+        warn "wrangler not found. Install generic tools first."
     fi
-
-    cd "$ROOT_DIR"
 }
 
 build_all() {
-    log "Building all WASM projects..."
-
-    for key in "${!PROJECTS[@]}"; do
-        IFS=':' read -r dir domain pages_project <<< "${PROJECTS[$key]}"
-        build_project "$key" "$dir" "$domain"
+    log "Building all projects..."
+    for key in "${!PROJECT_DIRS[@]}"; do
+        # Only build things we have mapped to Cloudflare (or known deployables)
+        # Verify if it has a PAGES mapping or is in our deploy list
+        if [[ -v "PAGES_PROJECTS[$key]" ]]; then
+            build_project "$key"
+        fi
     done
-
-    success "All projects built!"
 }
 
 publish_all() {
     log "Publishing all projects..."
-
-    for key in "${!PROJECTS[@]}"; do
-        IFS=':' read -r dir domain pages_project <<< "${PROJECTS[$key]}"
-        publish_project "$key" "$dir" "$domain" "$pages_project"
+    for key in "${!PROJECT_DIRS[@]}"; do
+        if [[ -v "PAGES_PROJECTS[$key]" ]]; then
+            publish_project "$key"
+        fi
     done
-
-    success "All projects published!"
 }
 
-# Main
-echo ""
-echo -e "${CYAN}═══════════════════════════════════════${NC}"
-echo -e "${CYAN}       too.foo Deployment Script       ${NC}"
-echo -e "${CYAN}═══════════════════════════════════════${NC}"
-echo ""
-
+# Main Dispatch
 if [[ "$PROJECT" == "all" ]]; then
     build_all
-    if $PUBLISH; then
-        publish_all
-    fi
-elif [[ -v "PROJECTS[$PROJECT]" ]]; then
-    IFS=':' read -r dir domain pages_project <<< "${PROJECTS[$PROJECT]}"
-    build_project "$PROJECT" "$dir" "$domain"
-    if $PUBLISH; then
-        publish_project "$PROJECT" "$dir" "$domain" "$pages_project"
-    fi
+    if $PUBLISH; then publish_all; fi
+elif [[ -v "PROJECT_DIRS[$PROJECT]" ]]; then
+    build_project "$PROJECT"
+    if $PUBLISH; then publish_project "$PROJECT"; fi
 else
     echo "Usage: $0 [project] [--publish]"
-    echo ""
-    echo "Projects:"
-    echo "  all        - Build/deploy all projects"
-    echo "  welcome    - Landing page      -> WELCOME (too.foo)"
-    echo "  helios     - Solar system      -> HELIOS (helios.too.foo)"
-    echo "  chladni    - Wave patterns     -> SIMULATIONS/CHLADNI (chladni.too.foo)"
-    echo "  blog       - Blog engine       -> BLOG (blog.too.foo)"
-    echo "  sensors    - Sensor test       -> TOOLS/SENSORS (sensors.too.foo)"
-    echo "  autocrate  - Crate generator   -> TOOLS/AUTOCRATE (autocrate.too.foo)"
-    echo "  crm        - CRM (coming soon) -> TOOLS/CRM (crm.too.foo)"
-    echo ""
-    echo "Options:"
-    echo "  --publish  - Deploy to Cloudflare Pages after building"
-    echo ""
-    echo "Examples:"
-    echo "  $0 all              # Build all projects"
-    echo "  $0 blog --publish   # Build and deploy blog"
-    echo "  $0 all --publish    # Build and deploy everything"
+    echo "Available projects: ${!PROJECT_DIRS[@]}"
     exit 1
 fi
-
-echo ""
-log "Done!"
