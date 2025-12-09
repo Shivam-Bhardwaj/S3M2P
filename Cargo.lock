@@ -154,7 +154,7 @@ version = "0.1.0"
 dependencies = [
  "autocrate-engine",
  "console_error_panic_hook",
- "glam",
+ "glam 0.29.3",
  "js-sys",
  "serde",
  "serde-wasm-bindgen",
@@ -168,7 +168,7 @@ name = "autocrate-engine"
 version = "0.1.0"
 dependencies = [
  "dna",
- "glam",
+ "glam 0.29.3",
  "serde",
 ]
 
@@ -281,7 +281,7 @@ name = "cad-engine"
 version = "0.1.0"
 dependencies = [
  "dna",
- "glam",
+ "glam 0.29.3",
  "serde",
 ]
 
@@ -306,7 +306,7 @@ name = "chladni"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "glam",
+ "glam 0.29.3",
  "js-sys",
  "wasm-bindgen",
  "wave-engine",
@@ -437,7 +437,7 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "getrandom 0.2.16",
- "glam",
+ "glam 0.29.3",
  "js-sys",
  "rand",
  "serde",
@@ -515,7 +515,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "getrandom 0.2.16",
- "glam",
+ "glam 0.29.3",
  "rand",
  "serde",
  "tokio",
@@ -734,6 +734,15 @@ dependencies = [
 
 [[package]]
 name = "glam"
+version = "0.24.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5418c17512bdf42730f9032c74e1ae39afc408745ebb2acf72fbc4691c17945"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "glam"
 version = "0.29.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8babf46d4c1c9d92deac9f7be466f76dfc4482b6452fc5024b5e8daf6ffeb3ee"
@@ -777,7 +786,9 @@ name = "helios"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
+ "glam 0.24.2",
  "js-sys",
+ "serde",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
@@ -1907,7 +1918,7 @@ dependencies = [
  "clap",
  "csv",
  "dna",
- "glam",
+ "glam 0.29.3",
  "indicatif",
  "rand",
  "serde",
@@ -1920,7 +1931,7 @@ name = "simulation-engine"
 version = "0.1.0"
 dependencies = [
  "dna",
- "glam",
+ "glam 0.29.3",
  "rand",
 ]
 
@@ -2569,7 +2580,7 @@ name = "wave-engine"
 version = "0.1.0"
 dependencies = [
  "dna",
- "glam",
+ "glam 0.29.3",
 ]
 
 [[package]]
@@ -2598,7 +2609,7 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "getrandom 0.2.16",
- "glam",
+ "glam 0.29.3",
  "js-sys",
  "rand",
  "simulation-engine",

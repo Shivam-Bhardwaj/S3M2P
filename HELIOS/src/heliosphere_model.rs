@@ -1,8 +1,8 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
-//! FILE: heliosphere_model.rs | DNA/src/heliosphere_model.rs
-//! PURPOSE: Defines HeliospherePhysicsModel types
-//! MODIFIED: 2025-11-29
-//! LAYER: DNA (foundation)
+//! FILE: heliosphere_model.rs | HELIOS/src/heliosphere_model.rs
+//! PURPOSE: Physics model for heliospheric boundaries - Parker spiral, termination shock
+//! MODIFIED: 2025-12-09
+//! LAYER: HELIOS (project)
 //! ═══════════════════════════════════════════════════════════════════════════════
 
 use crate::solar_wind::{NumberTimeSeries, Vector3TimeSeries, BOLTZMANN, PROTON_MASS};

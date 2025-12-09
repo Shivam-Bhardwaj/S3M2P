@@ -1,8 +1,8 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
-//! FILE: heliosphere.rs | DNA/src/heliosphere.rs
-//! PURPOSE: Defines HeliosphereMorphology, HeliosphereParameters, HeliosphereSurface types
+//! FILE: heliosphere.rs | HELIOS/src/heliosphere.rs
+//! PURPOSE: Heliosphere boundary models - morphology, parameters, surface
 //! MODIFIED: 2025-12-09
-//! LAYER: DNA (foundation)
+//! LAYER: HELIOS (project)
 //! ═══════════════════════════════════════════════════════════════════════════════
 
 use std::f32::consts::PI;

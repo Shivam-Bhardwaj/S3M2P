@@ -286,20 +286,6 @@
     "main_function": "new",
     "type": ".rs"
   },
-  "DNA/src/heliosphere.rs": {
-    "path": "DNA/src/heliosphere.rs",
-    "name": "heliosphere.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: heliosphere.rs | DNA/src/heliosphere.rs",
-    "main_function": "new",
-    "type": ".rs"
-  },
-  "DNA/src/heliosphere_model.rs": {
-    "path": "DNA/src/heliosphere_model.rs",
-    "name": "heliosphere_model.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: heliosphere_model.rs | DNA/src/heliosphere_model.rs",
-    "main_function": "new",
-    "type": ".rs"
-  },
   "DNA/src/interaction.rs": {
     "path": "DNA/src/interaction.rs",
     "name": "interaction.rs",
@@ -641,13 +627,6 @@
     "name": "mod.rs",
     "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/sim/mod.rs",
     "main_function": "Module/Lib",
-    "type": ".rs"
-  },
-  "DNA/src/solar_wind.rs": {
-    "path": "DNA/src/solar_wind.rs",
-    "name": "solar_wind.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: solar_wind.rs | DNA/src/solar_wind.rs",
-    "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/spatial.rs": {
@@ -1007,6 +986,20 @@
     "main_function": "fn main()",
     "type": ".rs"
   },
+  "HELIOS/src/heliosphere.rs": {
+    "path": "HELIOS/src/heliosphere.rs",
+    "name": "heliosphere.rs",
+    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: heliosphere.rs | DNA/src/heliosphere.rs",
+    "main_function": "new",
+    "type": ".rs"
+  },
+  "HELIOS/src/heliosphere_model.rs": {
+    "path": "HELIOS/src/heliosphere_model.rs",
+    "name": "heliosphere_model.rs",
+    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: heliosphere_model.rs | DNA/src/heliosphere_model.rs",
+    "main_function": "new",
+    "type": ".rs"
+  },
   "HELIOS/src/main.rs": {
     "path": "HELIOS/src/main.rs",
     "name": "main.rs",
@@ -1026,6 +1019,13 @@
     "name": "simulation.rs",
     "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: simulation.rs | HELIOS/src/simulation.rs",
     "main_function": "is_dragging",
+    "type": ".rs"
+  },
+  "HELIOS/src/solar_wind.rs": {
+    "path": "HELIOS/src/solar_wind.rs",
+    "name": "solar_wind.rs",
+    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: solar_wind.rs | DNA/src/solar_wind.rs",
+    "main_function": "new",
     "type": ".rs"
   },
   "HELIOS/src/streaming.rs": {

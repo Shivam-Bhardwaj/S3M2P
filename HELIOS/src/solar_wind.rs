@@ -1,8 +1,8 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
-//! FILE: solar_wind.rs | DNA/src/solar_wind.rs
-//! PURPOSE: Defines NumberTimeSeries, Vector3TimeSeries, ParkerSpiral types
-//! MODIFIED: 2025-11-29
-//! LAYER: DNA (foundation)
+//! FILE: solar_wind.rs | HELIOS/src/solar_wind.rs
+//! PURPOSE: Solar wind physics - time series, Parker spiral, interplanetary fields
+//! MODIFIED: 2025-12-09
+//! LAYER: HELIOS (project)
 //! ═══════════════════════════════════════════════════════════════════════════════
 
 use glam::Vec3;

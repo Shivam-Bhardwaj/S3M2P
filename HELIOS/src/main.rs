@@ -13,6 +13,11 @@
 mod render;
 mod simulation;
 
+// HELIOS domain modules (moved from DNA)
+mod heliosphere;
+mod heliosphere_model;
+mod solar_wind;
+
 #[cfg(target_arch = "wasm32")]
 use simulation::{DragMode, SimulationState};
 

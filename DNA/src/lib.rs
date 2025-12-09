@@ -29,11 +29,8 @@ pub mod math;
 pub mod data;
 
 // ============================================================================
-// DOMAIN-SPECIFIC MODULES (Heliosphere/Astronomy)
+// SIMULATION PRIMITIVES
 // ============================================================================
-
-pub mod heliosphere;
-pub use heliosphere::*;
 
 // Note: coordinates module moved to world::transforms::astronomical
 // Re-export for backward compatibility
@@ -41,12 +38,7 @@ pub use world::transforms::astronomical as coordinates;
 
 pub mod sim;
 
-pub mod solar_wind;
-pub use solar_wind::*;
-
-pub mod heliosphere_model;
-pub use heliosphere_model::*;
-
+/// Spatial indexing for cube-sphere LOD data (stars, planets, etc.)
 pub mod spatial;
 pub use spatial::*;
 
