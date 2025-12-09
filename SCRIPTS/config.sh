@@ -59,7 +59,7 @@ declare -A PROJECT_DIRS=(
     ["swarm"]="COMING_SOON"
     ["slam"]="COMING_SOON"
     ["coming_soon"]="COMING_SOON"
-    ["crm"]="CRM"
+    ["crm"]="COMING_SOON"
 
 )
 
