@@ -116,6 +116,9 @@ pub mod export;
 /// CAD module (B-Rep solid modeling)
 pub mod cad;
 
+/// Security module (secrets and PII detection)
+pub mod security;
+
 // ============================================================================
 // CORE TYPES
 // ============================================================================

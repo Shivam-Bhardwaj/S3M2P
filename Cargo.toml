@@ -12,6 +12,7 @@ members = [
     "DNA/SIMULATION_CLI",
     "DNA/STORAGE_SERVER",
     "DNA/CLAUDE_AUTOMATION",
+    "DNA/SECURITY_CLI",
 
     # CORE - Domain-specific engines
     "SIMULATION/CORE/SIMULATION_ENGINE",
