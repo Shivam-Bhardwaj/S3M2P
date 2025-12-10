@@ -112,7 +112,7 @@ impl ArchRenderer {
             LineAction::SelectFile(path) => {
                 ("file", format!(r#" data-path="{}""#, escape_html(path)))
             }
-            LineAction::None => ("none", String::new()),
+            LineAction::NextFile | LineAction::PreviousFile | LineAction::None => ("none", String::new()),
         };
 
         let selected_class = if is_selected {
@@ -158,6 +158,14 @@ impl ArchRenderer {
         html.push_str(
             r#"<button class="file-viewer__close" data-action="close-file">← Back to files</button>"#,
         );
+        html.push_str(r#"<div class="file-viewer__nav">"#);
+        html.push_str(
+            r#"<button class="file-viewer__nav-btn" data-action="previous-file" title="Previous file (←)">◀ Prev</button>"#,
+        );
+        html.push_str(
+            r#"<button class="file-viewer__nav-btn" data-action="next-file" title="Next file (→)">Next ▶</button>"#,
+        );
+        html.push_str(r#"</div>"#);
         html.push_str(r#"<div class="file-viewer__title">"#);
         html.push_str(&format!(
             r#"<span class="file-viewer__filename">{}</span>"#,

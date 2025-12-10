@@ -27,6 +27,8 @@ pub fn setup_events(container_id: &str) -> Result<(), JsValue> {
                         handle_line_click(&line_el);
                     } else if let Some(button_el) = find_closest(&element, "file-viewer__close") {
                         handle_close_click(&button_el);
+                    } else if let Some(button_el) = find_closest(&element, "file-viewer__nav-btn") {
+                        handle_nav_click(&button_el);
                     }
                 }
             }
@@ -48,6 +50,36 @@ pub fn setup_events(container_id: &str) -> Result<(), JsValue> {
         }) as Box<dyn FnMut()>);
 
         window.add_event_listener_with_callback("resize", closure.as_ref().unchecked_ref())?;
+        closure.forget();
+    }
+
+    // Keyboard navigation
+    {
+        use crate::ViewMode;
+        let closure = Closure::wrap(Box::new(move |event: web_sys::KeyboardEvent| {
+            APP.with(|app| {
+                if let Some(ref mut state) = *app.borrow_mut() {
+                    // Only handle arrow keys when file viewer is open
+                    if matches!(state.view_mode, ViewMode::FileViewer { .. }) {
+                        match event.key().as_str() {
+                            "ArrowLeft" => {
+                                state.navigate(&LineAction::PreviousFile);
+                                render();
+                                event.prevent_default();
+                            }
+                            "ArrowRight" => {
+                                state.navigate(&LineAction::NextFile);
+                                render();
+                                event.prevent_default();
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+            });
+        }) as Box<dyn FnMut(_)>);
+
+        window.add_event_listener_with_callback("keydown", closure.as_ref().unchecked_ref())?;
         closure.forget();
     }
 
@@ -98,6 +130,24 @@ fn handle_close_click(_button_el: &Element) {
     APP.with(|app| {
         if let Some(ref mut state) = *app.borrow_mut() {
             state.close_file_viewer();
+        }
+    });
+
+    render();
+}
+
+fn handle_nav_click(button_el: &Element) {
+    let action = button_el
+        .get_attribute("data-action")
+        .unwrap_or_default();
+
+    APP.with(|app| {
+        if let Some(ref mut state) = *app.borrow_mut() {
+            match action.as_str() {
+                "next-file" => state.navigate(&LineAction::NextFile),
+                "previous-file" => state.navigate(&LineAction::PreviousFile),
+                _ => {}
+            }
         }
     });
 

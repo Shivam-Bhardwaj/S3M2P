@@ -202,6 +202,33 @@ MODIFIED: 2025-12-09
             font-size: 11px;
         }
 
+        .file-viewer__nav {
+            display: flex;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .file-viewer__nav-btn {
+            background: transparent;
+            border: 1px solid var(--arch-dim);
+            color: var(--arch-text);
+            padding: 6px 12px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            border-radius: 3px;
+            transition: background 0.15s ease;
+        }
+
+        .file-viewer__nav-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--arch-file);
+        }
+
+        .file-viewer__nav-btn:active {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
         .file-viewer__content {
             flex: 1;
             overflow-y: auto;
@@ -318,6 +345,15 @@ MODIFIED: 2025-12-09
 
             .line-numbers-rows > span:before {
                 padding-right: 8px;
+            }
+
+            .file-viewer__nav {
+                gap: 4px;
+            }
+
+            .file-viewer__nav-btn {
+                font-size: 10px;
+                padding: 4px 8px;
             }
         }
 

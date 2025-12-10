@@ -66,6 +66,8 @@ pub enum LineAction {
     Back,
     EnterFolder(String),     // Enter a folder/category
     SelectFile(String),      // Select a file (leaf node)
+    NextFile,                // Navigate to next file
+    PreviousFile,            // Navigate to previous file
 }
 
 #[derive(Clone)]
@@ -295,6 +297,12 @@ impl AppState {
                 // Load file content
                 let _ = self.load_file_content(path);
             }
+            LineAction::NextFile => {
+                self.navigate_adjacent_file(1);
+            }
+            LineAction::PreviousFile => {
+                self.navigate_adjacent_file(-1);
+            }
             LineAction::None => {}
         }
     }
@@ -320,6 +328,66 @@ impl AppState {
         self.view_mode = ViewMode::Tree;
         self.selected_file = None;
         self.build_tree();
+    }
+
+    // Get sorted list of files in current directory
+    fn get_current_directory_files(&self) -> Vec<String> {
+        let prefix = if self.current_path.is_empty() {
+            String::new()
+        } else {
+            format!("{}/", self.current_path.join("/"))
+        };
+
+        let mut files = Vec::new();
+
+        for (path, _) in &self.file_db {
+            if prefix.is_empty() || path.starts_with(&prefix) {
+                let relative = if prefix.is_empty() {
+                    path.as_str()
+                } else {
+                    &path[prefix.len()..]
+                };
+
+                // Only files in current directory (no subdirectories)
+                if !relative.contains('/') {
+                    files.push(path.clone());
+                }
+            }
+        }
+
+        // Sort alphabetically by file name
+        files.sort_by(|a, b| {
+            let a_name = self.file_db.get(a).map(|f| &f.name);
+            let b_name = self.file_db.get(b).map(|f| &f.name);
+            a_name.cmp(&b_name)
+        });
+
+        files
+    }
+
+    // Navigate to adjacent file (direction: 1 = next, -1 = previous)
+    fn navigate_adjacent_file(&mut self, direction: i32) {
+        if let Some(current_path) = &self.selected_file {
+            let files = self.get_current_directory_files();
+
+            if files.is_empty() {
+                return;
+            }
+
+            if let Some(current_index) = files.iter().position(|p| p == current_path) {
+                let new_index = match direction {
+                    1 => (current_index + 1) % files.len(),  // Next (circular)
+                    -1 => if current_index == 0 { files.len() - 1 } else { current_index - 1 },  // Previous (circular)
+                    _ => current_index,
+                };
+
+                if let Some(new_path) = files.get(new_index) {
+                    self.selected_file = Some(new_path.clone());
+                    self.view_mode = ViewMode::FileViewer { path: new_path.clone() };
+                    let _ = self.load_file_content(new_path);
+                }
+            }
+        }
     }
 
     fn render(&self) -> Result<(), JsValue> {
