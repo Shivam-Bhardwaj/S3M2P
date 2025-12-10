@@ -283,8 +283,8 @@ impl AppState {
         let suffix = if file.purpose.is_empty() {
             String::new()
         } else {
-            let short_purpose = if file.purpose.len() > 50 {
-                format!("  {}", &file.purpose[..47])
+            let short_purpose = if file.purpose.len() > 120 {
+                format!("  {}...", &file.purpose[..117])
             } else {
                 format!("  {}", file.purpose)
             };
@@ -430,10 +430,10 @@ impl AppState {
         ctx.set_fill_style(&JsValue::from_str(Colors::DIM));
         ctx.fill_text("Info:", x, ty).ok();
         ctx.set_fill_style(&JsValue::from_str(Colors::TEXT));
-        let purpose_text = if is_mobile && file.purpose.len() > 30 {
-            format!("{}...", &file.purpose[..27])
-        } else if file.purpose.len() > 60 {
-            format!("{}...", &file.purpose[..57])
+        let purpose_text = if is_mobile && file.purpose.len() > 80 {
+            format!("{}...", &file.purpose[..77])
+        } else if file.purpose.len() > 150 {
+            format!("{}...", &file.purpose[..147])
         } else {
             file.purpose.clone()
         };
