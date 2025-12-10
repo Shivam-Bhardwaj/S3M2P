@@ -13,4 +13,4 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
 
 pub mod ekf;
-pub use ekf::{EKF, smooth_trajectory};
+pub use ekf::{smooth_trajectory, EKF};

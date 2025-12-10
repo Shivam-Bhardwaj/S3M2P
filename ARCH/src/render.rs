@@ -57,9 +57,8 @@ impl ArchRenderer {
         // Trigger syntax highlighting after DOM update
         if let Some(window) = web_sys::window() {
             // Use requestAnimationFrame to ensure DOM is ready
-            let raf_func = js_sys::Function::new_no_args(
-                "if (window.Prism) { window.Prism.highlightAll(); }"
-            );
+            let raf_func =
+                js_sys::Function::new_no_args("if (window.Prism) { window.Prism.highlightAll(); }");
             let _ = window.request_animation_frame(&raf_func);
         }
 
@@ -106,13 +105,16 @@ impl ArchRenderer {
 
         let (action_type, action_data) = match &line.action {
             LineAction::Back => ("back", String::new()),
-            LineAction::EnterFolder(folder) => {
-                ("folder", format!(r#" data-target="{}""#, escape_html(folder)))
-            }
+            LineAction::EnterFolder(folder) => (
+                "folder",
+                format!(r#" data-target="{}""#, escape_html(folder)),
+            ),
             LineAction::SelectFile(path) => {
                 ("file", format!(r#" data-path="{}""#, escape_html(path)))
             }
-            LineAction::NextFile | LineAction::PreviousFile | LineAction::None => ("none", String::new()),
+            LineAction::NextFile | LineAction::PreviousFile | LineAction::None => {
+                ("none", String::new())
+            }
         };
 
         let selected_class = if is_selected {
@@ -179,11 +181,14 @@ impl ArchRenderer {
 
         // Content with syntax highlighting
         html.push_str(r#"<div class="file-viewer__content">"#);
-        html.push_str(&format!(r#"<pre class="line-numbers"><code class="language-{}">"#, get_language(&file_info.file_type)));
+        html.push_str(&format!(
+            r#"<pre class="line-numbers"><code class="language-{}">"#,
+            get_language(&file_info.file_type)
+        ));
 
         for line in content.lines() {
             html.push_str(&escape_html(line));
-            html.push_str("\n");
+            html.push('\n');
         }
 
         html.push_str("</code></pre></div>");

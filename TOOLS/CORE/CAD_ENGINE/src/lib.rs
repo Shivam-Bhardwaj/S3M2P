@@ -57,14 +57,14 @@ pub use dna::cad::geometry::{
 
 // Topology types
 pub use dna::cad::topology::{
-    CurveType, Edge, EdgeId, Face, FaceId, FaceOrientation, Loop, Shell, ShellId,
-    Solid, SurfaceType, Vertex, VertexId,
+    CurveType, Edge, EdgeId, Face, FaceId, FaceOrientation, Loop, Shell, ShellId, Solid,
+    SurfaceType, Vertex, VertexId,
 };
 
 // Primitive generators
 pub use dna::cad::primitives::{
-    make_box, make_box_at, make_cone, make_cone_at, make_cylinder, make_cylinder_at,
-    make_sphere, make_sphere_at,
+    make_box, make_box_at, make_cone, make_cone_at, make_cylinder, make_cylinder_at, make_sphere,
+    make_sphere_at,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────────
@@ -214,7 +214,9 @@ pub fn volume(solid: &Solid) -> f32 {
             .edges
             .iter()
             .filter_map(|&edge_id| {
-                solid.edge(edge_id).and_then(|e| solid.vertex(e.start).map(|v| v.point))
+                solid
+                    .edge(edge_id)
+                    .and_then(|e| solid.vertex(e.start).map(|v| v.point))
             })
             .collect();
 
@@ -242,7 +244,9 @@ pub fn surface_area(solid: &Solid) -> f32 {
             .edges
             .iter()
             .filter_map(|&edge_id| {
-                solid.edge(edge_id).and_then(|e| solid.vertex(e.start).map(|v| v.point))
+                solid
+                    .edge(edge_id)
+                    .and_then(|e| solid.vertex(e.start).map(|v| v.point))
             })
             .collect();
 

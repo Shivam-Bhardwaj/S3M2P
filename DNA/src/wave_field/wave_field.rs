@@ -153,7 +153,7 @@ mod tests {
         let mut wf = WaveField::new(64);
 
         // Add wave at center
-        wf.add_circular_wave(32.0, 32.0, 10.0, 0.1);  // Higher amplitude
+        wf.add_circular_wave(32.0, 32.0, 10.0, 0.1); // Higher amplitude
         wf.update();
 
         // Sample near center

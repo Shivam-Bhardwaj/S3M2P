@@ -5,6 +5,8 @@
 //! LAYER: HELIOS (project)
 //! ═══════════════════════════════════════════════════════════════════════════════
 
+#![allow(dead_code)]
+
 use glam::Vec3;
 use std::f32::consts::PI;
 

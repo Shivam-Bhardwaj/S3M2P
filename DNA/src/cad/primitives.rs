@@ -439,8 +439,8 @@ pub fn make_cone_at(base_center: Point3, base_radius: f32, height: f32, segments
 
     // Create side edges (from apex to base)
     let mut side_edges = Vec::with_capacity(segments as usize);
-    for i in 0..segments as usize {
-        side_edges.push(solid.add_edge(apex, base_verts[i]));
+    for vert in &base_verts {
+        side_edges.push(solid.add_edge(apex, *vert));
     }
 
     // Create base face

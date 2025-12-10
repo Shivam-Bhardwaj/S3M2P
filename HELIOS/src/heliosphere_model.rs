@@ -5,6 +5,8 @@
 //! LAYER: HELIOS (project)
 //! ═══════════════════════════════════════════════════════════════════════════════
 
+#![allow(dead_code)]
+
 use crate::solar_wind::{NumberTimeSeries, Vector3TimeSeries, BOLTZMANN, PROTON_MASS};
 use glam::Vec3;
 

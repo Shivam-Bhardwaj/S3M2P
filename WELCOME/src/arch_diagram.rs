@@ -5,8 +5,7 @@
 //! LAYER: WELCOME (landing)
 //! ═══════════════════════════════════════════════════════════════════════════════
 
-use wasm_bindgen::prelude::*;
-use web_sys::{Document, Window};
+use web_sys::Document;
 
 /// Render the architecture diagram (via iframe to external micro-frontend)
 pub fn render_architecture_diagram(document: &Document) {

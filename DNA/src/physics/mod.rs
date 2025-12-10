@@ -23,10 +23,10 @@
 // ─────────────────────────────────────────────────────────────────────────────────
 
 pub mod core;
-pub mod mechanics;
-pub mod fields;
 pub mod electromagnetics;
+pub mod fields;
 pub mod fluids;
-pub mod thermal;
+pub mod mechanics;
 pub mod orbital;
 pub mod solvers;
+pub mod thermal;

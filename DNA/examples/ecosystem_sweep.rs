@@ -12,7 +12,7 @@
 //! Tests combinations of parameters to find optimal configuration.
 //! Uses parallel execution for faster results.
 
-use dna::wave_field::{Ecosystem, HyperParams, analyze_stability, StabilityReport};
+use dna::wave_field::{analyze_stability, Ecosystem, HyperParams, StabilityReport};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Instant;
@@ -175,13 +175,21 @@ fn main() {
 
     for (i, result) in results.iter().take(10).enumerate() {
         println!("#{}: Score = {:.2}", i + 1, result.score);
-        println!("  PID: Kp={:.3}, Ki={:.4}, Kd={:.2}",
-                 result.params.pid_kp, result.params.pid_ki, result.params.pid_kd);
-        println!("  Bhardwaj: {:.1}, Energy: {}",
-                 result.params.bhardwaj_constant, result.params.predator_energy);
-        println!("  Results: pop={:.0}±{:.0}, ratio={:.1}%, extinctions={}",
-                 result.report.avg_population, result.report.std_dev,
-                 result.report.avg_prey_ratio * 100.0, result.report.extinctions);
+        println!(
+            "  PID: Kp={:.3}, Ki={:.4}, Kd={:.2}",
+            result.params.pid_kp, result.params.pid_ki, result.params.pid_kd
+        );
+        println!(
+            "  Bhardwaj: {:.1}, Energy: {}",
+            result.params.bhardwaj_constant, result.params.predator_energy
+        );
+        println!(
+            "  Results: pop={:.0}±{:.0}, ratio={:.1}%, extinctions={}",
+            result.report.avg_population,
+            result.report.std_dev,
+            result.report.avg_prey_ratio * 100.0,
+            result.report.extinctions
+        );
         println!();
     }
 
@@ -196,10 +204,16 @@ fn main() {
         println!("    wave_spawn_rate: {},", best.params.wave_spawn_rate);
         println!("    max_waves: {},", best.params.max_waves);
         println!("    predator_energy: {},", best.params.predator_energy);
-        println!("    predator_hunt_chance: {},", best.params.predator_hunt_chance);
+        println!(
+            "    predator_hunt_chance: {},",
+            best.params.predator_hunt_chance
+        );
         println!("    sample_rate: {},", best.params.sample_rate);
         println!("    adaptive_sampling: {},", best.params.adaptive_sampling);
-        println!("    enable_direct_spawn: {},", best.params.enable_direct_spawn);
+        println!(
+            "    enable_direct_spawn: {},",
+            best.params.enable_direct_spawn
+        );
         println!("    direct_spawn_rate: {},", best.params.direct_spawn_rate);
         println!("}};");
     }

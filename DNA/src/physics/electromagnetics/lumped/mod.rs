@@ -13,10 +13,10 @@
 //!
 //! ═══════════════════════════════════════════════════════════════════════════════
 
-pub mod netlist;
-pub mod matrix;
 pub mod ac;
+pub mod matrix;
+pub mod netlist;
 
-pub use netlist::*;
-pub use matrix::*;
 pub use ac::*;
+pub use matrix::*;
+pub use netlist::*;

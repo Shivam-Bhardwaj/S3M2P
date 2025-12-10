@@ -57,9 +57,8 @@ pub use interaction::*;
 // Note: random module moved to math::random
 // Re-export for backward compatibility (don't glob re-export to avoid rand collision)
 pub use math::random::{
-    random_angle, random_direction, random_in_annulus, random_in_circle,
-    random_in_rect, random_in_rect_with_margin, random_index, random_velocity,
-    random_velocity_range, roll_chance,
+    random_angle, random_direction, random_in_annulus, random_in_circle, random_in_rect,
+    random_in_rect_with_margin, random_index, random_velocity, random_velocity_range, roll_chance,
 };
 
 /// Population statistics and metrics
@@ -76,8 +75,8 @@ pub mod wave_field;
 pub use wave_field::*;
 
 // Also export from new locations
-pub use physics::solvers::pde::FFT2D;
 pub use physics::fields::wave::{ChladniMode, PlateMode, WaveSimulation};
+pub use physics::solvers::pde::FFT2D;
 
 /// PLL (Phase-Locked Loop) circuit design
 pub mod pll;
@@ -85,7 +84,10 @@ pub use pll::*;
 
 /// SPICE circuit simulation engine
 /// DEPRECATED: Use `physics::electromagnetics::lumped` or `spice_engine` crate
-#[deprecated(since = "0.1.0", note = "use `physics::electromagnetics::lumped` instead")]
+#[deprecated(
+    since = "0.1.0",
+    note = "use `physics::electromagnetics::lumped` instead"
+)]
 pub mod spice;
 
 /// Autocrate crate generation algorithms

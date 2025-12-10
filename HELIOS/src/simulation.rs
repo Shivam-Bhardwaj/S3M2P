@@ -12,6 +12,9 @@
 #![allow(clippy::manual_range_contains)]
 #![allow(clippy::manual_clamp)]
 
+use crate::cca_projection::{CelestialCamera, ObjectId, ScaleLevel};
+use dna::world::stars::{create_bright_stars, StarDatabase};
+use glam::DVec3;
 use std::f64::consts::PI;
 
 // ============================================================================
@@ -474,6 +477,13 @@ pub struct SimulationState {
     // === VIEW STATE ===
     pub view: ViewState,
 
+    // === CELESTIAL CAMERA ===
+    pub camera: CelestialCamera,
+    pub selected_object: ObjectId, // What object is currently focused
+
+    // === STAR DATABASE ===
+    pub stars: StarDatabase,
+
     // === HELIOSPHERE ===
     pub termination_shock_au: f64,
     pub heliopause_au: f64,
@@ -527,6 +537,9 @@ impl SimulationState {
             mission_waypoint_counts: [0; MAX_MISSIONS],
 
             view: ViewState::default(),
+            camera: CelestialCamera::default(),
+            selected_object: ObjectId::Sun, // Default: focused on Sun
+            stars: create_bright_stars(),   // ~35 brightest stars with 3D positions
 
             termination_shock_au: 94.0,
             heliopause_au: 121.0,
@@ -754,6 +767,10 @@ impl SimulationState {
             self.orbit_dirty = false;
         }
 
+        // Sync camera from ViewState every frame
+        // This ensures camera follows view changes and target object movements
+        self.sync_camera();
+
         self.frame_count += 1;
     }
 
@@ -866,23 +883,70 @@ impl SimulationState {
     pub fn set_viewport(&mut self, width: f64, height: f64) {
         self.view.width = width;
         self.view.height = height;
+        self.sync_camera();
+    }
+
+    /// Sync camera from ViewState (bridge during migration)
+    pub fn sync_camera(&mut self) {
+        // Update viewport
+        self.camera.set_viewport(self.view.width, self.view.height);
+
+        // Set scale from zoom: zoom = AU/pixel, so scale = zoom * height
+        self.camera.set_scale(self.view.zoom * self.view.height);
+
+        // Set camera angles from view angles
+        self.camera.set_angles(self.view.rotation, self.view.tilt);
+
+        // Set camera target based on selected object
+        self.camera.target = self.selected_object;
+        match self.selected_object {
+            ObjectId::Sun => {
+                self.camera.target_position = DVec3::ZERO;
+            }
+            ObjectId::Planet(idx) if idx < self.planet_count => {
+                // Track planet position (updated each frame in update())
+                self.camera.target_position =
+                    DVec3::new(self.planet_x[idx], self.planet_y[idx], self.planet_z[idx]);
+            }
+            ObjectId::Star(hip_id) => {
+                // Look up star position from database
+                if let Some(star) = self.stars.get_by_hip(hip_id) {
+                    self.camera.target_position = star.position;
+                } else {
+                    // Star not found, use view center
+                    self.camera.target_position =
+                        DVec3::new(self.view.center_x, self.view.center_y, 0.0);
+                }
+            }
+            _ => {
+                // Free position mode - target is view center
+                self.camera.target_position =
+                    DVec3::new(self.view.center_x, self.view.center_y, 0.0);
+            }
+        }
+
+        // Update epoch
+        self.camera.set_epoch_jd(self.julian_date);
+    }
+
+    /// Project 3D AU coordinates to screen using camera
+    /// Returns (screen_x, screen_y, depth)
+    #[inline]
+    pub fn project_3d(&self, x: f64, y: f64, z: f64) -> (f64, f64, f64) {
+        self.camera.project(DVec3::new(x, y, z))
     }
 
     pub fn zoom_to(&mut self, level: f64) {
-        // Allow very small zoom for planet close-ups (10^-8 allows planet-scale viewing)
-        self.view.zoom = level.clamp(0.00000001, 10.0);
+        // Extended zoom range for multi-scale visualization:
+        // - Minimum: 10^-8 AU/pixel = planet surface detail
+        // - Maximum: 10^5 AU/pixel = Orion distance (1300 ly = 8.2×10^7 AU)
+        //   At 1080p: scale = 10^5 * 1080 = 10^8 AU visible
+        self.view.zoom = level.clamp(1e-8, 1e5);
 
-        // Adjust camera distance for appropriate perspective at this zoom level
-        // We want a noticeable 3D perspective effect, especially at heliosphere scale
-        // The camera distance determines the "focal length" - smaller = more perspective
-        let visible_range = self.view.zoom * self.view.width.max(self.view.height);
-
-        // Use a smaller multiplier for stronger perspective effect
-        // At heliosphere scale (zoom ~1.2), this gives camera_distance ~300 AU
-        // which creates visible foreshortening of the 3D heliosphere
-        self.view.camera_distance = visible_range * 0.15;
+        // NOTE: Perspective removed - using pure orthographic projection via CelestialCamera
 
         self.orbit_dirty = true;
+        self.sync_camera();
     }
 
     pub fn zoom_by(&mut self, factor: f64) {
@@ -890,12 +954,18 @@ impl SimulationState {
     }
 
     pub fn pan_by(&mut self, dx_screen: f64, dy_screen: f64) {
+        // Panning switches to free position mode
+        self.selected_object = ObjectId::Position;
         self.view.center_x -= dx_screen * self.view.zoom;
         self.view.center_y -= dy_screen * self.view.zoom;
+        self.sync_camera();
     }
 
     pub fn focus_on_planet(&mut self, idx: usize) {
         if idx < self.planet_count {
+            // Set camera to track this planet
+            self.selected_object = ObjectId::Planet(idx);
+
             // Check if we're already focused on this planet (within tolerance)
             let dx = (self.view.center_x - self.planet_x[idx]).abs();
             let dy = (self.view.center_y - self.planet_y[idx]).abs();
@@ -924,28 +994,32 @@ impl SimulationState {
     }
 
     pub fn focus_on_sun(&mut self) {
+        self.selected_object = ObjectId::Sun;
         self.view.center_x = 0.0;
         self.view.center_y = 0.0;
         self.zoom_to(0.001);
     }
 
     pub fn view_inner_system(&mut self) {
+        self.selected_object = ObjectId::Position; // Free position mode
         self.view.center_x = 0.0;
         self.view.center_y = 0.0;
         self.zoom_to(0.01); // Shows Mercury to Mars
     }
 
     pub fn view_outer_system(&mut self) {
+        self.selected_object = ObjectId::Position; // Free position mode
         self.view.center_x = 0.0;
         self.view.center_y = 0.0;
         self.zoom_to(0.15); // Shows out to Neptune
     }
 
     pub fn view_heliosphere(&mut self) {
-        // Position sun at 2/3 of screen to show heliosphere with direction of motion
-        // Sun moves through interstellar medium roughly in the +X direction (towards "nose")
-        // Desktop (landscape): sun at 2/3 from left, shows tail to right
-        // Mobile (portrait): sun at 2/3 from bottom, shows tail above
+        self.selected_object = ObjectId::Position; // Free position mode
+                                                   // Position sun at 2/3 of screen to show heliosphere with direction of motion
+                                                   // Sun moves through interstellar medium roughly in the +X direction (towards "nose")
+                                                   // Desktop (landscape): sun at 2/3 from left, shows tail to right
+                                                   // Mobile (portrait): sun at 2/3 from bottom, shows tail above
         let is_portrait = self.view.height > self.view.width;
 
         if is_portrait {
@@ -960,6 +1034,44 @@ impl SimulationState {
             self.view.center_y = 0.0;
         }
         self.zoom_to(1.2); // Shows full heliosphere including bow shock
+    }
+
+    /// View to nearby stars scale (~5 light-years, Alpha Centauri visible)
+    pub fn view_nearby_stars(&mut self) {
+        self.selected_object = ObjectId::Sun;
+        self.view.center_x = 0.0;
+        self.view.center_y = 0.0;
+        // 5 light-years = ~316,000 AU, need zoom to show this in viewport
+        // For 1080p: scale = zoom * 1080, we want scale ≈ 400,000 AU
+        // zoom = 400,000 / 1080 ≈ 370 AU/pixel
+        self.zoom_to(370.0);
+    }
+
+    /// View to Orion constellation scale (~2000 light-years)
+    pub fn view_orion(&mut self) {
+        self.selected_object = ObjectId::Sun;
+        self.view.center_x = 0.0;
+        self.view.center_y = 0.0;
+        // 2000 light-years = ~126 million AU
+        // For 1080p: zoom = 126,000,000 / 1080 ≈ 117,000 AU/pixel
+        self.zoom_to(100_000.0);
+    }
+
+    /// Get current scale level for LOD rendering decisions
+    pub fn scale_level(&self) -> ScaleLevel {
+        self.camera.scale_level
+    }
+
+    /// Get human-readable scale description
+    pub fn scale_description(&self) -> &'static str {
+        match self.camera.scale_level {
+            ScaleLevel::Planet => "Planetary",
+            ScaleLevel::Inner => "Inner System",
+            ScaleLevel::Outer => "Outer System",
+            ScaleLevel::Heliosphere => "Heliosphere",
+            ScaleLevel::NearStars => "Nearby Stars",
+            ScaleLevel::FarStars => "Distant Stars",
+        }
     }
 
     // === TIME CONTROL ===

@@ -44,13 +44,11 @@
 
 // Re-export Gerber types from DNA
 pub use dna::export::gerber::{
-    GerberDocument, GerberCommand, GerberUnit, ApertureDef, ApertureType,
+    ApertureDef, ApertureType, GerberCommand, GerberDocument, GerberUnit,
 };
 
 // Re-export PDF types from DNA
-pub use dna::export::pdf::{
-    PdfDocument, PdfPage, TextAlign,
-};
+pub use dna::export::pdf::{PdfDocument, PdfPage, TextAlign};
 
 /// Export format enumeration
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

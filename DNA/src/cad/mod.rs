@@ -39,8 +39,10 @@ pub mod topology;
 pub use geometry::{
     BoundingBox3, Line, Plane, Point3, Ray, Segment, Transform3, Vector3, TOLERANCE,
 };
-pub use primitives::{make_box, make_box_at, make_cone, make_cone_at, make_cylinder,
-    make_cylinder_at, make_sphere, make_sphere_at};
+pub use primitives::{
+    make_box, make_box_at, make_cone, make_cone_at, make_cylinder, make_cylinder_at, make_sphere,
+    make_sphere_at,
+};
 pub use topology::{
     CurveType, Edge, EdgeId, Face, FaceId, FaceOrientation, Loop, Shell, ShellId, Solid,
     SurfaceType, Vertex, VertexId,

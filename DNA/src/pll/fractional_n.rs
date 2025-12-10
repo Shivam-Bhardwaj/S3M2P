@@ -42,10 +42,10 @@ pub fn calculate_fractional_divider(
     // Order 2: 2^20 = 1048576
     // Order 3: 2^24 = 16777216
     let modulus = match modulator_order {
-        1 => 1u32 << 16,  // 65536
-        2 => 1u32 << 20,  // 1048576
-        3 => 1u32 << 24,  // 16777216
-        _ => 1u32 << 24,  // Default to order 3
+        1 => 1u32 << 16, // 65536
+        2 => 1u32 << 20, // 1048576
+        3 => 1u32 << 24, // 16777216
+        _ => 1u32 << 24, // Default to order 3
     };
 
     // Convert fractional part to integer numerator
@@ -117,15 +117,12 @@ pub fn estimate_quantization_noise(
 ///
 /// Fractional-N PLLs typically use wider loop bandwidth to suppress
 /// quantization noise from the sigma-delta modulator.
-pub fn adjust_bandwidth_for_fractional(
-    integer_n_bandwidth_hz: f64,
-    modulator_order: u32,
-) -> f64 {
+pub fn adjust_bandwidth_for_fractional(integer_n_bandwidth_hz: f64, modulator_order: u32) -> f64 {
     // Fractional-N typically needs 2-5x wider bandwidth
     let bandwidth_multiplier = match modulator_order {
-        1 => 5.0,  // Order 1: very noisy, need wide bandwidth
-        2 => 3.0,  // Order 2: moderate noise
-        3 => 2.0,  // Order 3: good noise shaping, less bandwidth needed
+        1 => 5.0, // Order 1: very noisy, need wide bandwidth
+        2 => 3.0, // Order 2: moderate noise
+        3 => 2.0, // Order 3: good noise shaping, less bandwidth needed
         _ => 2.0,
     };
 

@@ -53,8 +53,14 @@ pub struct Handle {
 
 /// Entry in the arena - either occupied with data or free (next free index + generation)
 enum Entry<T> {
-    Occupied { generation: u32, value: T },
-    Free { next_free: Option<u32>, next_generation: u32 },
+    Occupied {
+        generation: u32,
+        value: T,
+    },
+    Free {
+        next_free: Option<u32>,
+        next_generation: u32,
+    },
 }
 
 /// Generic fixed-capacity arena allocator
@@ -97,8 +103,17 @@ impl<T, const CAPACITY: usize> Arena<T, CAPACITY> {
     pub fn spawn(&mut self, value: T) -> Option<Handle> {
         let index = self.free_list_head?;
 
-        match std::mem::replace(&mut self.entries[index as usize], Entry::Free { next_free: None, next_generation: 0 }) {
-            Entry::Free { next_free, next_generation } => {
+        match std::mem::replace(
+            &mut self.entries[index as usize],
+            Entry::Free {
+                next_free: None,
+                next_generation: 0,
+            },
+        ) {
+            Entry::Free {
+                next_free,
+                next_generation,
+            } => {
                 // Use the generation from the free entry
                 let generation = next_generation;
 
@@ -118,7 +133,13 @@ impl<T, const CAPACITY: usize> Arena<T, CAPACITY> {
     ///
     /// Returns true if entity was killed, false if handle was invalid.
     pub fn kill(&mut self, handle: Handle) -> bool {
-        match std::mem::replace(&mut self.entries[handle.index as usize], Entry::Free { next_free: None, next_generation: 0 }) {
+        match std::mem::replace(
+            &mut self.entries[handle.index as usize],
+            Entry::Free {
+                next_free: None,
+                next_generation: 0,
+            },
+        ) {
             Entry::Occupied { generation, .. } if generation == handle.generation => {
                 // Entry was occupied with correct generation - kill it
                 // Next spawn in this slot will use incremented generation

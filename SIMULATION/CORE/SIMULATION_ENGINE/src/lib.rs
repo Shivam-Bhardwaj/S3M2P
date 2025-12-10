@@ -49,16 +49,15 @@
 
 // Re-export DNA types for convenience
 pub use dna::{
-    BoidArena, BoidHandle, BoidRole, BoidState, FoodSource, Genome,
-    Obstacle, PredatorZone, SeasonCycle, SimConfig, SpatialGrid,
+    BoidArena, BoidHandle, BoidRole, BoidState, FoodSource, Genome, Obstacle, PredatorZone,
+    SeasonCycle, SimConfig, SpatialGrid,
 };
 
 // Re-export simulation functions
 pub use dna::{
-    compute_diversity, compute_flocking_forces, feed_from_sources,
-    process_predation, process_scavenging, simulation_step, update_states,
-    trigger_earthquake, trigger_mass_extinction, trigger_migration,
-    apply_predator_zones, get_boid_color,
+    apply_predator_zones, compute_diversity, compute_flocking_forces, feed_from_sources,
+    get_boid_color, process_predation, process_scavenging, simulation_step, trigger_earthquake,
+    trigger_mass_extinction, trigger_migration, update_states,
 };
 
 /// Default arena capacity
@@ -107,7 +106,7 @@ mod tests {
 
         assert_eq!(arena.alive_count, 0);
         assert_eq!(config.carrying_capacity, 800);
-        let _ = grid;  // Just verify it was created
+        let _ = grid; // Just verify it was created
     }
 
     #[test]

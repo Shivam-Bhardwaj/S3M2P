@@ -46,22 +46,27 @@
 
 // Re-export PLL types from DNA
 pub use dna::pll::{
-    // Main types
-    PLLRequirements, PLLDesign, PLLPerformance, PLLArchitecture,
-    // Loop filter
-    LoopFilterDesign, LoopFilterTopology,
-    // Divider config
-    DividerConfig,
-    // Bode plot and noise
-    BodePlot, PhaseNoiseProfile,
-    // Transient simulation
-    TransientResult,
     // Main design function
     design_pll,
+    // Bode plot and noise
+    BodePlot,
+    // Divider config
+    DividerConfig,
+    // Loop filter
+    LoopFilterDesign,
+    LoopFilterTopology,
+    PLLArchitecture,
+    PLLDesign,
+    PLLPerformance,
+    // Main types
+    PLLRequirements,
+    PhaseNoiseProfile,
+    // Transient simulation
+    TransientResult,
 };
 
 // Re-export SPICE engine for circuit-level simulation
-pub use spice_engine::{Netlist, Element, SourceValue, ac_analysis, ACResult};
+pub use spice_engine::{ac_analysis, ACResult, Element, Netlist, SourceValue};
 
 /// Design a PLL with simplified interface
 ///
@@ -74,7 +79,7 @@ pub fn quick_design_integer_n(
 ) -> Result<PLLDesign, String> {
     let requirements = PLLRequirements {
         ref_freq_hz: f_ref,
-        output_freq_min_hz: f_out * 0.99,  // Allow 1% range
+        output_freq_min_hz: f_out * 0.99, // Allow 1% range
         output_freq_max_hz: f_out * 1.01,
         loop_bandwidth_hz: loop_bandwidth,
         phase_margin_deg: phase_margin,
@@ -87,8 +92,7 @@ pub fn quick_design_integer_n(
 
 /// Check if a PLL design meets stability requirements
 pub fn check_stability(design: &PLLDesign) -> bool {
-    design.performance.phase_margin_deg >= 30.0
-        && design.performance.gain_margin_db >= 6.0
+    design.performance.phase_margin_deg >= 30.0 && design.performance.gain_margin_db >= 6.0
 }
 
 /// Get a summary of PLL performance metrics
@@ -110,10 +114,10 @@ mod tests {
     #[test]
     fn test_quick_design() {
         let result = quick_design_integer_n(
-            10e6,       // 10 MHz reference
-            1e9,        // 1 GHz output
-            100e3,      // 100 kHz loop bandwidth
-            45.0,       // 45 degree phase margin
+            10e6,  // 10 MHz reference
+            1e9,   // 1 GHz output
+            100e3, // 100 kHz loop bandwidth
+            45.0,  // 45 degree phase margin
         );
 
         assert!(result.is_ok());

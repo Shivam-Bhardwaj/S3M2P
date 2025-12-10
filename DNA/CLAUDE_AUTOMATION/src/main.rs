@@ -8,19 +8,19 @@
 use anyhow::Result;
 use std::time::Duration;
 use tokio::time::sleep;
-use tracing::{info, warn, error};
+use tracing::{error, info, warn};
 
+mod agent_router;
 mod config;
 mod github;
+mod session;
 mod state;
 mod worktree;
-mod session;
-mod agent_router;
 
-use config::Config;
-use state::Database;
-use github::GitHubClient;
 use agent_router::Agent;
+use config::Config;
+use github::GitHubClient;
+use state::Database;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -39,10 +39,16 @@ async fn main() -> Result<()> {
 
     // Initialize GitHub client
     let github = GitHubClient::new(&config)?;
-    info!("GitHub client initialized for {}/{}", config.github.owner, config.github.repo);
+    info!(
+        "GitHub client initialized for {}/{}",
+        config.github.owner, config.github.repo
+    );
 
     info!("🤖 Claude Automation Daemon started");
-    info!("   Polling every {}s for fast, reliable responses", config.daemon.poll_interval_secs);
+    info!(
+        "   Polling every {}s for fast, reliable responses",
+        config.daemon.poll_interval_secs
+    );
 
     loop {
         info!("Polling...");
@@ -59,7 +65,10 @@ async fn main() -> Result<()> {
                         continue; // Skip - already processing
                     }
 
-                    info!("New issue #{}: {} - spawning Planner (Opus)", issue.number, issue.title);
+                    info!(
+                        "New issue #{}: {} - spawning Planner (Opus)",
+                        issue.number, issue.title
+                    );
 
                     match session::spawn_planner(&issue, &config, &db).await {
                         Ok(_) => {
@@ -80,20 +89,34 @@ async fn main() -> Result<()> {
         match db.get_active_issues() {
             Ok(active_issues) => {
                 for issue_num in active_issues {
-                    match github.get_new_comments(issue_num, db.last_comment_time(issue_num)?).await {
+                    match github
+                        .get_new_comments(issue_num, db.last_comment_time(issue_num)?)
+                        .await
+                    {
                         Ok(new_comments) if !new_comments.is_empty() => {
-                            info!("Issue #{}: {} new comment(s)", issue_num, new_comments.len());
+                            info!(
+                                "Issue #{}: {} new comment(s)",
+                                issue_num,
+                                new_comments.len()
+                            );
 
                             // Determine which agent to spawn
                             let agent = agent_router::decide(&new_comments, &db)?;
 
                             match agent {
                                 Agent::Planner => {
-                                    info!("Spawning Planner (Opus) for re-planning issue #{}", issue_num);
-                                    session::spawn_planner_with_context(issue_num, &config, &db).await?;
+                                    info!(
+                                        "Spawning Planner (Opus) for re-planning issue #{}",
+                                        issue_num
+                                    );
+                                    session::spawn_planner_with_context(issue_num, &config, &db)
+                                        .await?;
                                 }
                                 Agent::Executor => {
-                                    info!("Spawning Executor (Sonnet) for iteration on issue #{}", issue_num);
+                                    info!(
+                                        "Spawning Executor (Sonnet) for iteration on issue #{}",
+                                        issue_num
+                                    );
                                     session::spawn_executor(issue_num, &config, &db).await?;
                                 }
                             }
@@ -117,13 +140,23 @@ async fn main() -> Result<()> {
         match github.get_automation_prs().await {
             Ok(prs) => {
                 for (pr_number, issue_number) in prs {
-                    match github.get_pr_comments(pr_number, db.last_comment_time(issue_number)?).await {
+                    match github
+                        .get_pr_comments(pr_number, db.last_comment_time(issue_number)?)
+                        .await
+                    {
                         Ok(new_comments) if !new_comments.is_empty() => {
-                            info!("PR #{} (for issue #{}): {} new comment(s)", pr_number, issue_number, new_comments.len());
+                            info!(
+                                "PR #{} (for issue #{}): {} new comment(s)",
+                                pr_number,
+                                issue_number,
+                                new_comments.len()
+                            );
 
                             // Always use Executor for PR feedback (quick fixes)
                             info!("Spawning Executor (Sonnet) for PR #{} feedback", pr_number);
-                            if let Err(e) = session::spawn_executor(issue_number, &config, &db).await {
+                            if let Err(e) =
+                                session::spawn_executor(issue_number, &config, &db).await
+                            {
                                 error!("Failed to spawn Executor for PR: {}", e);
                             }
 

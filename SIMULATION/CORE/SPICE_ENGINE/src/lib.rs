@@ -44,12 +44,18 @@
 
 // Re-export lumped circuit types from DNA
 pub use dna::physics::electromagnetics::lumped::{
-    // Netlist types
-    Netlist, Element, SourceValue, BehavioralExpression,
-    // Matrix types
-    MNAMatrix, ComplexMNAMatrix, Complex,
     // Analysis functions
-    ac_analysis, ACResult,
+    ac_analysis,
+    ACResult,
+    BehavioralExpression,
+    Complex,
+    ComplexMNAMatrix,
+    Element,
+    // Matrix types
+    MNAMatrix,
+    // Netlist types
+    Netlist,
+    SourceValue,
 };
 
 /// Bode plot data point
@@ -62,11 +68,15 @@ pub struct BodePoint {
 
 /// Generate Bode plot data from AC analysis result
 pub fn generate_bode_plot(ac_result: &ACResult, output_node: usize) -> Vec<BodePoint> {
-    ac_result.frequencies
+    ac_result
+        .frequencies
         .iter()
         .zip(ac_result.node_voltages.iter())
         .map(|(&freq, voltages)| {
-            let v = voltages.get(output_node).copied().unwrap_or(Complex::zero());
+            let v = voltages
+                .get(output_node)
+                .copied()
+                .unwrap_or(Complex::zero());
             BodePoint {
                 frequency: freq,
                 magnitude_db: 20.0 * v.magnitude().log10(),
@@ -113,7 +123,10 @@ mod tests {
             name: "V1".to_string(),
             node_p: "in".to_string(),
             node_n: "0".to_string(),
-            value: SourceValue::AC { magnitude: 1.0, phase: 0.0 },
+            value: SourceValue::AC {
+                magnitude: 1.0,
+                phase: 0.0,
+            },
         });
 
         netlist.add_element(Element::Resistor {
@@ -147,9 +160,21 @@ mod tests {
     #[test]
     fn test_cutoff_frequency() {
         let bode = vec![
-            BodePoint { frequency: 10.0, magnitude_db: 0.0, phase_deg: 0.0 },
-            BodePoint { frequency: 100.0, magnitude_db: -2.0, phase_deg: -30.0 },
-            BodePoint { frequency: 200.0, magnitude_db: -4.0, phase_deg: -50.0 },
+            BodePoint {
+                frequency: 10.0,
+                magnitude_db: 0.0,
+                phase_deg: 0.0,
+            },
+            BodePoint {
+                frequency: 100.0,
+                magnitude_db: -2.0,
+                phase_deg: -30.0,
+            },
+            BodePoint {
+                frequency: 200.0,
+                magnitude_db: -4.0,
+                phase_deg: -50.0,
+            },
         ];
 
         let cutoff = find_cutoff_frequency(&bode);
