@@ -132,29 +132,8 @@ impl AppState {
     fn build_tree(&mut self) {
         self.lines.clear();
 
-        // Title with breadcrumb
-        let title = if self.current_path.is_empty() {
-            "ARCH".to_string()
-        } else {
-            format!("ARCH/{}", self.current_path.join("/"))
-        };
-
-        self.lines.push(TreeLine {
-            name: title,
-            suffix: " File Explorer".into(),
-            color: Colors::TEXT,
-            action: LineAction::None,
-            file_info: None,
-        });
-
-        // Separator
-        self.lines.push(TreeLine {
-            name: "────────────────────────────────".into(),
-            suffix: String::new(),
-            color: Colors::DIM,
-            action: LineAction::None,
-            file_info: None,
-        });
+        // Note: Title is now rendered in dedicated header element (render.rs)
+        // No need to add it as a TreeLine
 
         // Back navigation
         if !self.current_path.is_empty() {
