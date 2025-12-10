@@ -33,9 +33,11 @@ members = [
 
     # Tools (L2 under Tools bubble)
     "TOOLS/AUTOCRATE",
+    "TOOLS/CAD",
     "TOOLS/CRM",
     "TOOLS/PLL",
     "TOOLS/POWER_CIRCUITS",
+    "TOOLS/SPICE",
 
     # Learn (L2 under Learn bubble)
     "LEARN/SENSORS",

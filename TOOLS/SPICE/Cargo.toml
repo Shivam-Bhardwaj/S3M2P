@@ -1,15 +1,14 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# FILE: Cargo.toml | ARCH/Cargo.toml
-# PURPOSE: ARCH project dependencies for interactive architecture visualization WASM app
+# FILE: Cargo.toml | TOOLS/SPICE/Cargo.toml
+# PURPOSE: Package manifest for SPICE circuit simulator WASM application
 # MODIFIED: 2025-12-09
 # ═══════════════════════════════════════════════════════════════════════════════
 
 [package]
-name = "arch"
+name = "spice"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "Architecture visualization for antimony-labs monorepo"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -17,10 +16,9 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 wasm-bindgen = "=0.2.93"
 console_error_panic_hook = "0.1"
-js-sys = "0.3"
+spice-engine = { path = "../../SIMULATION/CORE/SPICE_ENGINE" }
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-toml = "0.8"
+serde-wasm-bindgen = "0.6"
 
 [dependencies.web-sys]
 version = "0.3"
@@ -29,15 +27,12 @@ features = [
     "Document",
     "Element",
     "HtmlElement",
+    "HtmlInputElement",
+    "HtmlTextAreaElement",
     "HtmlCanvasElement",
     "CanvasRenderingContext2d",
     "Window",
     "MouseEvent",
-    "WheelEvent",
-    "TouchEvent",
-    "TouchList",
-    "Touch",
-    "DomRect",
-    "Performance",
     "CssStyleDeclaration",
+    "DomRect",
 ]

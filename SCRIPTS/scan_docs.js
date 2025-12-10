@@ -18,44 +18,68 @@ const INCLUDE_EXTS = ['.rs', '.js', '.ts', '.html', '.css', '.md', '.sh'];
 
 function getPurpose(content, ext) {
     const lines = content.split('\n');
-    let buffer = [];
 
+    // First pass: look for explicit PURPOSE: line (our header convention)
+    for (let line of lines) {
+        line = line.trim();
+        // Remove comment prefixes
+        line = line.replace(/^\/\/[!\/]?\s*/, '').replace(/^\*\s*/, '').replace(/^<!--\s*/, '');
+
+        if (line.match(/^PURPOSE:\s*(.+)/i)) {
+            const purpose = line.replace(/^PURPOSE:\s*/i, '').trim();
+            if (purpose && purpose.length > 0) {
+                return purpose;
+            }
+        }
+    }
+
+    // Second pass: extract from doc comments or headers
+    let buffer = [];
     for (let line of lines) {
         line = line.trim();
         if (!line) continue;
 
-        // Skip separators
-        if (line.match(/^[-=*]{3,}$/)) continue;
-        if (line.match(/^\/\/[-=*]{3,}$/)) continue;
+        // Skip separator lines (═, ─, -, =, *)
+        if (line.match(/^[═─\-=*]{3,}$/)) continue;
+        if (line.match(/^\/\/[!\/]?\s*[═─\-=*]{3,}$/)) continue;
+        if (line.match(/^<!--[═─\-=*\s]*$/)) continue;
+
+        // Skip FILE: lines
+        if (line.match(/FILE:/)) continue;
+        // Skip MODIFIED: lines
+        if (line.match(/MODIFIED:/)) continue;
+        // Skip LAYER: lines
+        if (line.match(/LAYER:/)) continue;
 
         let cleanLine = null;
 
         if (ext === '.rs') {
             if (line.startsWith('//!')) cleanLine = line.replace('//!', '').trim();
             else if (line.startsWith('///')) cleanLine = line.replace('///', '').trim();
-            // Don't grab normal comments // as they are often implementation details or licenses
         } else if (ext === '.js' || ext === '.ts') {
-            if (line.startsWith('/**')) continue; // Skip start of block
-            if (line.startsWith('*/')) continue; // Skip end
+            if (line.startsWith('/**')) continue;
+            if (line.startsWith('*/')) continue;
             if (line.startsWith('*')) cleanLine = line.replace('*', '').trim();
-            // Skip // for JS/TS unless it's a top-level file description convention you use
         } else if (ext === '.md') {
             if (line.startsWith('#')) cleanLine = line.replace(/^#+/, '').trim();
-            // Take the first text line if no header
             else if (buffer.length === 0 && line.length > 0) cleanLine = line;
+        } else if (ext === '.html') {
+            if (line.startsWith('<!--')) continue;
+            if (line.startsWith('-->')) continue;
         }
 
         if (cleanLine && cleanLine.length > 0) {
-            // Filter out common license text starts
+            // Skip common noise
             if (cleanLine.toLowerCase().startsWith('copyright')) continue;
             if (cleanLine.toLowerCase().startsWith('license')) continue;
+            if (cleanLine.match(/^[═─\-=*]+$/)) continue;
 
             buffer.push(cleanLine);
-            if (buffer.length >= 2) break; // Grab first 2 significant lines
+            if (buffer.length >= 1) break; // Just grab first meaningful line
         }
     }
 
-    if (buffer.length > 0) return buffer.join(' ');
+    if (buffer.length > 0) return buffer[0];
     return "No description available.";
 }
 
@@ -102,7 +126,7 @@ function walk(dir, fileList = []) {
 
 const db = {};
 
-const dirsToScan = ['DNA', 'TOOLS', 'SIMULATION', 'HELIOS', 'BLOG', 'LEARN'];
+const dirsToScan = ['DNA', 'TOOLS', 'SIMULATION', 'HELIOS', 'BLOG', 'LEARN', 'ARCH', 'WELCOME'];
 
 dirsToScan.forEach(dirName => {
     const dirPath = path.join(ROOT_DIR, dirName);

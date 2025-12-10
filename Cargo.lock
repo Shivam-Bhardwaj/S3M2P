@@ -277,6 +277,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b35204fbdc0b3f4446b89fc1ac2cf84a8a68971995d0bf2e925ec7cd960f9cb3"
 
 [[package]]
+name = "cad"
+version = "0.1.0"
+dependencies = [
+ "cad-engine",
+ "console_error_panic_hook",
+ "glam 0.29.3",
+ "js-sys",
+ "serde",
+ "serde-wasm-bindgen",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "cad-engine"
 version = "0.1.0"
 dependencies = [
@@ -1985,6 +1999,18 @@ checksum = "17129e116933cf371d018bb80ae557e889637989d8638274fb25622827b03881"
 dependencies = [
  "libc",
  "windows-sys 0.60.2",
+]
+
+[[package]]
+name = "spice"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "serde",
+ "serde-wasm-bindgen",
+ "spice-engine",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

@@ -1,0 +1,409 @@
+<!--
+═══════════════════════════════════════════════════════════════════════════════
+FILE: index.html | TOOLS/SPICE/index.html
+PURPOSE: SPICE circuit simulator web application entry point
+MODIFIED: 2025-12-09
+═══════════════════════════════════════════════════════════════════════════════
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPICE Simulator - Circuit Analysis Tool</title>
+    <link data-trunk rel="rust" href="Cargo.toml" data-wasm-opt="z" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #050508 0%, #0a0a12 100%);
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            color: #e0e0e0;
+            padding: 1.5rem;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #00aaff;
+            text-shadow: 0 0 20px rgba(0, 170, 255, 0.5);
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #808080;
+            font-size: 0.9rem;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            color: #00aaff;
+            margin-bottom: 1.25rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .panel-left {
+            background: rgba(10, 10, 18, 0.8);
+            border: 1px solid rgba(0, 170, 255, 0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: sticky;
+            top: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #a0a0a0;
+            margin-bottom: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 170, 255, 0.3);
+            border-radius: 6px;
+            color: #00aaff;
+            font-family: inherit;
+            font-size: 0.85rem;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #00aaff;
+        }
+
+        .freq-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .input-group input[type="number"] {
+            width: 100%;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 170, 255, 0.3);
+            border-radius: 6px;
+            color: #00aaff;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .input-group input[type="number"]:focus {
+            outline: none;
+            border-color: #00aaff;
+        }
+
+        .unit {
+            color: #606060;
+            font-size: 0.8rem;
+        }
+
+        #analyze-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, rgba(0, 170, 255, 0.2), rgba(0, 170, 255, 0.1));
+            border: 1px solid rgba(0, 170, 255, 0.5);
+            border-radius: 8px;
+            color: #00aaff;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 0.5rem;
+        }
+
+        #analyze-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 170, 255, 0.3), rgba(0, 170, 255, 0.15));
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.2);
+        }
+
+        .info-text {
+            margin-top: 1.25rem;
+            font-size: 0.75rem;
+            color: #606060;
+            line-height: 1.5;
+        }
+
+        #error-msg {
+            display: none;
+            padding: 0.75rem;
+            background: rgba(255, 100, 100, 0.1);
+            border: 1px solid rgba(255, 100, 100, 0.3);
+            border-radius: 6px;
+            color: #ff6b6b;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .panel-right {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .results-section {
+            background: rgba(10, 10, 18, 0.8);
+            border: 1px solid rgba(0, 170, 255, 0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            color: #808080;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+
+        .result-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 170, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            color: #808080;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-size: 1rem;
+            color: #00aaff;
+            font-weight: 500;
+        }
+
+        .plots-section {
+            background: rgba(10, 10, 18, 0.8);
+            border: 1px solid rgba(0, 170, 255, 0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(0, 170, 255, 0.2);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #606060;
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: #a0a0a0;
+        }
+
+        .tab-btn.active {
+            color: #00aaff;
+            border-bottom-color: #00aaff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content canvas {
+            width: 100%;
+            height: 350px;
+            display: block;
+        }
+
+        @media (max-width: 1000px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .panel-left {
+                position: static;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .freq-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>SPICE Simulator</h1>
+            <p class="subtitle">Circuit Analysis - DC, AC, and Transient</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="panel-left">
+                <h2>Circuit Netlist</h2>
+
+                <div id="error-msg"></div>
+
+                <div class="input-group">
+                    <label for="netlist">Enter SPICE Netlist</label>
+                    <textarea id="netlist" placeholder="* RC Low-Pass Filter
+V1 in 0 AC 1
+R1 in out 1k
+C1 out 0 1u"></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>AC Analysis Frequency Range</label>
+                    <div class="freq-inputs">
+                        <div>
+                            <label for="freq-start">Start <span class="unit">(Hz)</span></label>
+                            <input type="number" id="freq-start" value="1" step="any" min="0.001">
+                        </div>
+                        <div>
+                            <label for="freq-stop">Stop <span class="unit">(Hz)</span></label>
+                            <input type="number" id="freq-stop" value="100000" step="any" min="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="output-node">Output Node</label>
+                    <input type="number" id="output-node" value="1" min="1">
+                </div>
+
+                <button id="analyze-btn">Run Analysis</button>
+
+                <p class="info-text">
+                    Supports R, L, C, V (DC/AC), I sources. Uses Modified Nodal Analysis (MNA)
+                    for DC operating point and complex arithmetic for AC frequency response.
+                </p>
+            </div>
+
+            <div class="panel-right" id="results">
+                <div class="results-section">
+                    <h2>Analysis Results</h2>
+
+                    <div class="section-title">AC Analysis</div>
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <div class="result-label">DC Gain</div>
+                            <div class="result-value" id="result-dc-gain">-</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">Cutoff Frequency</div>
+                            <div class="result-value" id="result-cutoff">-</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">Phase at Cutoff</div>
+                            <div class="result-value" id="result-phase">-</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">High-Freq Rolloff</div>
+                            <div class="result-value" id="result-rolloff">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plots-section">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="openTab('magnitude')">Magnitude</button>
+                        <button class="tab-btn" onclick="openTab('phase')">Phase</button>
+                    </div>
+
+                    <div id="magnitude" class="tab-content active">
+                        <canvas id="magnitude-canvas"></canvas>
+                    </div>
+                    <div id="phase" class="tab-content">
+                        <canvas id="phase-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTab(tabName) {
+            const contents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < contents.length; i++) {
+                contents[i].style.display = "none";
+                contents[i].classList.remove("active");
+            }
+
+            const buttons = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove("active");
+            }
+
+            document.getElementById(tabName).style.display = "block";
+            document.getElementById(tabName).classList.add("active");
+
+            const activeBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabName));
+            if (activeBtn) activeBtn.classList.add("active");
+        }
+    </script>
+</body>
+
+</html>

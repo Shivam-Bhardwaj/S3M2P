@@ -1,0 +1,16 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# FILE: Trunk.toml | TOOLS/CAD/Trunk.toml
+# PURPOSE: Trunk build configuration for CAD solid modeler WASM bundling
+# MODIFIED: 2025-12-09
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[build]
+target = "index.html"
+dist = "dist"
+
+[watch]
+ignore = ["dist"]
+
+[serve]
+address = "127.0.0.1"
+port = 8093

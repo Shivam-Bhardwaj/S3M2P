@@ -2,28 +2,28 @@
   "DNA/CLAUDE.md": {
     "path": "DNA/CLAUDE.md",
     "name": "CLAUDE.md",
-    "purpose": "DNA - Foundation Layer Build & Test",
+    "purpose": "DNA - Foundation Layer",
     "main_function": "N/A",
     "type": ".md"
   },
   "DNA/CLAUDE_AUTOMATION/README.md": {
     "path": "DNA/CLAUDE_AUTOMATION/README.md",
     "name": "README.md",
-    "purpose": "Claude Code Automation System Quick Start",
+    "purpose": "Claude Code Automation System",
     "main_function": "N/A",
     "type": ".md"
   },
   "DNA/CLAUDE_AUTOMATION/STATUS.md": {
     "path": "DNA/CLAUDE_AUTOMATION/STATUS.md",
     "name": "STATUS.md",
-    "purpose": "Claude Automation System - Current Status ✅ What's Working",
+    "purpose": "Claude Automation System - Current Status",
     "main_function": "N/A",
     "type": ".md"
   },
   "DNA/CLAUDE_AUTOMATION/TESTING.md": {
     "path": "DNA/CLAUDE_AUTOMATION/TESTING.md",
     "name": "TESTING.md",
-    "purpose": "Testing Procedures for Claude Automation Pre-Flight Validation",
+    "purpose": "Testing Procedures for Claude Automation",
     "main_function": "N/A",
     "type": ".md"
   },
@@ -44,56 +44,56 @@
   "DNA/CLAUDE_AUTOMATION/src/agent_router.rs": {
     "path": "DNA/CLAUDE_AUTOMATION/src/agent_router.rs",
     "name": "agent_router.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: agent_router.rs | DNA/CLAUDE_AUTOMATION/src/agent_router.rs",
+    "purpose": "Defines Agent types",
     "main_function": "decide",
     "type": ".rs"
   },
   "DNA/CLAUDE_AUTOMATION/src/config.rs": {
     "path": "DNA/CLAUDE_AUTOMATION/src/config.rs",
     "name": "config.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: config.rs | DNA/CLAUDE_AUTOMATION/src/config.rs",
+    "purpose": "Defines Config, DaemonConfig, GitHubConfig types",
     "main_function": "load",
     "type": ".rs"
   },
   "DNA/CLAUDE_AUTOMATION/src/github.rs": {
     "path": "DNA/CLAUDE_AUTOMATION/src/github.rs",
     "name": "github.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: github.rs | DNA/CLAUDE_AUTOMATION/src/github.rs",
+    "purpose": "Defines Issue, Comment, GitHubClient types",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/CLAUDE_AUTOMATION/src/main.rs": {
     "path": "DNA/CLAUDE_AUTOMATION/src/main.rs",
     "name": "main.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: main.rs | DNA/CLAUDE_AUTOMATION/src/main.rs",
+    "purpose": "Application entry point and initialization",
     "main_function": "fn main()",
     "type": ".rs"
   },
   "DNA/CLAUDE_AUTOMATION/src/session.rs": {
     "path": "DNA/CLAUDE_AUTOMATION/src/session.rs",
     "name": "session.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: session.rs | DNA/CLAUDE_AUTOMATION/src/session.rs",
+    "purpose": "Claude Automation module implementation",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/CLAUDE_AUTOMATION/src/state.rs": {
     "path": "DNA/CLAUDE_AUTOMATION/src/state.rs",
     "name": "state.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: state.rs | DNA/CLAUDE_AUTOMATION/src/state.rs",
+    "purpose": "Defines Database types",
     "main_function": "open",
     "type": ".rs"
   },
   "DNA/CLAUDE_AUTOMATION/src/webhook.rs": {
     "path": "DNA/CLAUDE_AUTOMATION/src/webhook.rs",
     "name": "webhook.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: webhook.rs | DNA/CLAUDE_AUTOMATION/src/webhook.rs",
+    "purpose": "Defines AppState, WebhookPayload types",
     "main_function": "struct AppState",
     "type": ".rs"
   },
   "DNA/CLAUDE_AUTOMATION/src/worktree.rs": {
     "path": "DNA/CLAUDE_AUTOMATION/src/worktree.rs",
     "name": "worktree.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: worktree.rs | DNA/CLAUDE_AUTOMATION/src/worktree.rs",
+    "purpose": "Provides 2 public functions for src",
     "main_function": "extract_project_from_labels",
     "type": ".rs"
   },
@@ -114,21 +114,21 @@
   "DNA/METADATA_SUMMARY.md": {
     "path": "DNA/METADATA_SUMMARY.md",
     "name": "METADATA_SUMMARY.md",
-    "purpose": "DNA Metadata Headers - Processing Summary Overview",
+    "purpose": "{purpose}",
     "main_function": "N/A",
     "type": ".md"
   },
   "DNA/README.md": {
     "path": "DNA/README.md",
     "name": "README.md",
-    "purpose": "S3M2P DNA Core Architecture",
+    "purpose": "S3M2P DNA Core",
     "main_function": "N/A",
     "type": ".md"
   },
   "DNA/SIMULATION_CLI/src/main.rs": {
     "path": "DNA/SIMULATION_CLI/src/main.rs",
     "name": "main.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: main.rs | DNA/SIMULATION_CLI/src/main.rs",
+    "purpose": "Application entry point and initialization",
     "main_function": "fn main()",
     "type": ".rs"
   },
@@ -142,1275 +142,1429 @@
   "DNA/STORAGE_SERVER/src/main.rs": {
     "path": "DNA/STORAGE_SERVER/src/main.rs",
     "name": "main.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: main.rs | DNA/STORAGE_SERVER/src/main.rs",
+    "purpose": "Application entry point and initialization",
     "main_function": "fn main()",
     "type": ".rs"
   },
   "DNA/examples/ecosystem_sweep.rs": {
     "path": "DNA/examples/ecosystem_sweep.rs",
     "name": "ecosystem_sweep.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: ecosystem_sweep.rs | DNA/examples/ecosystem_sweep.rs",
+    "purpose": "Examples module implementation",
     "main_function": "fn main()",
     "type": ".rs"
   },
   "DNA/src/autocrate/calculator.rs": {
     "path": "DNA/src/autocrate/calculator.rs",
     "name": "calculator.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: calculator.rs | DNA/src/autocrate/calculator.rs",
+    "purpose": "Shipping crate geometry calculator for dimensions and components",
     "main_function": "calculate_crate",
     "type": ".rs"
   },
   "DNA/src/autocrate/constants.rs": {
     "path": "DNA/src/autocrate/constants.rs",
     "name": "constants.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: constants.rs | DNA/src/autocrate/constants.rs",
+    "purpose": "Defines LumberSize types",
     "main_function": "actual",
     "type": ".rs"
   },
   "DNA/src/autocrate/geometry.rs": {
     "path": "DNA/src/autocrate/geometry.rs",
     "name": "geometry.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: geometry.rs | DNA/src/autocrate/geometry.rs",
+    "purpose": "Defines Point3, BoundingBox, SkidGeometry types",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/autocrate/mod.rs": {
     "path": "DNA/src/autocrate/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/autocrate/mod.rs",
+    "purpose": "Module exports for autocrate",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/autocrate/types.rs": {
     "path": "DNA/src/autocrate/types.rs",
     "name": "types.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: types.rs | DNA/src/autocrate/types.rs",
+    "purpose": "Defines ProductDimensions, Clearances, CrateSpec types",
     "main_function": "struct ProductDimensions",
     "type": ".rs"
   },
   "DNA/src/cad/geometry.rs": {
     "path": "DNA/src/cad/geometry.rs",
     "name": "geometry.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: geometry.rs | DNA/src/cad/geometry.rs",
+    "purpose": "Geometric primitives for CAD/B-Rep modeling",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/cad/mod.rs": {
     "path": "DNA/src/cad/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/cad/mod.rs",
+    "purpose": "B-Rep (Boundary Representation) CAD kernel for solid modeling",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/cad/primitives.rs": {
     "path": "DNA/src/cad/primitives.rs",
     "name": "primitives.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: primitives.rs | DNA/src/cad/primitives.rs",
+    "purpose": "Solid primitive generators (box, cylinder, sphere, etc.)",
     "main_function": "make_box",
     "type": ".rs"
   },
   "DNA/src/cad/topology.rs": {
     "path": "DNA/src/cad/topology.rs",
     "name": "topology.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: topology.rs | DNA/src/cad/topology.rs",
+    "purpose": "B-Rep topology primitives (Vertex, Edge, Face, Shell, Solid)",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/color.rs": {
     "path": "DNA/src/color.rs",
     "name": "color.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: color.rs | DNA/src/color.rs",
+    "purpose": "Defines Rgb, Hsl, Gradient types",
     "main_function": "from_hex",
     "type": ".rs"
   },
   "DNA/src/data/arena.rs": {
     "path": "DNA/src/data/arena.rs",
     "name": "arena.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: arena.rs | DNA/src/data/arena.rs",
+    "purpose": "Generic fixed-capacity arena allocator with generational indices",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/data/graph.rs": {
     "path": "DNA/src/data/graph.rs",
     "name": "graph.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: graph.rs | DNA/src/data/graph.rs",
+    "purpose": "Graph data structures for circuits, pathfinding, dependencies",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/data/mesh.rs": {
     "path": "DNA/src/data/mesh.rs",
     "name": "mesh.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mesh.rs | DNA/src/data/mesh.rs",
+    "purpose": "Triangle/quad mesh representation for CAD and rendering",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/data/mod.rs": {
     "path": "DNA/src/data/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/data/mod.rs",
+    "purpose": "Module exports for data",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/data/spatial_grid.rs": {
     "path": "DNA/src/data/spatial_grid.rs",
     "name": "spatial_grid.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: spatial_grid.rs | DNA/src/data/spatial_grid.rs",
+    "purpose": "Generic uniform spatial grid for O(1) neighbor queries",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/ekf.rs": {
     "path": "DNA/src/ekf.rs",
     "name": "ekf.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: ekf.rs | DNA/src/ekf.rs",
+    "purpose": "Extended Kalman Filter implementation",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/export/gerber.rs": {
     "path": "DNA/src/export/gerber.rs",
     "name": "gerber.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: gerber.rs | DNA/src/export/gerber.rs",
+    "purpose": "Defines GerberDocument, GerberCommand, ApertureDef types",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/export/mod.rs": {
     "path": "DNA/src/export/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/export/mod.rs",
+    "purpose": "Module exports: pdf, gerber",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/export/pdf.rs": {
     "path": "DNA/src/export/pdf.rs",
     "name": "pdf.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: pdf.rs | DNA/src/export/pdf.rs",
+    "purpose": "Defines PdfDocument, PdfPage, TextAlign types",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/interaction.rs": {
     "path": "DNA/src/interaction.rs",
     "name": "interaction.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: interaction.rs | DNA/src/interaction.rs",
+    "purpose": "Defines InteractionResult types",
     "main_function": "has_effect",
     "type": ".rs"
   },
   "DNA/src/lib.rs": {
     "path": "DNA/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | DNA/src/lib.rs",
+    "purpose": "Foundation library root - physics, math, world, data structures",
     "main_function": "random",
     "type": ".rs"
   },
   "DNA/src/math/mat.rs": {
     "path": "DNA/src/math/mat.rs",
     "name": "mat.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mat.rs | DNA/src/math/mat.rs",
+    "purpose": "Matrix operations for 2D/3D transforms and filters",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/math/mod.rs": {
     "path": "DNA/src/math/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/math/mod.rs",
+    "purpose": "Module exports: mat, random",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/math/random.rs": {
     "path": "DNA/src/math/random.rs",
     "name": "random.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: random.rs | DNA/src/math/random.rs",
+    "purpose": "Random number generation utilities for simulations",
     "main_function": "random_angle",
     "type": ".rs"
   },
   "DNA/src/pathfinding.rs": {
     "path": "DNA/src/pathfinding.rs",
     "name": "pathfinding.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: pathfinding.rs | DNA/src/pathfinding.rs",
+    "purpose": "Defines GridMap, Heuristic, PathResult types",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/physics/core/constants.rs": {
     "path": "DNA/src/physics/core/constants.rs",
     "name": "constants.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: constants.rs | DNA/src/physics/core/constants.rs",
+    "purpose": "Physical and mathematical constants",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/core/mod.rs": {
     "path": "DNA/src/physics/core/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/core/mod.rs",
+    "purpose": "Module exports: constants",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/electromagnetics/lumped/ac.rs": {
     "path": "DNA/src/physics/electromagnetics/lumped/ac.rs",
     "name": "ac.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: ac.rs | DNA/src/physics/electromagnetics/lumped/ac.rs",
+    "purpose": "AC (frequency-domain) circuit analysis using complex MNA",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/physics/electromagnetics/lumped/matrix.rs": {
     "path": "DNA/src/physics/electromagnetics/lumped/matrix.rs",
     "name": "matrix.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: matrix.rs | DNA/src/physics/electromagnetics/lumped/matrix.rs",
+    "purpose": "Modified Nodal Analysis (MNA) matrix for DC circuit analysis",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/physics/electromagnetics/lumped/mod.rs": {
     "path": "DNA/src/physics/electromagnetics/lumped/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/electromagnetics/lumped/mod.rs",
+    "purpose": "Module exports: netlist, matrix, ac",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/electromagnetics/lumped/netlist.rs": {
     "path": "DNA/src/physics/electromagnetics/lumped/netlist.rs",
     "name": "netlist.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: netlist.rs | DNA/src/physics/electromagnetics/lumped/netlist.rs",
+    "purpose": "SPICE netlist representation and circuit element definitions",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/physics/electromagnetics/mod.rs": {
     "path": "DNA/src/physics/electromagnetics/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/electromagnetics/mod.rs",
+    "purpose": "Module exports: lumped",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/fields/mod.rs": {
     "path": "DNA/src/physics/fields/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/fields/mod.rs",
+    "purpose": "Module exports: wave",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/fields/wave.rs": {
     "path": "DNA/src/physics/fields/wave.rs",
     "name": "wave.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: wave.rs | DNA/src/physics/fields/wave.rs",
+    "purpose": "Wave equation solver and Chladni pattern generation",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/physics/fluids/mod.rs": {
     "path": "DNA/src/physics/fluids/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/fluids/mod.rs",
+    "purpose": "Module exports: sph",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/fluids/sph.rs": {
     "path": "DNA/src/physics/fluids/sph.rs",
     "name": "sph.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: sph.rs | DNA/src/physics/fluids/sph.rs",
+    "purpose": "Smoothed Particle Hydrodynamics (SPH) for fluid simulation",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/mechanics/mod.rs": {
     "path": "DNA/src/physics/mechanics/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/mechanics/mod.rs",
+    "purpose": "Module exports: particle",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/mechanics/particle.rs": {
     "path": "DNA/src/physics/mechanics/particle.rs",
     "name": "particle.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: particle.rs | DNA/src/physics/mechanics/particle.rs",
+    "purpose": "Point mass dynamics using Newton's laws",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/physics/mod.rs": {
     "path": "DNA/src/physics/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/mod.rs",
+    "purpose": "Physics simulation root - mechanics, fields, solvers, orbital dynamics",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/orbital/kepler.rs": {
     "path": "DNA/src/physics/orbital/kepler.rs",
     "name": "kepler.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: kepler.rs | DNA/src/physics/orbital/kepler.rs",
+    "purpose": "Two-body orbital mechanics (Kepler problem)",
     "main_function": "position_from_elements",
     "type": ".rs"
   },
   "DNA/src/physics/orbital/mod.rs": {
     "path": "DNA/src/physics/orbital/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/orbital/mod.rs",
+    "purpose": "Module exports: kepler",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/solvers/filters/ekf.rs": {
     "path": "DNA/src/physics/solvers/filters/ekf.rs",
     "name": "ekf.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: ekf.rs | DNA/src/physics/solvers/filters/ekf.rs",
+    "purpose": "Extended Kalman Filter for 2D state estimation",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/physics/solvers/filters/mod.rs": {
     "path": "DNA/src/physics/solvers/filters/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/solvers/filters/mod.rs",
+    "purpose": "Module exports: ekf",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/solvers/linear/dense.rs": {
     "path": "DNA/src/physics/solvers/linear/dense.rs",
     "name": "dense.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: dense.rs | DNA/src/physics/solvers/linear/dense.rs",
+    "purpose": "Dense matrix linear algebra (LU, QR decomposition)",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/solvers/linear/mod.rs": {
     "path": "DNA/src/physics/solvers/linear/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/solvers/linear/mod.rs",
+    "purpose": "Module exports: dense",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/solvers/mod.rs": {
     "path": "DNA/src/physics/solvers/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/solvers/mod.rs",
+    "purpose": "Module exports for solvers",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/solvers/nonlinear/mod.rs": {
     "path": "DNA/src/physics/solvers/nonlinear/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/solvers/nonlinear/mod.rs",
+    "purpose": "Nonlinear module implementation",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/solvers/ode/euler.rs": {
     "path": "DNA/src/physics/solvers/ode/euler.rs",
     "name": "euler.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: euler.rs | DNA/src/physics/solvers/ode/euler.rs",
+    "purpose": "Forward Euler ODE integrator (1st order, explicit)",
     "main_function": "euler_step",
     "type": ".rs"
   },
   "DNA/src/physics/solvers/ode/mod.rs": {
     "path": "DNA/src/physics/solvers/ode/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/solvers/ode/mod.rs",
+    "purpose": "Module exports: euler, rk4, verlet",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/solvers/ode/rk4.rs": {
     "path": "DNA/src/physics/solvers/ode/rk4.rs",
     "name": "rk4.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: rk4.rs | DNA/src/physics/solvers/ode/rk4.rs",
+    "purpose": "4th-order Runge-Kutta ODE integrator",
     "main_function": "rk4_step",
     "type": ".rs"
   },
   "DNA/src/physics/solvers/ode/verlet.rs": {
     "path": "DNA/src/physics/solvers/ode/verlet.rs",
     "name": "verlet.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: verlet.rs | DNA/src/physics/solvers/ode/verlet.rs",
+    "purpose": "Velocity Verlet integrator (symplectic, energy-conserving)",
     "main_function": "verlet_step",
     "type": ".rs"
   },
   "DNA/src/physics/solvers/pde/mod.rs": {
     "path": "DNA/src/physics/solvers/pde/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/solvers/pde/mod.rs",
+    "purpose": "Module exports: spectral",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/solvers/pde/spectral.rs": {
     "path": "DNA/src/physics/solvers/pde/spectral.rs",
     "name": "spectral.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: spectral.rs | DNA/src/physics/solvers/pde/spectral.rs",
+    "purpose": "FFT-based spectral methods for solving PDEs",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/physics/thermal/conduction.rs": {
     "path": "DNA/src/physics/thermal/conduction.rs",
     "name": "conduction.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: conduction.rs | DNA/src/physics/thermal/conduction.rs",
+    "purpose": "Heat equation solver (thermal conduction)",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/physics/thermal/mod.rs": {
     "path": "DNA/src/physics/thermal/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/physics/thermal/mod.rs",
+    "purpose": "Module exports: conduction",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/pll/CLAUDE.md": {
     "path": "DNA/src/pll/CLAUDE.md",
     "name": "CLAUDE.md",
-    "purpose": "PLL Design Engine - Technical Documentation Theory of Operation",
+    "purpose": "PLL Design Engine - Technical Documentation",
     "main_function": "N/A",
     "type": ".md"
   },
   "DNA/src/pll/circuit.rs": {
     "path": "DNA/src/pll/circuit.rs",
     "name": "circuit.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: circuit.rs | DNA/src/pll/circuit.rs",
+    "purpose": "Provides 2 public functions for pll",
     "main_function": "build_pll_netlist",
     "type": ".rs"
   },
   "DNA/src/pll/components.rs": {
     "path": "DNA/src/pll/components.rs",
     "name": "components.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: components.rs | DNA/src/pll/components.rs",
+    "purpose": "Defines VCOSpec, PFDSpec, PLLICSpec types",
     "main_function": "get_vco_library",
     "type": ".rs"
   },
   "DNA/src/pll/fractional_n.rs": {
     "path": "DNA/src/pll/fractional_n.rs",
     "name": "fractional_n.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: fractional_n.rs | DNA/src/pll/fractional_n.rs",
+    "purpose": "Provides 4 public functions for pll",
     "main_function": "calculate_fractional_divider",
     "type": ".rs"
   },
   "DNA/src/pll/integer_n.rs": {
     "path": "DNA/src/pll/integer_n.rs",
     "name": "integer_n.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: integer_n.rs | DNA/src/pll/integer_n.rs",
+    "purpose": "Provides 4 public functions for pll",
     "main_function": "calculate_dividers",
     "type": ".rs"
   },
   "DNA/src/pll/loop_filter.rs": {
     "path": "DNA/src/pll/loop_filter.rs",
     "name": "loop_filter.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: loop_filter.rs | DNA/src/pll/loop_filter.rs",
+    "purpose": "Provides 3 public functions for pll",
     "main_function": "design_passive_second_order",
     "type": ".rs"
   },
   "DNA/src/pll/mod.rs": {
     "path": "DNA/src/pll/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/pll/mod.rs",
+    "purpose": "Module exports for pll",
     "main_function": "design_pll",
     "type": ".rs"
   },
   "DNA/src/pll/noise.rs": {
     "path": "DNA/src/pll/noise.rs",
     "name": "noise.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: noise.rs | DNA/src/pll/noise.rs",
+    "purpose": "Provides 1 public functions for pll",
     "main_function": "calculate_phase_noise",
     "type": ".rs"
   },
   "DNA/src/pll/stability.rs": {
     "path": "DNA/src/pll/stability.rs",
     "name": "stability.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: stability.rs | DNA/src/pll/stability.rs",
+    "purpose": "Provides 2 public functions for pll",
     "main_function": "generate_bode_plot",
     "type": ".rs"
   },
   "DNA/src/pll/transient.rs": {
     "path": "DNA/src/pll/transient.rs",
     "name": "transient.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: transient.rs | DNA/src/pll/transient.rs",
+    "purpose": "Provides 1 public functions for pll",
     "main_function": "simulate_step_response",
     "type": ".rs"
   },
   "DNA/src/pll/types.rs": {
     "path": "DNA/src/pll/types.rs",
     "name": "types.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: types.rs | DNA/src/pll/types.rs",
+    "purpose": "Defines NoiseComponents, PhaseNoiseProfile, TransientResult types",
     "main_function": "validate",
     "type": ".rs"
   },
   "DNA/src/sim/chladni.rs": {
     "path": "DNA/src/sim/chladni.rs",
     "name": "chladni.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: chladni.rs | DNA/src/sim/chladni.rs",
+    "purpose": "Defines ChladniMode, PlateMode, WaveSimulation types",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/sim/mod.rs": {
     "path": "DNA/src/sim/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/sim/mod.rs",
+    "purpose": "Module exports: chladni",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/spatial.rs": {
     "path": "DNA/src/spatial.rs",
     "name": "spatial.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: spatial.rs | DNA/src/spatial.rs",
+    "purpose": "Defines SphericalPos, SpatialKey, DataLayer types",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/spice/mod.rs": {
     "path": "DNA/src/spice/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/spice/mod.rs",
+    "purpose": "Spice module implementation",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/statistics.rs": {
     "path": "DNA/src/statistics.rs",
     "name": "statistics.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: statistics.rs | DNA/src/statistics.rs",
+    "purpose": "Defines PopulationMetrics, MetricsHistory types",
     "main_function": "compute",
     "type": ".rs"
   },
   "DNA/src/wave_field/ecosystem.rs": {
     "path": "DNA/src/wave_field/ecosystem.rs",
     "name": "ecosystem.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: ecosystem.rs | DNA/src/wave_field/ecosystem.rs",
+    "purpose": "Defines CellType, Wave, PIDController types",
     "main_function": "value",
     "type": ".rs"
   },
   "DNA/src/wave_field/fft.rs": {
     "path": "DNA/src/wave_field/fft.rs",
     "name": "fft.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: fft.rs | DNA/src/wave_field/fft.rs",
+    "purpose": "Defines FFT2D types",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/wave_field/mod.rs": {
     "path": "DNA/src/wave_field/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/wave_field/mod.rs",
+    "purpose": "Wave Field module implementation",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/wave_field/wave_field.rs": {
     "path": "DNA/src/wave_field/wave_field.rs",
     "name": "wave_field.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: wave_field.rs | DNA/src/wave_field/wave_field.rs",
+    "purpose": "Defines WaveField types",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/world/coordinates/cartesian.rs": {
     "path": "DNA/src/world/coordinates/cartesian.rs",
     "name": "cartesian.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: cartesian.rs | DNA/src/world/coordinates/cartesian.rs",
+    "purpose": "Coordinates module implementation",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/world/coordinates/mod.rs": {
     "path": "DNA/src/world/coordinates/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/world/coordinates/mod.rs",
+    "purpose": "Module exports: cartesian, spherical",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/world/coordinates/spherical.rs": {
     "path": "DNA/src/world/coordinates/spherical.rs",
     "name": "spherical.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: spherical.rs | DNA/src/world/coordinates/spherical.rs",
+    "purpose": "Spherical coordinate system (r, θ, φ)",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/src/world/grid/mod.rs": {
     "path": "DNA/src/world/grid/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/world/grid/mod.rs",
+    "purpose": "Grid module implementation",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/world/mod.rs": {
     "path": "DNA/src/world/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/world/mod.rs",
+    "purpose": "Module exports for world",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/world/topology/mod.rs": {
     "path": "DNA/src/world/topology/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/world/topology/mod.rs",
+    "purpose": "Module exports: toroidal",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/world/topology/toroidal.rs": {
     "path": "DNA/src/world/topology/toroidal.rs",
     "name": "toroidal.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: toroidal.rs | DNA/src/world/topology/toroidal.rs",
+    "purpose": "Toroidal topology (wrap-around boundaries)",
     "main_function": "wrap_position",
     "type": ".rs"
   },
   "DNA/src/world/transforms/astronomical.rs": {
     "path": "DNA/src/world/transforms/astronomical.rs",
     "name": "astronomical.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: astronomical.rs | DNA/src/world/transforms/astronomical.rs",
+    "purpose": "Astronomical coordinate system transformations",
     "main_function": "deg_to_rad",
     "type": ".rs"
   },
   "DNA/src/world/transforms/mod.rs": {
     "path": "DNA/src/world/transforms/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | DNA/src/world/transforms/mod.rs",
+    "purpose": "Module exports: astronomical",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/src/world/units.rs": {
     "path": "DNA/src/world/units.rs",
     "name": "units.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: units.rs | DNA/src/world/units.rs",
+    "purpose": "Provides 2 public functions for world",
     "main_function": "deg_to_rad",
     "type": ".rs"
   },
   "DNA/src/zones.rs": {
     "path": "DNA/src/zones.rs",
     "name": "zones.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: zones.rs | DNA/src/zones.rs",
+    "purpose": "Defines ExclusionZone types",
     "main_function": "new",
     "type": ".rs"
   },
   "DNA/tests/comprehensive_tests.rs": {
     "path": "DNA/tests/comprehensive_tests.rs",
     "name": "comprehensive_tests.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: comprehensive_tests.rs | DNA/tests/comprehensive_tests.rs",
+    "purpose": "Unit and integration tests",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/tests/ecosystem_stability.rs": {
     "path": "DNA/tests/ecosystem_stability.rs",
     "name": "ecosystem_stability.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: ecosystem_stability.rs | DNA/tests/ecosystem_stability.rs",
+    "purpose": "Tests module implementation",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "DNA/tests/simulation_tests.rs": {
     "path": "DNA/tests/simulation_tests.rs",
     "name": "simulation_tests.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: simulation_tests.rs | DNA/tests/simulation_tests.rs",
+    "purpose": "Unit and integration tests",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "TOOLS/AUTOCRATE/CLAUDE.md": {
     "path": "TOOLS/AUTOCRATE/CLAUDE.md",
     "name": "CLAUDE.md",
-    "purpose": "AutoCrate - ASTM Crate Generator Build & Run",
+    "purpose": "AutoCrate - ASTM Crate Generator",
     "main_function": "N/A",
     "type": ".md"
   },
   "TOOLS/AUTOCRATE/README.md": {
     "path": "TOOLS/AUTOCRATE/README.md",
     "name": "README.md",
-    "purpose": "AutoCrate Overview",
+    "purpose": "AutoCrate",
     "main_function": "N/A",
     "type": ".md"
   },
   "TOOLS/AUTOCRATE/index.html": {
     "path": "TOOLS/AUTOCRATE/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "AutoCrate web application entry point for shipping crate design",
     "main_function": "N/A",
     "type": ".html"
   },
   "TOOLS/AUTOCRATE/src/lib.rs": {
     "path": "TOOLS/AUTOCRATE/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | TOOLS/AUTOCRATE/src/lib.rs",
+    "purpose": "ASTM standard shipping crate generator WASM application entry point",
     "main_function": "start",
     "type": ".rs"
   },
   "TOOLS/AUTOCRATE/style.css": {
     "path": "TOOLS/AUTOCRATE/style.css",
     "name": "style.css",
-    "purpose": "No description available.",
+    "purpose": "Stylesheet for AutoCrate application with JustSans font and dark theme",
     "main_function": "N/A",
     "type": ".css"
+  },
+  "TOOLS/CAD/index.html": {
+    "path": "TOOLS/CAD/index.html",
+    "name": "index.html",
+    "purpose": "CAD solid modeler web application entry point",
+    "main_function": "N/A",
+    "type": ".html"
+  },
+  "TOOLS/CAD/src/lib.rs": {
+    "path": "TOOLS/CAD/src/lib.rs",
+    "name": "lib.rs",
+    "purpose": "CAD solid modeler WASM application with 3D wireframe visualization",
+    "main_function": "start",
+    "type": ".rs"
   },
   "TOOLS/CORE/AUTOCRATE_ENGINE/src/lib.rs": {
     "path": "TOOLS/CORE/AUTOCRATE_ENGINE/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | TOOLS/CORE/AUTOCRATE_ENGINE/src/lib.rs",
+    "purpose": "ASTM-standard shipping crate design automation engine",
     "main_function": "quick_design",
     "type": ".rs"
   },
   "TOOLS/CORE/CAD_ENGINE/src/lib.rs": {
     "path": "TOOLS/CORE/CAD_ENGINE/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | TOOLS/CORE/CAD_ENGINE/src/lib.rs",
+    "purpose": "B-Rep CAD engine for solid modeling",
     "main_function": "new",
     "type": ".rs"
   },
   "TOOLS/CORE/EXPORT_ENGINE/src/lib.rs": {
     "path": "TOOLS/CORE/EXPORT_ENGINE/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | TOOLS/CORE/EXPORT_ENGINE/src/lib.rs",
+    "purpose": "Export pipeline for various file formats",
     "main_function": "is_format_supported",
     "type": ".rs"
   },
   "TOOLS/CORE/PLL_ENGINE/src/lib.rs": {
     "path": "TOOLS/CORE/PLL_ENGINE/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | TOOLS/CORE/PLL_ENGINE/src/lib.rs",
+    "purpose": "PLL (Phase-Locked Loop) design automation engine",
     "main_function": "quick_design_integer_n",
     "type": ".rs"
   },
   "TOOLS/CRM/CLAUDE.md": {
     "path": "TOOLS/CRM/CLAUDE.md",
     "name": "CLAUDE.md",
-    "purpose": "CRM - Customer Relationship Management Build & Run",
+    "purpose": "CRM - Customer Relationship Management",
     "main_function": "N/A",
     "type": ".md"
   },
   "TOOLS/CRM/README.md": {
     "path": "TOOLS/CRM/README.md",
     "name": "README.md",
-    "purpose": "CRM Tool Overview",
+    "purpose": "CRM Tool",
     "main_function": "N/A",
     "type": ".md"
   },
   "TOOLS/CRM/index.html": {
     "path": "TOOLS/CRM/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "CRM web application entry point for customer relationship management",
     "main_function": "N/A",
     "type": ".html"
   },
   "TOOLS/CRM/src/lib.rs": {
     "path": "TOOLS/CRM/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | TOOLS/CRM/src/lib.rs",
+    "purpose": "Customer relationship management WASM application with contact and deal tracking",
     "main_function": "start",
     "type": ".rs"
   },
   "TOOLS/PLL/README.md": {
     "path": "TOOLS/PLL/README.md",
     "name": "README.md",
-    "purpose": "PLL Designer Tool Overview",
+    "purpose": "PLL Designer Tool",
     "main_function": "N/A",
     "type": ".md"
   },
   "TOOLS/PLL/index.html": {
     "path": "TOOLS/PLL/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "PLL designer web application entry point for phase-locked loop design",
     "main_function": "N/A",
     "type": ".html"
   },
   "TOOLS/PLL/src/lib.rs": {
     "path": "TOOLS/PLL/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | TOOLS/PLL/src/lib.rs",
+    "purpose": "PLL designer WASM application with interactive circuit design and visualization",
     "main_function": "start",
     "type": ".rs"
   },
   "TOOLS/POWER_CIRCUITS/README.md": {
     "path": "TOOLS/POWER_CIRCUITS/README.md",
     "name": "README.md",
-    "purpose": "Power Circuits Designer Overview",
+    "purpose": "Power Circuits Designer",
     "main_function": "N/A",
     "type": ".md"
   },
   "TOOLS/POWER_CIRCUITS/index.html": {
     "path": "TOOLS/POWER_CIRCUITS/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Power circuit designer web application entry point for supply design",
     "main_function": "N/A",
     "type": ".html"
   },
   "TOOLS/POWER_CIRCUITS/src/lib.rs": {
     "path": "TOOLS/POWER_CIRCUITS/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | TOOLS/POWER_CIRCUITS/src/lib.rs",
+    "purpose": "Power circuit designer WASM application for supply and converter design",
+    "main_function": "start",
+    "type": ".rs"
+  },
+  "TOOLS/SPICE/index.html": {
+    "path": "TOOLS/SPICE/index.html",
+    "name": "index.html",
+    "purpose": "SPICE circuit simulator web application entry point",
+    "main_function": "N/A",
+    "type": ".html"
+  },
+  "TOOLS/SPICE/src/lib.rs": {
+    "path": "TOOLS/SPICE/src/lib.rs",
+    "name": "lib.rs",
+    "purpose": "SPICE circuit simulator WASM application",
     "main_function": "start",
     "type": ".rs"
   },
   "SIMULATION/CHLADNI/CLAUDE.md": {
     "path": "SIMULATION/CHLADNI/CLAUDE.md",
     "name": "CLAUDE.md",
-    "purpose": "Chladni - Wave Pattern Visualization Build & Run",
+    "purpose": "Chladni - Wave Pattern Visualization",
     "main_function": "N/A",
     "type": ".md"
   },
   "SIMULATION/CHLADNI/index.html": {
     "path": "SIMULATION/CHLADNI/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Entry point for Chladni pattern visualization with interactive mode controls",
     "main_function": "N/A",
     "type": ".html"
   },
   "SIMULATION/CHLADNI/src/lib.rs": {
     "path": "SIMULATION/CHLADNI/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | SIMULATION/CHLADNI/src/lib.rs",
+    "purpose": "Chladni wave pattern visualization with particle-based sand simulation",
     "main_function": "new",
     "type": ".rs"
   },
   "SIMULATION/CHLADNI/src/renderer.rs": {
     "path": "SIMULATION/CHLADNI/src/renderer.rs",
     "name": "renderer.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: renderer.rs | SIMULATION/CHLADNI/src/renderer.rs",
+    "purpose": "WebGL2 renderer for Chladni wave visualization and particle rendering",
     "main_function": "new",
     "type": ".rs"
   },
   "SIMULATION/CORE/SIMULATION_ENGINE/src/lib.rs": {
     "path": "SIMULATION/CORE/SIMULATION_ENGINE/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | SIMULATION/CORE/SIMULATION_ENGINE/src/lib.rs",
+    "purpose": "Simulation runtime engine for boid/particle systems",
     "main_function": "create_simulation",
     "type": ".rs"
   },
   "SIMULATION/CORE/SPICE_ENGINE/src/lib.rs": {
     "path": "SIMULATION/CORE/SPICE_ENGINE/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | SIMULATION/CORE/SPICE_ENGINE/src/lib.rs",
+    "purpose": "Circuit simulation engine (DC, AC, Transient analysis)",
     "main_function": "generate_bode_plot",
     "type": ".rs"
   },
   "SIMULATION/CORE/WAVE_ENGINE/src/lib.rs": {
     "path": "SIMULATION/CORE/WAVE_ENGINE/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | SIMULATION/CORE/WAVE_ENGINE/src/lib.rs",
+    "purpose": "Wave and field simulation engine",
     "main_function": "new",
     "type": ".rs"
   },
   "HELIOS/CLAUDE.md": {
     "path": "HELIOS/CLAUDE.md",
     "name": "CLAUDE.md",
-    "purpose": "Helios - Solar System Visualization Build & Run",
+    "purpose": "Helios - Solar System Visualization",
     "main_function": "N/A",
     "type": ".md"
   },
   "HELIOS/build.rs": {
     "path": "HELIOS/build.rs",
     "name": "build.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: build.rs | HELIOS/build.rs",
+    "purpose": "Build script to inject git commit hash and timestamp into binary",
     "main_function": "fn main()",
     "type": ".rs"
   },
   "HELIOS/index.html": {
     "path": "HELIOS/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Main HTML entry point for Helios solar system visualization with UI controls",
     "main_function": "N/A",
     "type": ".html"
   },
   "HELIOS/simulation-cli/src/main.rs": {
     "path": "HELIOS/simulation-cli/src/main.rs",
     "name": "main.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: main.rs | HELIOS/simulation-cli/src/main.rs",
+    "purpose": "Placeholder CLI entry point for simulation testing and development",
     "main_function": "fn main()",
     "type": ".rs"
   },
   "HELIOS/src/heliosphere.rs": {
     "path": "HELIOS/src/heliosphere.rs",
     "name": "heliosphere.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: heliosphere.rs | HELIOS/src/heliosphere.rs",
+    "purpose": "Heliosphere boundary models - morphology, parameters, surface",
     "main_function": "new",
     "type": ".rs"
   },
   "HELIOS/src/heliosphere_model.rs": {
     "path": "HELIOS/src/heliosphere_model.rs",
     "name": "heliosphere_model.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: heliosphere_model.rs | HELIOS/src/heliosphere_model.rs",
+    "purpose": "Physics model for heliospheric boundaries - Parker spiral, termination shock",
     "main_function": "new",
     "type": ".rs"
   },
   "HELIOS/src/main.rs": {
     "path": "HELIOS/src/main.rs",
     "name": "main.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: main.rs | HELIOS/src/main.rs",
+    "purpose": "WASM entry point with event handlers and animation loop for heliosphere visualization",
     "main_function": "fn main()",
     "type": ".rs"
   },
   "HELIOS/src/render.rs": {
     "path": "HELIOS/src/render.rs",
     "name": "render.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: render.rs | HELIOS/src/render.rs",
+    "purpose": "Canvas 2D rendering engine for solar system visualization with starfield and UI",
     "main_function": "render",
     "type": ".rs"
   },
   "HELIOS/src/simulation.rs": {
     "path": "HELIOS/src/simulation.rs",
     "name": "simulation.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: simulation.rs | HELIOS/src/simulation.rs",
+    "purpose": "Solar system simulation state with 3D orbital mechanics and heliosphere model using SoA layout",
     "main_function": "is_dragging",
     "type": ".rs"
   },
   "HELIOS/src/solar_wind.rs": {
     "path": "HELIOS/src/solar_wind.rs",
     "name": "solar_wind.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: solar_wind.rs | HELIOS/src/solar_wind.rs",
+    "purpose": "Solar wind physics - time series, Parker spiral, interplanetary fields",
     "main_function": "new",
     "type": ".rs"
   },
   "HELIOS/src/streaming.rs": {
     "path": "HELIOS/src/streaming.rs",
     "name": "streaming.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: streaming.rs | HELIOS/src/streaming.rs",
+    "purpose": "Streaming controller for spatial star data with LOD-based chunk fetching",
     "main_function": "new",
     "type": ".rs"
   },
   "BLOG/CLAUDE.md": {
     "path": "BLOG/CLAUDE.md",
     "name": "CLAUDE.md",
-    "purpose": "Blog - Markdown Blog Engine Build & Run",
+    "purpose": "Blog - Markdown Blog Engine",
     "main_function": "N/A",
     "type": ".md"
   },
   "BLOG/index.html": {
     "path": "BLOG/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Entry point for markdown blog platform with AI-generated content indicators",
     "main_function": "N/A",
     "type": ".html"
   },
   "BLOG/posts/claude-automation-daemon.md": {
     "path": "BLOG/posts/claude-automation-daemon.md",
     "name": "claude-automation-daemon.md",
-    "purpose": "title: \"Automating GitHub Issues with Claude Daemon\" Automating GitHub Issues with Claude Daemon",
+    "purpose": "title: \"Automating GitHub Issues with Claude Daemon\"",
     "main_function": "N/A",
     "type": ".md"
   },
   "BLOG/posts/hello-world.md": {
     "path": "BLOG/posts/hello-world.md",
     "name": "hello-world.md",
-    "purpose": "title: \"Hello, World\" Welcome to the Blog",
+    "purpose": "title: \"Hello, World\"",
     "main_function": "N/A",
     "type": ".md"
   },
   "BLOG/src/lib.rs": {
     "path": "BLOG/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | BLOG/src/lib.rs",
+    "purpose": "Core blog types and markdown parsing with frontmatter support",
     "main_function": "render_html",
     "type": ".rs"
   },
   "BLOG/src/render.rs": {
     "path": "BLOG/src/render.rs",
     "name": "render.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: render.rs | BLOG/src/render.rs",
+    "purpose": "DOM rendering engine for blog posts, listings, and tag pages",
     "main_function": "new",
     "type": ".rs"
   },
   "BLOG/src/router.rs": {
     "path": "BLOG/src/router.rs",
     "name": "router.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: router.rs | BLOG/src/router.rs",
+    "purpose": "Client-side router handling navigation between posts and tag pages",
     "main_function": "from_path",
     "type": ".rs"
   },
   "LEARN/AI/index.html": {
     "path": "LEARN/AI/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Web application entry point with HTML structure",
     "main_function": "N/A",
     "type": ".html"
   },
   "LEARN/AI/src/lib.rs": {
     "path": "LEARN/AI/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | AI/src/lib.rs",
+    "purpose": "Library crate root module with public API exports",
     "main_function": "start",
     "type": ".rs"
   },
   "LEARN/ARDUINO/index.html": {
     "path": "LEARN/ARDUINO/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Web application entry point with HTML structure",
     "main_function": "N/A",
     "type": ".html"
   },
   "LEARN/ARDUINO/src/lib.rs": {
     "path": "LEARN/ARDUINO/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | ARDUINO/src/lib.rs",
+    "purpose": "Library crate root module with public API exports",
     "main_function": "start",
     "type": ".rs"
   },
   "LEARN/CLAUDE.md": {
     "path": "LEARN/CLAUDE.md",
     "name": "CLAUDE.md",
-    "purpose": "Learn - Zero to AGI Platform Build & Run",
+    "purpose": "Learn - Zero to AGI Platform",
     "main_function": "N/A",
     "type": ".md"
   },
   "LEARN/ESP32/index.html": {
     "path": "LEARN/ESP32/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Web application entry point with HTML structure",
     "main_function": "N/A",
     "type": ".html"
   },
   "LEARN/ESP32/src/lib.rs": {
     "path": "LEARN/ESP32/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | ESP32/src/lib.rs",
+    "purpose": "Library crate root module with public API exports",
     "main_function": "start",
     "type": ".rs"
   },
   "LEARN/ML/README.md": {
     "path": "LEARN/ML/README.md",
     "name": "README.md",
-    "purpose": "Antimony Labs: Zero to AGI in Rust Quick Start",
+    "purpose": "Antimony Labs: Zero to AGI in Rust",
     "main_function": "N/A",
     "type": ".md"
   },
   "LEARN/ML/antimony-core/src/lib.rs": {
     "path": "LEARN/ML/antimony-core/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | ML/antimony-core/src/lib.rs",
+    "purpose": "Library crate root module with public API exports",
     "main_function": "add",
     "type": ".rs"
   },
   "LEARN/ML/src/engine/mod.rs": {
     "path": "LEARN/ML/src/engine/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | ML/src/engine/mod.rs",
+    "purpose": "Module organization and re-exports",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "LEARN/ML/src/engine/value.rs": {
     "path": "LEARN/ML/src/engine/value.rs",
     "name": "value.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: value.rs | ML/src/engine/value.rs",
+    "purpose": "Core value type for automatic differentiation engine",
     "main_function": "new",
     "type": ".rs"
   },
   "LEARN/ML/src/lessons/lesson_00_rust_refresher.rs": {
     "path": "LEARN/ML/src/lessons/lesson_00_rust_refresher.rs",
     "name": "lesson_00_rust_refresher.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lesson_00_rust_refresher.rs | ML/src/lessons/lesson_00_rust_refresher.rs",
+    "purpose": "Rust fundamentals refresher covering syntax and key concepts",
     "main_function": "run",
     "type": ".rs"
   },
   "LEARN/ML/src/lessons/lesson_01_linear_regression.rs": {
     "path": "LEARN/ML/src/lessons/lesson_01_linear_regression.rs",
     "name": "lesson_01_linear_regression.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lesson_01_linear_regression.rs | ML/src/lessons/lesson_01_linear_regression.rs",
+    "purpose": "Linear regression from scratch with gradient descent",
     "main_function": "run",
     "type": ".rs"
   },
   "LEARN/ML/src/lessons/lesson_02_logistic_regression.rs": {
     "path": "LEARN/ML/src/lessons/lesson_02_logistic_regression.rs",
     "name": "lesson_02_logistic_regression.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lesson_02_logistic_regression.rs | ML/src/lessons/lesson_02_logistic_regression.rs",
+    "purpose": "Logistic regression for binary classification tasks",
     "main_function": "run",
     "type": ".rs"
   },
   "LEARN/ML/src/lessons/lesson_03_neural_networks.rs": {
     "path": "LEARN/ML/src/lessons/lesson_03_neural_networks.rs",
     "name": "lesson_03_neural_networks.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lesson_03_neural_networks.rs | ML/src/lessons/lesson_03_neural_networks.rs",
+    "purpose": "Neural networks with backpropagation implementation",
     "main_function": "run",
     "type": ".rs"
   },
   "LEARN/ML/src/lessons/lesson_04_cnn.rs": {
     "path": "LEARN/ML/src/lessons/lesson_04_cnn.rs",
     "name": "lesson_04_cnn.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lesson_04_cnn.rs | ML/src/lessons/lesson_04_cnn.rs",
+    "purpose": "Convolutional neural networks for image processing",
     "main_function": "run",
     "type": ".rs"
   },
   "LEARN/ML/src/lessons/lesson_05_policy_networks.rs": {
     "path": "LEARN/ML/src/lessons/lesson_05_policy_networks.rs",
     "name": "lesson_05_policy_networks.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lesson_05_policy_networks.rs | ML/src/lessons/lesson_05_policy_networks.rs",
+    "purpose": "Policy networks for decision-making in RL",
     "main_function": "run",
     "type": ".rs"
   },
   "LEARN/ML/src/lessons/lesson_06_qlearning.rs": {
     "path": "LEARN/ML/src/lessons/lesson_06_qlearning.rs",
     "name": "lesson_06_qlearning.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lesson_06_qlearning.rs | ML/src/lessons/lesson_06_qlearning.rs",
+    "purpose": "Q-learning temporal difference reinforcement learning",
     "main_function": "run",
     "type": ".rs"
   },
   "LEARN/ML/src/lessons/lesson_07_policy_gradients.rs": {
     "path": "LEARN/ML/src/lessons/lesson_07_policy_gradients.rs",
     "name": "lesson_07_policy_gradients.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lesson_07_policy_gradients.rs | ML/src/lessons/lesson_07_policy_gradients.rs",
+    "purpose": "Policy gradient methods for continuous action spaces",
     "main_function": "run",
     "type": ".rs"
   },
   "LEARN/ML/src/lessons/lesson_08_mcts.rs": {
     "path": "LEARN/ML/src/lessons/lesson_08_mcts.rs",
     "name": "lesson_08_mcts.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lesson_08_mcts.rs | ML/src/lessons/lesson_08_mcts.rs",
+    "purpose": "Monte Carlo tree search for game-playing agents",
     "main_function": "run",
     "type": ".rs"
   },
   "LEARN/ML/src/lessons/lesson_09_alphazero.rs": {
     "path": "LEARN/ML/src/lessons/lesson_09_alphazero.rs",
     "name": "lesson_09_alphazero.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lesson_09_alphazero.rs | ML/src/lessons/lesson_09_alphazero.rs",
+    "purpose": "AlphaZero combining MCTS with deep neural networks",
     "main_function": "run",
     "type": ".rs"
   },
   "LEARN/ML/src/lessons/lesson_10_llm.rs": {
     "path": "LEARN/ML/src/lessons/lesson_10_llm.rs",
     "name": "lesson_10_llm.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lesson_10_llm.rs | ML/src/lessons/lesson_10_llm.rs",
+    "purpose": "Large language models and transformer architecture",
     "main_function": "run",
     "type": ".rs"
   },
   "LEARN/ML/src/lessons/lesson_11_agi.rs": {
     "path": "LEARN/ML/src/lessons/lesson_11_agi.rs",
     "name": "lesson_11_agi.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lesson_11_agi.rs | ML/src/lessons/lesson_11_agi.rs",
+    "purpose": "AGI architecture and approaches to general intelligence",
     "main_function": "run",
     "type": ".rs"
   },
   "LEARN/ML/src/lessons/mod.rs": {
     "path": "LEARN/ML/src/lessons/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | ML/src/lessons/mod.rs",
+    "purpose": "Module organization and re-exports",
     "main_function": "run_lesson",
     "type": ".rs"
   },
   "LEARN/ML/src/main.rs": {
     "path": "LEARN/ML/src/main.rs",
     "name": "main.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: main.rs | ML/src/main.rs",
+    "purpose": "Binary crate entry point for CLI or standalone application",
     "main_function": "fn main()",
     "type": ".rs"
   },
   "LEARN/ML/src/utils/mod.rs": {
     "path": "LEARN/ML/src/utils/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | ML/src/utils/mod.rs",
+    "purpose": "Module organization and re-exports",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "LEARN/ML/src/utils/visualization.rs": {
     "path": "LEARN/ML/src/utils/visualization.rs",
     "name": "visualization.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: visualization.rs | ML/src/utils/visualization.rs",
+    "purpose": "Data visualization utilities and plotting helpers",
     "main_function": "generate_linear_regression_json",
     "type": ".rs"
   },
   "LEARN/ML/src/web/comments.rs": {
     "path": "LEARN/ML/src/web/comments.rs",
     "name": "comments.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: comments.rs | ML/src/web/comments.rs",
+    "purpose": "Comment system implementation for web interface",
     "main_function": "new",
     "type": ".rs"
   },
   "LEARN/ML/src/web/index.html": {
     "path": "LEARN/ML/src/web/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Web application entry point with HTML structure",
     "main_function": "N/A",
     "type": ".html"
   },
   "LEARN/ML/src/web/mod.rs": {
     "path": "LEARN/ML/src/web/mod.rs",
     "name": "mod.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: mod.rs | ML/src/web/mod.rs",
+    "purpose": "Module organization and re-exports",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "LEARN/ML/src/web/styles_and_scripts_snippet.html": {
     "path": "LEARN/ML/src/web/styles_and_scripts_snippet.html",
     "name": "styles_and_scripts_snippet.html",
-    "purpose": "No description available.",
+    "purpose": "HTML template for web application interface",
     "main_function": "N/A",
     "type": ".html"
   },
   "LEARN/ML/tests/integration.rs": {
     "path": "LEARN/ML/tests/integration.rs",
     "name": "integration.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: integration.rs | ML/tests/integration.rs",
+    "purpose": "Integration tests for cross-module functionality",
     "main_function": "Module/Lib",
     "type": ".rs"
   },
   "LEARN/OPENCV/index.html": {
     "path": "LEARN/OPENCV/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Web application entry point with HTML structure",
     "main_function": "N/A",
     "type": ".html"
   },
   "LEARN/OPENCV/src/lib.rs": {
     "path": "LEARN/OPENCV/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | OPENCV/src/lib.rs",
+    "purpose": "Library crate root module with public API exports",
     "main_function": "start",
     "type": ".rs"
   },
   "LEARN/SENSORS/README.md": {
     "path": "LEARN/SENSORS/README.md",
     "name": "README.md",
-    "purpose": "Sensors Tool Overview",
+    "purpose": "Sensors Tool",
     "main_function": "N/A",
     "type": ".md"
   },
   "LEARN/SENSORS/index.html": {
     "path": "LEARN/SENSORS/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Web application entry point with HTML structure",
     "main_function": "N/A",
     "type": ".html"
   },
   "LEARN/SENSORS/src/lib.rs": {
     "path": "LEARN/SENSORS/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | SENSORS/src/lib.rs",
+    "purpose": "Library crate root module with public API exports",
     "main_function": "fn main()",
     "type": ".rs"
   },
   "LEARN/SLAM/index.html": {
     "path": "LEARN/SLAM/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Web application entry point with HTML structure",
     "main_function": "N/A",
     "type": ".html"
   },
   "LEARN/SLAM/src/lib.rs": {
     "path": "LEARN/SLAM/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | SLAM/src/lib.rs",
+    "purpose": "Library crate root module with public API exports",
     "main_function": "start",
     "type": ".rs"
   },
   "LEARN/SWARM_ROBOTICS/index.html": {
     "path": "LEARN/SWARM_ROBOTICS/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Web application entry point with HTML structure",
     "main_function": "N/A",
     "type": ".html"
   },
   "LEARN/SWARM_ROBOTICS/src/lib.rs": {
     "path": "LEARN/SWARM_ROBOTICS/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | SWARM_ROBOTICS/src/lib.rs",
+    "purpose": "Library crate root module with public API exports",
     "main_function": "start",
     "type": ".rs"
   },
   "LEARN/UBUNTU/index.html": {
     "path": "LEARN/UBUNTU/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Web application entry point with HTML structure",
     "main_function": "N/A",
     "type": ".html"
   },
   "LEARN/UBUNTU/src/lib.rs": {
     "path": "LEARN/UBUNTU/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | UBUNTU/src/lib.rs",
+    "purpose": "Library crate root module with public API exports",
     "main_function": "start",
     "type": ".rs"
   },
   "LEARN/index.html": {
     "path": "LEARN/index.html",
     "name": "index.html",
-    "purpose": "No description available.",
+    "purpose": "Web application entry point with HTML structure",
     "main_function": "N/A",
     "type": ".html"
   },
   "LEARN/src/lessons.rs": {
     "path": "LEARN/src/lessons.rs",
     "name": "lessons.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lessons.rs | src/lessons.rs",
+    "purpose": "Lesson definitions and curriculum structure",
     "main_function": "struct Lesson",
     "type": ".rs"
   },
   "LEARN/src/lib.rs": {
     "path": "LEARN/src/lib.rs",
     "name": "lib.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: lib.rs | src/lib.rs",
+    "purpose": "Library crate root module with public API exports",
     "main_function": "new",
     "type": ".rs"
   },
   "LEARN/src/render.rs": {
     "path": "LEARN/src/render.rs",
     "name": "render.rs",
-    "purpose": "═══════════════════════════════════════════════════════════════════════════════ FILE: render.rs | src/render.rs",
+    "purpose": "DOM rendering and canvas visualization logic",
     "main_function": "new",
     "type": ".rs"
+  },
+  "ARCH/CLAUDE.md": {
+    "path": "ARCH/CLAUDE.md",
+    "name": "CLAUDE.md",
+    "purpose": "ARCH - Architecture Explorer",
+    "main_function": "N/A",
+    "type": ".md"
+  },
+  "ARCH/index.html": {
+    "path": "ARCH/index.html",
+    "name": "index.html",
+    "purpose": "Entry point for ARCH architecture explorer with canvas visualization",
+    "main_function": "N/A",
+    "type": ".html"
+  },
+  "ARCH/src/audit.rs": {
+    "path": "ARCH/src/audit.rs",
+    "name": "audit.rs",
+    "purpose": "Crate audit tracking for git metadata and validation status",
+    "main_function": "new",
+    "type": ".rs"
+  },
+  "ARCH/src/graph.rs": {
+    "path": "ARCH/src/graph.rs",
+    "name": "graph.rs",
+    "purpose": "Dependency graph data structures for crate hierarchy and relationships",
+    "main_function": "new",
+    "type": ".rs"
+  },
+  "ARCH/src/lib.rs": {
+    "path": "ARCH/src/lib.rs",
+    "name": "lib.rs",
+    "purpose": "Interactive canvas-based architecture explorer showing crates, layers, and dependencies",
+    "main_function": "start",
+    "type": ".rs"
+  },
+  "WELCOME/CLAUDE.md": {
+    "path": "WELCOME/CLAUDE.md",
+    "name": "CLAUDE.md",
+    "purpose": "WELCOME - antimony-labs Landing Page",
+    "main_function": "N/A",
+    "type": ".md"
+  },
+  "WELCOME/PLAN.md": {
+    "path": "WELCOME/PLAN.md",
+    "name": "PLAN.md",
+    "purpose": "Plan: Issue #46 - Bubble Text Readability Improvement",
+    "main_function": "N/A",
+    "type": ".md"
+  },
+  "WELCOME/WHITEPAPER.md": {
+    "path": "WELCOME/WHITEPAPER.md",
+    "name": "WHITEPAPER.md",
+    "purpose": "TOO.FOO: The Infinite Resolution Engine",
+    "main_function": "N/A",
+    "type": ".md"
+  },
+  "WELCOME/build.rs": {
+    "path": "WELCOME/build.rs",
+    "name": "build.rs",
+    "purpose": "Build script to capture git commit hash and timestamp for deployment tracking",
+    "main_function": "fn main()",
+    "type": ".rs"
+  },
+  "WELCOME/index.html": {
+    "path": "WELCOME/index.html",
+    "name": "index.html",
+    "purpose": "Landing page HTML with constellation layout, telemetry bar, and WASM integration",
+    "main_function": "N/A",
+    "type": ".html"
+  },
+  "WELCOME/src/arch_diagram.rs": {
+    "path": "WELCOME/src/arch_diagram.rs",
+    "name": "arch_diagram.rs",
+    "purpose": "Architecture diagram renderer with iframe integration for external micro-frontend",
+    "main_function": "render_architecture_diagram",
+    "type": ".rs"
+  },
+  "WELCOME/src/bubbles.rs": {
+    "path": "WELCOME/src/bubbles.rs",
+    "name": "bubbles.rs",
+    "purpose": "Bubble navigation configuration with environment-specific URLs and category definitions",
+    "main_function": "hash_route",
+    "type": ".rs"
+  },
+  "WELCOME/src/fungal.rs": {
+    "path": "WELCOME/src/fungal.rs",
+    "name": "fungal.rs",
+    "purpose": "Organic fungal network growth simulation with spatial partitioning and boid interaction",
+    "main_function": "new",
+    "type": ".rs"
+  },
+  "WELCOME/src/lib.rs": {
+    "path": "WELCOME/src/lib.rs",
+    "name": "lib.rs",
+    "purpose": "Library root for landing page with bubble navigation and visual simulations",
+    "main_function": "Module/Lib",
+    "type": ".rs"
+  },
+  "WELCOME/src/main.rs": {
+    "path": "WELCOME/src/main.rs",
+    "name": "main.rs",
+    "purpose": "WASM entry point with constellation UI, boid simulation, and fungal network rendering",
+    "main_function": "fn main()",
+    "type": ".rs"
+  },
+  "WELCOME/src/routing.rs": {
+    "path": "WELCOME/src/routing.rs",
+    "name": "routing.rs",
+    "purpose": "Hash-based client-side routing for single-page application category navigation",
+    "main_function": "from_hash",
+    "type": ".rs"
+  },
+  "WELCOME/src/shader.rs": {
+    "path": "WELCOME/src/shader.rs",
+    "name": "shader.rs",
+    "purpose": "Background visual effect system with animated grid and digital rain",
+    "main_function": "new",
+    "type": ".rs"
+  },
+  "WELCOME/watch_tree.sh": {
+    "path": "WELCOME/watch_tree.sh",
+    "name": "watch_tree.sh",
+    "purpose": "No description available.",
+    "main_function": "N/A",
+    "type": ".sh"
   }
 }
