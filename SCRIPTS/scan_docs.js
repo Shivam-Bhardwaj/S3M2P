@@ -15,6 +15,7 @@ const OUTPUT_FILE = path.join(ROOT_DIR, 'ARCH', 'src', 'db.json');
 const IGNORE_DIRS = ['target', 'node_modules', '.git', '.vscode', '.idea', 'dist', 'build', 'assets', 'images'];
 const IGNORE_FILES = ['Cargo.lock', 'Cargo.toml', 'package-lock.json', 'package.json', 'tsconfig.json', '.gitignore', 'LICENSE', 'Caddyfile'];
 const INCLUDE_EXTS = ['.rs', '.js', '.ts', '.html', '.css', '.md', '.sh'];
+const MAX_FILE_SIZE = 100 * 1024; // 100KB limit for file content
 
 function getPurpose(content, ext) {
     const lines = content.split('\n');
@@ -135,12 +136,23 @@ dirsToScan.forEach(dirName => {
         files.forEach(f => {
             const relPath = path.relative(ROOT_DIR, f);
             const content = fs.readFileSync(f, 'utf-8');
+            const stats = fs.statSync(f);
+
+            // Include full file content if under size limit
+            let fileContent = null;
+            if (stats.size <= MAX_FILE_SIZE) {
+                fileContent = content;
+            } else {
+                fileContent = `[File too large to display: ${stats.size} bytes. Size limit: ${MAX_FILE_SIZE} bytes]`;
+            }
+
             db[relPath] = {
                 path: relPath,
                 name: path.basename(f),
                 purpose: getPurpose(content, path.extname(f)),
                 main_function: getMainFunction(content, path.extname(f)),
-                type: path.extname(f)
+                type: path.extname(f),
+                content: fileContent
             };
         });
     }

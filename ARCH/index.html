@@ -1,7 +1,7 @@
 <!--
 ═══════════════════════════════════════════════════════════════════════════════
 FILE: index.html | ARCH/index.html
-PURPOSE: Entry point for ARCH architecture explorer with canvas visualization
+PURPOSE: Entry point for ARCH architecture explorer with HTML/DOM-based rendering and file viewer
 MODIFIED: 2025-12-09
 ═══════════════════════════════════════════════════════════════════════════════
 -->
@@ -13,35 +13,304 @@ MODIFIED: 2025-12-09
     <title>ARCH - Architecture Explorer</title>
     <link data-trunk rel="rust" data-wasm-opt="z" />
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --arch-bg: #0a0a0f;
+            --arch-text: #ffffff;
+            --arch-dim: #555566;
+            --arch-dna: #3b82f6;
+            --arch-core: #14b8a6;
+            --arch-project: #a855f7;
+            --arch-tool: #f59e0b;
+            --arch-learn: #22c55e;
+            --arch-back: #888899;
+            --arch-file: #ccccdd;
+            --arch-selected-bg: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: 'JetBrains Mono', monospace;
-            background: #0a0a0f;
+            font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+            background: var(--arch-bg);
+            color: var(--arch-text);
             overflow: hidden;
             height: 100vh;
             width: 100vw;
         }
 
-        #canvas-container {
-            position: absolute;
+        #arch-app {
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .arch-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ═══════════════════ HEADER ═══════════════════ */
+        .arch-header {
+            padding: 14px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--arch-dim);
+            flex-shrink: 0;
+        }
+
+        .arch-header__title {
+            color: var(--arch-text);
+            font-weight: 600;
+        }
+
+        .arch-header__subtitle {
+            color: var(--arch-dim);
+        }
+
+        /* ═══════════════════ TREE VIEW ═══════════════════ */
+        .arch-tree {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 14px;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+
+        .tree-line {
+            font-size: 13px;
+            line-height: 1.5;
+            padding: 2px 0;
+            cursor: default;
+            user-select: text;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tree-line--folder,
+        .tree-line--file,
+        .tree-line--back {
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+            padding: 2px 4px;
+            margin: 0 -4px;
+            border-radius: 3px;
+        }
+
+        .tree-line--folder:hover,
+        .tree-line--file:hover,
+        .tree-line--back:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .tree-line--selected {
+            background: var(--arch-selected-bg) !important;
+        }
+
+        .tree-line--separator,
+        .tree-line--none {
+            cursor: default;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .tree-line__name {
+            /* Color set inline from Rust */
+        }
+
+        .tree-line__suffix {
+            color: var(--arch-dim);
+        }
+
+        /* ═══════════════════ FILE VIEWER ═══════════════════ */
+        .file-viewer {
+            display: none;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
+            background: var(--arch-bg);
+            z-index: 200;
+            flex-direction: column;
         }
 
-        #canvas {
+        .file-viewer--active {
+            display: flex;
+        }
+
+        .file-viewer__header {
+            padding: 12px 14px;
+            border-bottom: 2px solid var(--arch-file);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .file-viewer__close {
+            background: transparent;
+            border: 1px solid var(--arch-dim);
+            color: var(--arch-text);
+            padding: 6px 10px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            border-radius: 3px;
+            transition: background 0.15s ease;
+        }
+
+        .file-viewer__close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--arch-text);
+        }
+
+        .file-viewer__title {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .file-viewer__filename {
+            color: var(--arch-file);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .file-viewer__path {
+            color: var(--arch-dim);
+            font-size: 11px;
+        }
+
+        .file-viewer__content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            padding: 14px;
+        }
+
+        .code-display {
+            margin: 0;
+            padding: 0;
+            font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--arch-text);
+            white-space: pre;
+            tab-size: 4;
+        }
+
+        .code-display code {
             display: block;
-            width: 100%;
-            height: 100%;
-            cursor: default;
+        }
+
+        .line-number {
+            display: inline-block;
+            width: 50px;
+            color: var(--arch-dim);
+            text-align: right;
+            padding-right: 12px;
+            user-select: none;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            margin-right: 12px;
+        }
+
+        .line-content {
+            user-select: text;
+        }
+
+        /* ═══════════════════ SCROLLBARS ═══════════════════ */
+        .arch-tree::-webkit-scrollbar,
+        .file-viewer__content::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .arch-tree::-webkit-scrollbar-track,
+        .file-viewer__content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .arch-tree::-webkit-scrollbar-thumb,
+        .file-viewer__content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .arch-tree::-webkit-scrollbar-thumb:hover,
+        .file-viewer__content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* ═══════════════════ MOBILE RESPONSIVE ═══════════════════ */
+        @media (max-width: 500px) {
+            .arch-header {
+                font-size: 11px;
+                padding: 12px;
+            }
+
+            .tree-line {
+                font-size: 11px;
+            }
+
+            .arch-tree {
+                padding: 12px;
+            }
+
+            .file-viewer__header {
+                padding: 10px 12px;
+            }
+
+            .file-viewer__filename {
+                font-size: 12px;
+            }
+
+            .file-viewer__path {
+                font-size: 10px;
+            }
+
+            .file-viewer__content {
+                padding: 10px;
+            }
+
+            .code-display {
+                font-size: 10px;
+                line-height: 1.5;
+            }
+
+            .line-number {
+                width: 40px;
+                padding-right: 8px;
+                margin-right: 8px;
+            }
+        }
+
+        /* Very narrow screens */
+        @media (max-width: 400px) {
+            .file-viewer__close {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+
+            .code-display {
+                font-size: 9px;
+            }
+
+            .line-number {
+                width: 35px;
+                padding-right: 6px;
+                margin-right: 6px;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="canvas-container">
-        <canvas id="canvas"></canvas>
-    </div>
+    <div id="arch-app"></div>
 </body>
 </html>

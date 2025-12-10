@@ -10,30 +10,40 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
-use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement, MouseEvent, TouchEvent};
 use serde::{Deserialize, Serialize};
 
 mod audit;
 mod graph;
+mod render;
+mod events;
+
 pub use audit::{CrateAudit, GitMetadata, ValidationStatus};
 pub use graph::{CrateInfo, CrateLayer, DependencyGraph};
+use render::ArchRenderer;
 
 const WORKSPACE_DATA: &str = include_str!("workspace_data.json");
 const FILE_DB: &str = include_str!("db.json");
 
 // File metadata from db.json
 #[derive(Debug, Clone, Deserialize, Serialize)]
-struct FileInfo {
-    path: String,
-    name: String,
-    purpose: String,
-    main_function: String,
+pub struct FileInfo {
+    pub path: String,
+    pub name: String,
+    pub purpose: String,
+    pub main_function: String,
     #[serde(rename = "type")]
-    file_type: String,
+    pub file_type: String,
+    pub content: Option<String>,
 }
 
 type FileDatabase = HashMap<String, FileInfo>;
+
+// View mode enum
+#[derive(Clone, PartialEq)]
+pub enum ViewMode {
+    Tree,
+    FileViewer { path: String },
+}
 
 // Colors
 struct Colors;
@@ -51,7 +61,7 @@ impl Colors {
 }
 
 #[derive(Clone)]
-enum LineAction {
+pub enum LineAction {
     None,
     Back,
     EnterFolder(String),     // Enter a folder/category
@@ -59,63 +69,56 @@ enum LineAction {
 }
 
 #[derive(Clone)]
-struct TreeLine {
-    name: String,
-    suffix: String,
-    color: &'static str,
-    action: LineAction,
+pub struct TreeLine {
+    pub name: String,
+    pub suffix: String,
+    pub color: &'static str,
+    pub action: LineAction,
     // Metadata
-    file_info: Option<FileInfo>,
+    pub file_info: Option<FileInfo>,
 }
 
-struct AppState {
-    canvas: HtmlCanvasElement,
-    ctx: CanvasRenderingContext2d,
+pub struct AppState {
+    renderer: ArchRenderer,
     width: f64,
     height: f64,
-    dpr: f64,
+    is_mobile: bool,
     lines: Vec<TreeLine>,
-    selected_file: Option<String>,  // Selected file path
-    current_path: Vec<String>,      // Navigation path (e.g., ["TOOLS", "CAD", "src"])
-    scroll_y: f64,
-    max_scroll: f64,
+    selected_file: Option<String>,
+    current_path: Vec<String>,
+    view_mode: ViewMode,
+    file_content_cache: HashMap<String, String>,
     line_height: f64,
     font_size: f64,
     graph: DependencyGraph,
-    file_db: FileDatabase,
+    pub file_db: FileDatabase,
 }
 
 impl AppState {
-    fn new(canvas: HtmlCanvasElement, ctx: CanvasRenderingContext2d) -> Self {
-        let window = window().unwrap();
-        let dpr = window.device_pixel_ratio();
-        let rect = canvas.get_bounding_client_rect();
-
-        let width = rect.width();
-        let height = rect.height();
-
-        canvas.set_width((width * dpr) as u32);
-        canvas.set_height((height * dpr) as u32);
-        ctx.scale(dpr, dpr).ok();
-
-        let graph: DependencyGraph = serde_json::from_str(WORKSPACE_DATA).unwrap_or_default();
-        let file_db: FileDatabase = serde_json::from_str(FILE_DB).unwrap_or_default();
+    fn new() -> Result<Self, JsValue> {
+        let window = web_sys::window().ok_or("No window")?;
+        let width = window.inner_width()?.as_f64().unwrap_or(1024.0);
+        let height = window.inner_height()?.as_f64().unwrap_or(768.0);
 
         let is_mobile = width < 500.0;
         let font_size = if is_mobile { 11.0 } else { 13.0 };
         let line_height = font_size * 1.5;
 
+        let graph: DependencyGraph = serde_json::from_str(WORKSPACE_DATA).unwrap_or_default();
+        let file_db: FileDatabase = serde_json::from_str(FILE_DB).unwrap_or_default();
+
+        let renderer = ArchRenderer::new("arch-app")?;
+
         let mut state = Self {
-            canvas,
-            ctx,
+            renderer,
             width,
             height,
-            dpr,
+            is_mobile,
             lines: Vec::new(),
             selected_file: None,
             current_path: Vec::new(),
-            scroll_y: 0.0,
-            max_scroll: 0.0,
+            view_mode: ViewMode::Tree,
+            file_content_cache: HashMap::new(),
             line_height,
             font_size,
             graph,
@@ -123,12 +126,11 @@ impl AppState {
         };
 
         state.build_tree();
-        state
+        Ok(state)
     }
 
     fn build_tree(&mut self) {
         self.lines.clear();
-        self.scroll_y = 0.0;
 
         // Title with breadcrumb
         let title = if self.current_path.is_empty() {
@@ -181,10 +183,6 @@ impl AppState {
             self.build_directory_contents();
         }
 
-        // Calculate max scroll
-        let content_height = self.lines.len() as f64 * self.line_height + 40.0;
-        let panel_height = if self.selected_file.is_some() { 110.0 } else { 0.0 };
-        self.max_scroll = (content_height - self.height + panel_height + 20.0).max(0.0);
     }
 
     fn build_root_categories(&mut self) {
@@ -313,167 +311,54 @@ impl AppState {
                 self.build_tree();
             }
             LineAction::SelectFile(path) => {
-                if self.selected_file.as_ref() == Some(path) {
-                    self.selected_file = None;
-                } else {
-                    self.selected_file = Some(path.clone());
-                }
+                self.selected_file = Some(path.clone());
+                self.view_mode = ViewMode::FileViewer { path: path.clone() };
+                // Load file content
+                let _ = self.load_file_content(path);
             }
             LineAction::None => {}
         }
     }
 
-    fn line_at(&self, y: f64) -> Option<&TreeLine> {
-        let scroll_y = y + self.scroll_y;
-        let start_y = 20.0;
-        let idx = ((scroll_y - start_y) / self.line_height) as usize;
-        self.lines.get(idx).filter(|l| !matches!(l.action, LineAction::None))
-    }
-
-    fn render(&self) {
-        let ctx = &self.ctx;
-
-        // Clear
-        ctx.set_fill_style(&JsValue::from_str(Colors::BG));
-        ctx.fill_rect(0.0, 0.0, self.width, self.height);
-
-        let panel_h = if self.selected_file.is_some() {
-            if self.width < 400.0 { 110.0 } else { 100.0 }
-        } else {
-            0.0
-        };
-
-        ctx.save();
-        ctx.translate(0.0, -self.scroll_y).ok();
-
-        let x = 14.0;
-        let mut y = 18.0 + self.font_size;
-
-        ctx.set_font(&format!("{}px monospace", self.font_size));
-        ctx.set_text_baseline("top");
-
-        for line in &self.lines {
-            let is_selected = match &line.action {
-                LineAction::SelectFile(path) => self.selected_file.as_ref() == Some(path),
-                _ => false,
-            };
-
-            // Highlight selected
-            if is_selected {
-                ctx.set_fill_style(&JsValue::from_str("rgba(255, 255, 255, 0.08)"));
-                ctx.fill_rect(0.0, y - 2.0, self.width, self.line_height);
-            }
-
-            // Draw name
-            ctx.set_fill_style(&JsValue::from_str(line.color));
-            ctx.fill_text(&line.name, x, y).ok();
-
-            // Draw suffix (purpose/description)
-            if !line.suffix.is_empty() {
-                let suffix_x = x + line.name.chars().count() as f64 * self.font_size * 0.6;
-                ctx.set_fill_style(&JsValue::from_str(Colors::DIM));
-                ctx.fill_text(&line.suffix, suffix_x, y).ok();
-            }
-
-            y += self.line_height;
+    pub fn load_file_content(&mut self, path: &str) -> Result<String, JsValue> {
+        // Check cache first
+        if let Some(content) = self.file_content_cache.get(path) {
+            return Ok(content.clone());
         }
 
-        ctx.restore();
-
-        // Draw info panel for selected file
-        if let Some(ref path) = self.selected_file {
-            if let Some(file_info) = self.file_db.get(path) {
-                self.draw_file_info_panel(file_info, panel_h);
+        // Get from db.json (which now includes content)
+        if let Some(file_info) = self.file_db.get(path) {
+            if let Some(content) = &file_info.content {
+                self.file_content_cache.insert(path.to_string(), content.clone());
+                return Ok(content.clone());
             }
         }
+
+        Err(JsValue::from_str("Content not available"))
     }
 
-    fn draw_file_info_panel(&self, file: &FileInfo, panel_h: f64) {
-        let ctx = &self.ctx;
-        let y = self.height - panel_h;
-        let is_mobile = self.width < 400.0;
-        let x = 14.0;
-        let small_font = (self.font_size - 1.0).max(10.0);
-
-        // Background
-        ctx.set_fill_style(&JsValue::from_str("rgba(10, 10, 15, 0.98)"));
-        ctx.fill_rect(0.0, y, self.width, panel_h);
-
-        // Top border
-        ctx.set_fill_style(&JsValue::from_str(Colors::FILE));
-        ctx.fill_rect(0.0, y, self.width, 2.0);
-
-        ctx.set_font(&format!("{}px monospace", small_font));
-        ctx.set_text_baseline("top");
-
-        let mut ty = y + 8.0;
-        let row_h = small_font * 1.4;
-
-        // File name
-        ctx.set_fill_style(&JsValue::from_str(Colors::FILE));
-        ctx.fill_text(&file.name, x, ty).ok();
-        ty += row_h;
-
-        // Path
-        ctx.set_fill_style(&JsValue::from_str(Colors::DIM));
-        ctx.fill_text("Path:", x, ty).ok();
-        ctx.set_fill_style(&JsValue::from_str(Colors::TEXT));
-        let path_text = if is_mobile && file.path.len() > 35 {
-            format!("...{}", &file.path[file.path.len()-32..])
-        } else {
-            file.path.clone()
-        };
-        ctx.fill_text(&path_text, x + 40.0, ty).ok();
-        ty += row_h;
-
-        // Purpose
-        ctx.set_fill_style(&JsValue::from_str(Colors::DIM));
-        ctx.fill_text("Info:", x, ty).ok();
-        ctx.set_fill_style(&JsValue::from_str(Colors::TEXT));
-        let purpose_text = if is_mobile && file.purpose.len() > 80 {
-            format!("{}...", &file.purpose[..77])
-        } else if file.purpose.len() > 150 {
-            format!("{}...", &file.purpose[..147])
-        } else {
-            file.purpose.clone()
-        };
-        ctx.fill_text(&purpose_text, x + 40.0, ty).ok();
-        ty += row_h;
-
-        // Type and main function
-        ctx.set_fill_style(&JsValue::from_str(Colors::DIM));
-        ctx.fill_text("Type:", x, ty).ok();
-        ctx.set_fill_style(&JsValue::from_str(Colors::TEXT));
-        ctx.fill_text(&file.file_type, x + 40.0, ty).ok();
-
-        if !file.main_function.is_empty() && file.main_function != "N/A" {
-            ctx.set_fill_style(&JsValue::from_str(Colors::DIM));
-            ctx.fill_text("Entry:", x + 140.0, ty).ok();
-            ctx.set_fill_style(&JsValue::from_str(Colors::TEXT));
-            ctx.fill_text(&file.main_function, x + 185.0, ty).ok();
-        }
-    }
-
-    fn handle_resize(&mut self) {
-        let window = window().unwrap();
-        let dpr = window.device_pixel_ratio();
-        let rect = self.canvas.get_bounding_client_rect();
-
-        self.width = rect.width();
-        self.height = rect.height();
-        self.dpr = dpr;
-
-        self.canvas.set_width((self.width * dpr) as u32);
-        self.canvas.set_height((self.height * dpr) as u32);
-
-        self.ctx.set_transform(1.0, 0.0, 0.0, 1.0, 0.0, 0.0).ok();
-        self.ctx.scale(dpr, dpr).ok();
-
-        let is_mobile = self.width < 500.0;
-        self.font_size = if is_mobile { 11.0 } else { 13.0 };
-        self.line_height = self.font_size * 1.5;
-
+    pub fn close_file_viewer(&mut self) {
+        self.view_mode = ViewMode::Tree;
+        self.selected_file = None;
         self.build_tree();
+    }
+
+    fn render(&self) -> Result<(), JsValue> {
+        self.renderer.render(self)
+    }
+
+    pub fn handle_resize(&mut self) {
+        let window = web_sys::window().unwrap();
+        self.width = window.inner_width().unwrap().as_f64().unwrap_or(1024.0);
+        self.height = window.inner_height().unwrap().as_f64().unwrap_or(768.0);
+
+        let new_is_mobile = self.width < 500.0;
+        if new_is_mobile != self.is_mobile {
+            self.is_mobile = new_is_mobile;
+            self.font_size = if self.is_mobile { 11.0 } else { 13.0 };
+            self.line_height = self.font_size * 1.5;
+            self.build_tree();
+        }
     }
 }
 
@@ -485,110 +370,19 @@ thread_local! {
 pub fn start() -> Result<(), JsValue> {
     console_error_panic_hook::set_once();
 
-    let window = window().ok_or("No window")?;
-    let document = window.document().ok_or("No document")?;
-
-    let canvas = document
-        .get_element_by_id("canvas")
-        .ok_or("No canvas")?
-        .dyn_into::<HtmlCanvasElement>()?;
-
-    let ctx = canvas
-        .get_context("2d")?
-        .ok_or("No 2d context")?
-        .dyn_into::<CanvasRenderingContext2d>()?;
-
-    let state = AppState::new(canvas.clone(), ctx);
+    let state = AppState::new()?;
     APP.with(|app| *app.borrow_mut() = Some(state));
 
     render();
-    setup_events(&canvas)?;
+    events::setup_events("arch-app")?;
 
     Ok(())
 }
 
-fn setup_events(canvas: &HtmlCanvasElement) -> Result<(), JsValue> {
-    // Click
-    {
-        let closure = Closure::wrap(Box::new(move |event: MouseEvent| {
-            APP.with(|app| {
-                if let Some(ref mut state) = *app.borrow_mut() {
-                    let rect = state.canvas.get_bounding_client_rect();
-                    let y = event.client_y() as f64 - rect.top();
-
-                    if let Some(line) = state.line_at(y) {
-                        let action = line.action.clone();
-                        state.navigate(&action);
-                    }
-                }
-            });
-            render();
-        }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
-        closure.forget();
-    }
-
-    // Touch
-    {
-        let closure = Closure::wrap(Box::new(move |event: TouchEvent| {
-            if let Some(touch) = event.touches().get(0) {
-                APP.with(|app| {
-                    if let Some(ref mut state) = *app.borrow_mut() {
-                        let rect = state.canvas.get_bounding_client_rect();
-                        let y = touch.client_y() as f64 - rect.top();
-
-                        if let Some(line) = state.line_at(y) {
-                            let action = line.action.clone();
-                            state.navigate(&action);
-                        }
-                    }
-                });
-                render();
-            }
-        }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("touchstart", closure.as_ref().unchecked_ref())?;
-        closure.forget();
-    }
-
-    // Wheel scroll
-    {
-        let closure = Closure::wrap(Box::new(move |event: web_sys::WheelEvent| {
-            event.prevent_default();
-            APP.with(|app| {
-                if let Some(ref mut state) = *app.borrow_mut() {
-                    state.scroll_y = (state.scroll_y + event.delta_y() * 0.5)
-                        .clamp(0.0, state.max_scroll);
-                }
-            });
-            render();
-        }) as Box<dyn FnMut(_)>);
-        canvas.add_event_listener_with_callback("wheel", closure.as_ref().unchecked_ref())?;
-        closure.forget();
-    }
-
-    // Resize
-    {
-        let closure = Closure::wrap(Box::new(move || {
-            APP.with(|app| {
-                if let Some(ref mut state) = *app.borrow_mut() {
-                    state.handle_resize();
-                }
-            });
-            render();
-        }) as Box<dyn FnMut()>);
-        window()
-            .unwrap()
-            .add_event_listener_with_callback("resize", closure.as_ref().unchecked_ref())?;
-        closure.forget();
-    }
-
-    Ok(())
-}
-
-fn render() {
+pub fn render() {
     APP.with(|app| {
         if let Some(ref state) = *app.borrow() {
-            state.render();
+            let _ = state.render();
         }
     });
 }
