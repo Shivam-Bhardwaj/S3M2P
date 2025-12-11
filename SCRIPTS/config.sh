@@ -68,8 +68,48 @@ declare -A PROJECT_DIRS=(
 
 )
 
+# Cloudflare Pages Project Names (Mapping from config keys)
+declare -A PAGES_PROJECTS=(
+    ["welcome"]="too-foo"
+    ["helios"]="helios-too-foo"
+    ["blog"]="blog-too-foo"
+    ["chladni"]="chladni-too-foo"
+    ["sensors"]="sensors-too-foo"
+    ["autocrate"]="autocrate-too-foo"
+    ["crm"]="crm-too-foo"
+    ["pll"]="pll-too-foo"
+    ["coming_soon"]="coming-soon-too-foo"
+
+    ["ai"]="ai-too-foo"
+    ["arduino"]="arduino-too-foo"
+    ["esp32"]="esp32-too-foo"
+    ["ubuntu"]="ubuntu-too-foo"
+    ["opencv"]="opencv-too-foo"
+    ["swarm"]="swarm-too-foo"
+    ["slam"]="slam-too-foo"
+    ["power"]="power-too-foo"
+    ["arch"]="arch-too-foo"
+)
+
+# Static projects that don't need trunk build (deploy root dir directly)
+declare -A STATIC_PROJECTS=(
+    ["coming_soon"]=1
+    ["ai"]=1
+    ["arduino"]=1
+    ["esp32"]=1
+    ["ubuntu"]=1
+    ["opencv"]=1
+    ["swarm"]=1
+    ["slam"]=1
+    ["sensors"]=1
+    ["power"]=1
+    ["crm"]=1
+)
+
 # Export for sub-shells
 export REPO_ROOT
 export LOG_DIR
 export PROJECT_PORTS
 export PROJECT_DIRS
+export PAGES_PROJECTS
+export STATIC_PROJECTS

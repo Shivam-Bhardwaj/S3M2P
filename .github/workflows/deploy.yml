@@ -17,6 +17,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Needed so we can diff ${{ github.event.before }}..${{ github.sha }}
+          fetch-depth: 0
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -34,10 +37,24 @@ jobs:
       - name: Install Wrangler
         run: npm install -g wrangler
 
-      - name: Build & Deploy All
+      - name: Build & Deploy Changed Projects
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           chmod +x ./SCRIPTS/deploy.sh
-          ./SCRIPTS/deploy.sh all --publish
+          chmod +x ./SCRIPTS/deploy_changed.sh
+
+          projects="$(./SCRIPTS/deploy_changed.sh "${{ github.event.before }}" "${{ github.sha }}" || true)"
+
+          echo "Projects to deploy:"
+          if [[ -z "$projects" ]]; then
+            echo "(none)"
+            exit 0
+          fi
+
+          echo "$projects"
+          while IFS= read -r key; do
+            [[ -z "$key" ]] && continue
+            ./SCRIPTS/deploy.sh "$key" --publish
+          done <<< "$projects"

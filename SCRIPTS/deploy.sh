@@ -19,44 +19,11 @@ CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# Cloudflare Pages Project Names (Mapping from Config Keys)
-declare -A PAGES_PROJECTS=(
-    ["welcome"]="too-foo"
-    ["helios"]="helios-too-foo"
-    ["blog"]="blog-too-foo"
-    ["chladni"]="chladni-too-foo"
-    ["sensors"]="sensors-too-foo"
-    ["autocrate"]="autocrate-too-foo"
-    ["crm"]="crm-too-foo"
-    ["pll"]="pll-too-foo"
-    ["coming_soon"]="coming-soon-too-foo"
-    
-    # Missing added
-    ["ai"]="ai-too-foo"
-    ["arduino"]="arduino-too-foo"
-    ["esp32"]="esp32-too-foo"
-    ["ubuntu"]="ubuntu-too-foo"
-    ["opencv"]="opencv-too-foo"
-    ["swarm"]="swarm-too-foo"
-    ["slam"]="slam-too-foo"
-    ["power"]="power-too-foo"
-    ["arch"]="arch-too-foo"
-)
-
-# Static projects that don't need trunk build
-declare -A STATIC_PROJECTS=(
-    ["coming_soon"]=1
-    ["ai"]=1
-    ["arduino"]=1
-    ["esp32"]=1
-    ["ubuntu"]=1
-    ["opencv"]=1
-    ["swarm"]=1
-    ["slam"]=1
-    ["sensors"]=1
-    ["power"]=1
-    ["crm"]=1
-)
+#
+# Cloudflare Pages mappings live in SCRIPTS/config.sh:
+# - PAGES_PROJECTS (key -> Cloudflare Pages project name)
+# - STATIC_PROJECTS (keys that don't need trunk build)
+#
 
 # Parse arguments
 PROJECT="${1:-all}"
