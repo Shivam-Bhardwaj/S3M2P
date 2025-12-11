@@ -31,12 +31,12 @@ use glam::Vec3;
 
 /// Orbital elements (Keplerian elements)
 pub struct OrbitalElements {
-    pub semi_major_axis: f64,      // a (m)
-    pub eccentricity: f64,          // e (0 = circle, <1 = ellipse)
-    pub inclination: f64,           // i (radians)
-    pub longitude_ascending: f64,   // Ω (radians)
-    pub argument_periapsis: f64,    // ω (radians)
-    pub true_anomaly: f64,          // ν (radians)
+    pub semi_major_axis: f64,     // a (m)
+    pub eccentricity: f64,        // e (0 = circle, <1 = ellipse)
+    pub inclination: f64,         // i (radians)
+    pub longitude_ascending: f64, // Ω (radians)
+    pub argument_periapsis: f64,  // ω (radians)
+    pub true_anomaly: f64,        // ν (radians)
 }
 
 /// Compute position from orbital elements

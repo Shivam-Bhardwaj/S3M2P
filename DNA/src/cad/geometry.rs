@@ -46,7 +46,11 @@ pub struct Point3 {
 }
 
 impl Point3 {
-    pub const ORIGIN: Self = Self { x: 0.0, y: 0.0, z: 0.0 };
+    pub const ORIGIN: Self = Self {
+        x: 0.0,
+        y: 0.0,
+        z: 0.0,
+    };
 
     #[inline]
     pub fn new(x: f32, y: f32, z: f32) -> Self {
@@ -55,7 +59,11 @@ impl Point3 {
 
     #[inline]
     pub fn from_vec3(v: Vec3) -> Self {
-        Self { x: v.x, y: v.y, z: v.z }
+        Self {
+            x: v.x,
+            y: v.y,
+            z: v.z,
+        }
     }
 
     #[inline]
@@ -136,13 +144,41 @@ pub struct Vector3 {
 }
 
 impl Vector3 {
-    pub const ZERO: Self = Self { x: 0.0, y: 0.0, z: 0.0 };
-    pub const X: Self = Self { x: 1.0, y: 0.0, z: 0.0 };
-    pub const Y: Self = Self { x: 0.0, y: 1.0, z: 0.0 };
-    pub const Z: Self = Self { x: 0.0, y: 0.0, z: 1.0 };
-    pub const NEG_X: Self = Self { x: -1.0, y: 0.0, z: 0.0 };
-    pub const NEG_Y: Self = Self { x: 0.0, y: -1.0, z: 0.0 };
-    pub const NEG_Z: Self = Self { x: 0.0, y: 0.0, z: -1.0 };
+    pub const ZERO: Self = Self {
+        x: 0.0,
+        y: 0.0,
+        z: 0.0,
+    };
+    pub const X: Self = Self {
+        x: 1.0,
+        y: 0.0,
+        z: 0.0,
+    };
+    pub const Y: Self = Self {
+        x: 0.0,
+        y: 1.0,
+        z: 0.0,
+    };
+    pub const Z: Self = Self {
+        x: 0.0,
+        y: 0.0,
+        z: 1.0,
+    };
+    pub const NEG_X: Self = Self {
+        x: -1.0,
+        y: 0.0,
+        z: 0.0,
+    };
+    pub const NEG_Y: Self = Self {
+        x: 0.0,
+        y: -1.0,
+        z: 0.0,
+    };
+    pub const NEG_Z: Self = Self {
+        x: 0.0,
+        y: 0.0,
+        z: -1.0,
+    };
 
     #[inline]
     pub fn new(x: f32, y: f32, z: f32) -> Self {
@@ -151,7 +187,11 @@ impl Vector3 {
 
     #[inline]
     pub fn from_vec3(v: Vec3) -> Self {
-        Self { x: v.x, y: v.y, z: v.z }
+        Self {
+            x: v.x,
+            y: v.y,
+            z: v.z,
+        }
     }
 
     #[inline]
@@ -266,9 +306,18 @@ pub struct Plane {
 }
 
 impl Plane {
-    pub const XY: Self = Self { origin: Point3::ORIGIN, normal: Vector3::Z };
-    pub const XZ: Self = Self { origin: Point3::ORIGIN, normal: Vector3::Y };
-    pub const YZ: Self = Self { origin: Point3::ORIGIN, normal: Vector3::X };
+    pub const XY: Self = Self {
+        origin: Point3::ORIGIN,
+        normal: Vector3::Z,
+    };
+    pub const XZ: Self = Self {
+        origin: Point3::ORIGIN,
+        normal: Vector3::Y,
+    };
+    pub const YZ: Self = Self {
+        origin: Point3::ORIGIN,
+        normal: Vector3::X,
+    };
 
     pub fn new(origin: Point3, normal: Vector3) -> Option<Self> {
         let normal = normal.normalize()?;
@@ -361,7 +410,11 @@ impl Ray {
             return None; // Parallel
         }
         let t = (plane.origin - self.origin).dot(plane.normal) / denom;
-        if t >= 0.0 { Some(t) } else { None }
+        if t >= 0.0 {
+            Some(t)
+        } else {
+            None
+        }
     }
 }
 
@@ -413,8 +466,16 @@ pub struct BoundingBox3 {
 
 impl BoundingBox3 {
     pub const EMPTY: Self = Self {
-        min: Point3 { x: f32::INFINITY, y: f32::INFINITY, z: f32::INFINITY },
-        max: Point3 { x: f32::NEG_INFINITY, y: f32::NEG_INFINITY, z: f32::NEG_INFINITY },
+        min: Point3 {
+            x: f32::INFINITY,
+            y: f32::INFINITY,
+            z: f32::INFINITY,
+        },
+        max: Point3 {
+            x: f32::NEG_INFINITY,
+            y: f32::NEG_INFINITY,
+            z: f32::NEG_INFINITY,
+        },
     };
 
     pub fn new(min: Point3, max: Point3) -> Self {
@@ -478,22 +539,36 @@ impl BoundingBox3 {
     }
 
     pub fn contains(&self, point: Point3) -> bool {
-        point.x >= self.min.x && point.x <= self.max.x
-            && point.y >= self.min.y && point.y <= self.max.y
-            && point.z >= self.min.z && point.z <= self.max.z
+        point.x >= self.min.x
+            && point.x <= self.max.x
+            && point.y >= self.min.y
+            && point.y <= self.max.y
+            && point.z >= self.min.z
+            && point.z <= self.max.z
     }
 
     pub fn intersects(&self, other: &Self) -> bool {
-        self.min.x <= other.max.x && self.max.x >= other.min.x
-            && self.min.y <= other.max.y && self.max.y >= other.min.y
-            && self.min.z <= other.max.z && self.max.z >= other.min.z
+        self.min.x <= other.max.x
+            && self.max.x >= other.min.x
+            && self.min.y <= other.max.y
+            && self.max.y >= other.min.y
+            && self.min.z <= other.max.z
+            && self.max.z >= other.min.z
     }
 
     /// Expand box by margin on all sides
     pub fn expand(&self, margin: f32) -> Self {
         Self {
-            min: Point3::new(self.min.x - margin, self.min.y - margin, self.min.z - margin),
-            max: Point3::new(self.max.x + margin, self.max.y + margin, self.max.z + margin),
+            min: Point3::new(
+                self.min.x - margin,
+                self.min.y - margin,
+                self.min.z - margin,
+            ),
+            max: Point3::new(
+                self.max.x + margin,
+                self.max.y + margin,
+                self.max.z + margin,
+            ),
         }
     }
 }

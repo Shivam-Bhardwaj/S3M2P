@@ -7,6 +7,7 @@ MODIFIED: 2025-12-02
 -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -18,49 +19,56 @@ MODIFIED: 2025-12-02
         @font-face {
             font-family: 'Just Sans';
             src: url('webfonts/JUST Sans Regular.woff2') format('woff2'),
-                 url('webfonts/JUST Sans Regular.woff') format('woff');
+                url('webfonts/JUST Sans Regular.woff') format('woff');
             font-weight: 400;
             font-style: normal;
             font-display: swap;
         }
+
         @font-face {
             font-family: 'Just Sans';
             src: url('webfonts/JUST Sans Medium.woff2') format('woff2'),
-                 url('webfonts/JUST Sans Medium.woff') format('woff');
+                url('webfonts/JUST Sans Medium.woff') format('woff');
             font-weight: 500;
             font-style: normal;
             font-display: swap;
         }
+
         @font-face {
             font-family: 'Just Sans';
             src: url('webfonts/JUST Sans SemiBold.woff2') format('woff2'),
-                 url('webfonts/JUST Sans SemiBold.woff') format('woff');
+                url('webfonts/JUST Sans SemiBold.woff') format('woff');
             font-weight: 600;
             font-style: normal;
             font-display: swap;
         }
+
         @font-face {
             font-family: 'Just Sans';
             src: url('webfonts/JUST Sans Bold.woff2') format('woff2'),
-                 url('webfonts/JUST Sans Bold.woff') format('woff');
+                url('webfonts/JUST Sans Bold.woff') format('woff');
             font-weight: 700;
             font-style: normal;
             font-display: swap;
         }
+
         @font-face {
             font-family: 'Just Sans';
             src: url('webfonts/JUST Sans Light.woff2') format('woff2'),
-                 url('webfonts/JUST Sans Light.woff') format('woff');
+                url('webfonts/JUST Sans Light.woff') format('woff');
             font-weight: 300;
             font-style: normal;
             font-display: swap;
         }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        html, body {
+
+        html,
+        body {
             width: 100%;
             height: 100%;
             overflow: hidden;
@@ -70,6 +78,7 @@ MODIFIED: 2025-12-02
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
         }
+
         canvas {
             display: block;
             width: 100%;
@@ -122,7 +131,7 @@ MODIFIED: 2025-12-02
             box-shadow: 0 0 15px currentColor;
         }
 
-        .planet-icon:hover + .planet-name,
+        .planet-icon:hover+.planet-name,
         .planet-item:hover .planet-name {
             color: rgba(255, 255, 255, 0.9);
         }
@@ -138,32 +147,38 @@ MODIFIED: 2025-12-02
 
         .planet-icon[data-planet="mercury"] {
             background: radial-gradient(circle at 30% 30%, #D4D4D4, #B5B5B5, #808080);
-            width: 20px; height: 20px;
+            width: 20px;
+            height: 20px;
         }
 
         .planet-icon[data-planet="venus"] {
             background: radial-gradient(circle at 30% 30%, #F5E6C8, #E6C87A, #C4A050);
-            width: 24px; height: 24px;
+            width: 24px;
+            height: 24px;
         }
 
         .planet-icon[data-planet="earth"] {
             background: radial-gradient(circle at 30% 30%, #8BC4E8, #6B93D6, #4A6FA5);
-            width: 25px; height: 25px;
+            width: 25px;
+            height: 25px;
         }
 
         .planet-icon[data-planet="mars"] {
             background: radial-gradient(circle at 30% 30%, #E8A080, #C1440E, #8B3010);
-            width: 22px; height: 22px;
+            width: 22px;
+            height: 22px;
         }
 
         .planet-icon[data-planet="jupiter"] {
             background: radial-gradient(circle at 30% 30%, #F5E6D3, #D4A57A, #A07040);
-            width: 36px; height: 36px;
+            width: 36px;
+            height: 36px;
         }
 
         .planet-icon[data-planet="saturn"] {
             background: radial-gradient(circle at 30% 30%, #F5E8C8, #E3D4AD, #B8A070);
-            width: 34px; height: 34px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
         }
 
@@ -183,18 +198,21 @@ MODIFIED: 2025-12-02
 
         .planet-icon[data-planet="uranus"] {
             background: radial-gradient(circle at 30% 30%, #D5F5F5, #B5E3E3, #80C8C8);
-            width: 28px; height: 28px;
+            width: 28px;
+            height: 28px;
         }
 
         .planet-icon[data-planet="neptune"] {
             background: radial-gradient(circle at 30% 30%, #8AAADE, #5B7FDE, #3A5098);
-            width: 27px; height: 27px;
+            width: 27px;
+            height: 27px;
         }
 
         .planet-icon[data-planet="heliosphere"] {
             background: radial-gradient(circle at 50% 50%, rgba(100, 150, 255, 0.3), rgba(150, 100, 200, 0.2), transparent);
             border: 2px dashed rgba(150, 100, 200, 0.5);
-            width: 36px; height: 36px;
+            width: 36px;
+            height: 36px;
         }
 
 
@@ -423,6 +441,146 @@ MODIFIED: 2025-12-02
             font-size: 10px;
         }
 
+        /* Band Selector - Top right, mobile-first carousel */
+        #band-selector {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 20px;
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        #band-selector::-webkit-scrollbar {
+            display: none;
+        }
+
+        .band-btn {
+            padding: 6px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .band-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .band-btn.active {
+            background: linear-gradient(135deg, #4A90D9, #2E6BB5);
+            border-color: #4A90D9;
+            color: white;
+        }
+
+        /* Filters Panel - Bottom right */
+        #filters-panel {
+            position: fixed;
+            bottom: 90px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 20px;
+            backdrop-filter: blur(8px);
+        }
+
+        .filter-toggle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.3);
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-toggle:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-toggle.active {
+            background: linear-gradient(135deg, #5CB85C, #449D44);
+            border-color: #5CB85C;
+        }
+
+        .mag-slider {
+            width: 120px;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .mag-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #FFD700, #FF8C00);
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 1px 6px rgba(255, 200, 0, 0.5);
+        }
+
+        .mag-slider::-webkit-slider-thumb:active {
+            cursor: grabbing;
+        }
+
+        .mag-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 11px;
+            font-weight: 500;
+            min-width: 35px;
+            text-align: center;
+        }
+
+        /* Performance Display */
+        #perf-display {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            z-index: 100;
+        }
+
         /* Mobile adjustments */
         @media (max-width: 600px) {
             #planet-nav {
@@ -430,42 +588,99 @@ MODIFIED: 2025-12-02
                 gap: 4px;
                 padding: 6px 10px;
             }
+
             .planet-icon {
                 width: 24px !important;
                 height: 24px !important;
             }
-            .planet-icon[data-planet="sun"] { width: 26px !important; height: 26px !important; }
-            .planet-icon[data-planet="jupiter"] { width: 28px !important; height: 28px !important; }
-            .planet-icon[data-planet="saturn"] { width: 26px !important; height: 26px !important; }
-            .planet-icon[data-planet="saturn"]::after { width: 38px; height: 8px; }
+
+            .planet-icon[data-planet="sun"] {
+                width: 26px !important;
+                height: 26px !important;
+            }
+
+            .planet-icon[data-planet="jupiter"] {
+                width: 28px !important;
+                height: 28px !important;
+            }
+
+            .planet-icon[data-planet="saturn"] {
+                width: 26px !important;
+                height: 26px !important;
+            }
+
+            .planet-icon[data-planet="saturn"]::after {
+                width: 38px;
+                height: 8px;
+            }
 
             #timeline {
                 bottom: 10px;
                 padding: 10px 15px;
                 gap: 10px;
             }
+
             #play-pause {
                 width: 44px;
                 height: 44px;
                 font-size: 18px;
             }
+
             .speed-btn {
                 width: 32px;
                 height: 32px;
             }
+
             .time-control {
                 min-width: 100px;
             }
+
             #info-panel {
                 display: none;
             }
+
             #view-presets {
                 left: 8px;
             }
+
             .view-btn {
                 width: 38px;
                 height: 38px;
                 font-size: 16px;
+            }
+
+            /* Mobile UI adjustments */
+            #band-selector {
+                top: 10px;
+                right: 10px;
+                max-width: calc(100vw - 20px);
+            }
+
+            .band-btn {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+
+            #filters-panel {
+                bottom: 80px;
+                right: 10px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                max-width: calc(100vw - 20px);
+            }
+
+            .filter-group {
+                padding: 6px 8px;
+            }
+
+            .mag-slider {
+                width: 80px;
+            }
+
+            #perf-display {
+                bottom: 10px;
+                right: 10px;
+                font-size: 9px;
             }
         }
 
@@ -488,6 +703,7 @@ MODIFIED: 2025-12-02
         }
     </style>
 </head>
+
 <body>
     <canvas id="helios-canvas"></canvas>
 
@@ -568,6 +784,36 @@ MODIFIED: 2025-12-02
         </div>
     </div>
 
+    <!-- Band Selector -->
+    <div id="band-selector">
+        <button class="band-btn active" data-band="optical">Optical</button>
+        <button class="band-btn" data-band="uv">UV</button>
+        <button class="band-btn" data-band="xray">X-ray</button>
+        <button class="band-btn" data-band="gamma">Gamma</button>
+        <button class="band-btn" data-band="ir">IR</button>
+        <button class="band-btn" data-band="radio">Radio</button>
+        <button class="band-btn" data-band="cmb">CMB</button>
+    </div>
+
+    <!-- Filters Panel -->
+    <div id="filters-panel">
+        <div class="filter-group">
+            <button class="filter-toggle active" id="filter-stars" title="Show Stars">★</button>
+            <button class="filter-toggle active" id="filter-constellations" title="Show Constellations">☆</button>
+            <button class="filter-toggle active" id="filter-grid" title="Show Grid">⊞</button>
+        </div>
+        <div class="filter-group">
+            <span class="mag-label">Mag</span>
+            <input type="range" class="mag-slider" id="mag-slider" min="2" max="8" value="6" step="0.5">
+            <span class="mag-label" id="mag-value">6.0</span>
+        </div>
+    </div>
+
+    <!-- Performance Display -->
+    <div id="perf-display">
+        <span id="perf-stars">0</span> stars • <span id="perf-fps">60</span> FPS
+    </div>
+
     <!-- Info Panel -->
     <div id="info-panel">
         <div>Left drag: pan &bull; Right drag: orbit</div>
@@ -592,5 +838,5 @@ MODIFIED: 2025-12-02
         }, { once: true });
     </script>
 </body>
-</html>
 
+</html>

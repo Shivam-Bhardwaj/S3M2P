@@ -26,11 +26,11 @@ impl Severity {
     /// Get color code for terminal output
     pub fn color_code(&self) -> &'static str {
         match self {
-            Severity::Info => "\x1b[36m",      // Cyan
-            Severity::Low => "\x1b[32m",       // Green
-            Severity::Medium => "\x1b[33m",    // Yellow
-            Severity::High => "\x1b[31m",      // Red
-            Severity::Critical => "\x1b[35m",  // Magenta
+            Severity::Info => "\x1b[36m",     // Cyan
+            Severity::Low => "\x1b[32m",      // Green
+            Severity::Medium => "\x1b[33m",   // Yellow
+            Severity::High => "\x1b[31m",     // Red
+            Severity::Critical => "\x1b[35m", // Magenta
         }
     }
 
@@ -145,16 +145,25 @@ impl FindingType {
     pub fn category(&self) -> Category {
         match self {
             FindingType::AwsAccessKey | FindingType::AwsSecretKey => Category::CloudCredential,
-            FindingType::GitHubToken | FindingType::StripeKey | FindingType::SlackToken
-            | FindingType::GenericApiKey | FindingType::JwtToken | FindingType::Password => {
-                Category::Secret
-            }
-            FindingType::RsaPrivateKey | FindingType::SshPrivateKey | FindingType::PgpPrivateKey
+            FindingType::GitHubToken
+            | FindingType::StripeKey
+            | FindingType::SlackToken
+            | FindingType::GenericApiKey
+            | FindingType::JwtToken
+            | FindingType::Password => Category::Secret,
+            FindingType::RsaPrivateKey
+            | FindingType::SshPrivateKey
+            | FindingType::PgpPrivateKey
             | FindingType::Certificate => Category::CryptoKey,
-            FindingType::DatabaseUrl | FindingType::MongoDbUrl | FindingType::PostgresUrl
+            FindingType::DatabaseUrl
+            | FindingType::MongoDbUrl
+            | FindingType::PostgresUrl
             | FindingType::MySqlPassword => Category::DatabaseCredential,
-            FindingType::Email | FindingType::PhoneNumber | FindingType::CreditCard
-            | FindingType::SocialSecurityNumber | FindingType::IpAddress => Category::PII,
+            FindingType::Email
+            | FindingType::PhoneNumber
+            | FindingType::CreditCard
+            | FindingType::SocialSecurityNumber
+            | FindingType::IpAddress => Category::PII,
             FindingType::HighEntropy | FindingType::Suspicious => Category::Suspicious,
         }
     }
@@ -162,24 +171,36 @@ impl FindingType {
     pub fn severity(&self) -> Severity {
         match self {
             // Critical: Exposed credentials
-            FindingType::AwsAccessKey | FindingType::AwsSecretKey | FindingType::RsaPrivateKey
-            | FindingType::SshPrivateKey | FindingType::DatabaseUrl => Severity::Critical,
+            FindingType::AwsAccessKey
+            | FindingType::AwsSecretKey
+            | FindingType::RsaPrivateKey
+            | FindingType::SshPrivateKey
+            | FindingType::DatabaseUrl => Severity::Critical,
 
             // High: API keys and tokens
-            FindingType::GitHubToken | FindingType::StripeKey | FindingType::SlackToken
-            | FindingType::GenericApiKey | FindingType::Password | FindingType::MongoDbUrl
+            FindingType::GitHubToken
+            | FindingType::StripeKey
+            | FindingType::SlackToken
+            | FindingType::GenericApiKey
+            | FindingType::Password
+            | FindingType::MongoDbUrl
             | FindingType::PostgresUrl => Severity::High,
 
             // Medium: PII
-            FindingType::Email | FindingType::PhoneNumber | FindingType::CreditCard
+            FindingType::Email
+            | FindingType::PhoneNumber
+            | FindingType::CreditCard
             | FindingType::SocialSecurityNumber => Severity::Medium,
 
             // Low: Less sensitive
             FindingType::IpAddress | FindingType::JwtToken => Severity::Low,
 
             // Info: Suspicious patterns
-            FindingType::HighEntropy | FindingType::Suspicious | FindingType::PgpPrivateKey
-            | FindingType::Certificate | FindingType::MySqlPassword => Severity::Info,
+            FindingType::HighEntropy
+            | FindingType::Suspicious
+            | FindingType::PgpPrivateKey
+            | FindingType::Certificate
+            | FindingType::MySqlPassword => Severity::Info,
         }
     }
 }
@@ -266,7 +287,11 @@ impl Finding {
         if len <= 8 {
             "*".repeat(len)
         } else {
-            format!("{}***{}", &self.matched_text[..4], &self.matched_text[len - 4..])
+            format!(
+                "{}***{}",
+                &self.matched_text[..4],
+                &self.matched_text[len - 4..]
+            )
         }
     }
 }
@@ -354,12 +379,18 @@ impl ScanResult {
 
     /// Get findings by severity
     pub fn by_severity(&self, severity: Severity) -> Vec<&Finding> {
-        self.findings.iter().filter(|f| f.severity == severity).collect()
+        self.findings
+            .iter()
+            .filter(|f| f.severity == severity)
+            .collect()
     }
 
     /// Get findings by category
     pub fn by_category(&self, category: Category) -> Vec<&Finding> {
-        self.findings.iter().filter(|f| f.category == category).collect()
+        self.findings
+            .iter()
+            .filter(|f| f.category == category)
+            .collect()
     }
 }
 

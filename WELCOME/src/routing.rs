@@ -35,7 +35,7 @@ impl Route {
     }
 
     /// Get the hash string for this route
-    pub fn to_hash(&self) -> &'static str {
+    pub fn to_hash(self) -> &'static str {
         match self {
             Route::Home => "",
             Route::Category(id) => id.hash_route(),

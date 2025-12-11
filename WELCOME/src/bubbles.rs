@@ -93,6 +93,7 @@ mod urls {
     pub const SLAM: &str = "http://localhost:8106";
 
     pub const BLOG: &str = "http://localhost:8085";
+    #[allow(dead_code)]
     pub const GENERIC_404: &str = "http://localhost:8080/404";
 }
 

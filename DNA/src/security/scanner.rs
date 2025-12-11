@@ -36,10 +36,20 @@ impl Scanner {
 
         for pattern in patterns {
             // Skip patterns based on config
-            if !config.detect_secrets && matches!(pattern.finding_type.category(), crate::security::types::Category::Secret | crate::security::types::Category::CryptoKey | crate::security::types::Category::CloudCredential | crate::security::types::Category::DatabaseCredential) {
+            if !config.detect_secrets
+                && matches!(
+                    pattern.finding_type.category(),
+                    crate::security::types::Category::Secret
+                        | crate::security::types::Category::CryptoKey
+                        | crate::security::types::Category::CloudCredential
+                        | crate::security::types::Category::DatabaseCredential
+                )
+            {
                 continue;
             }
-            if !config.detect_pii && pattern.finding_type.category() == crate::security::types::Category::PII {
+            if !config.detect_pii
+                && pattern.finding_type.category() == crate::security::types::Category::PII
+            {
                 continue;
             }
 
@@ -52,7 +62,10 @@ impl Scanner {
             }
         }
 
-        Self { patterns: compiled, config }
+        Self {
+            patterns: compiled,
+            config,
+        }
     }
 
     /// Scan a text string
@@ -79,7 +92,9 @@ impl Scanner {
                     }
 
                     // Additional validation for specific types
-                    if let Some(validated) = self.validate_finding(&pattern.finding_type, &matched_text) {
+                    if let Some(validated) =
+                        self.validate_finding(&pattern.finding_type, &matched_text)
+                    {
                         if !validated {
                             continue;
                         }
@@ -125,7 +140,11 @@ impl Scanner {
         Ok(result)
     }
 
-    fn scan_directory_recursive(&self, dir: &Path, result: &mut ScanResult) -> Result<(), std::io::Error> {
+    fn scan_directory_recursive(
+        &self,
+        dir: &Path,
+        result: &mut ScanResult,
+    ) -> Result<(), std::io::Error> {
         if !dir.is_dir() {
             return Ok(());
         }
@@ -306,7 +325,7 @@ mod tests {
     #[test]
     fn test_github_token_detection() {
         let scanner = Scanner::new();
-        let text = "token = 'ghp_abcdefghijklmnopqrstuvwxyz1234567890'";  // 36 chars after ghp_
+        let text = "token = 'ghp_abcdefghijklmnopqrstuvwxyz1234567890'"; // 36 chars after ghp_
         let findings = scanner.scan_text(text, "config.py");
 
         assert_eq!(findings.len(), 1);
@@ -353,8 +372,12 @@ mod tests {
         let findings = scanner.scan_text(text, "test.txt");
 
         // Should only detect AWS key, not email
-        assert!(findings.iter().all(|f| f.finding_type != FindingType::Email));
-        assert!(findings.iter().any(|f| f.finding_type == FindingType::AwsAccessKey));
+        assert!(findings
+            .iter()
+            .all(|f| f.finding_type != FindingType::Email));
+        assert!(findings
+            .iter()
+            .any(|f| f.finding_type == FindingType::AwsAccessKey));
     }
 
     #[test]

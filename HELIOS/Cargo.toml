@@ -18,8 +18,16 @@ console_error_panic_hook = "0.1"
 js-sys = "0.3"
 
 # Math and serialization (for heliosphere modules)
-glam = { version = "0.24", features = ["serde"] }
+glam = { version = "0.29", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Streaming (Phase 2)
+lru = "0.12"
+reqwest = { version = "0.11", default-features = false, features = ["json"] }
+
+# DNA foundation (CCA coordinate system)
+dna = { path = "../DNA" }
 
 [dependencies.web-sys]
 version = "0.3"

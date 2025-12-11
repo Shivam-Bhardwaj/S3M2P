@@ -10,8 +10,11 @@
 
 #![allow(unexpected_cfgs)]
 
+mod cca_projection;
 mod render;
 mod simulation;
+mod star_data; // local star manager (phase 1)
+mod streaming; // tile streaming (phase 2)
 
 // HELIOS domain modules (moved from DNA)
 mod heliosphere;
@@ -31,8 +34,8 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 #[cfg(target_arch = "wasm32")]
 use web_sys::{
-    window, CanvasRenderingContext2d, HtmlCanvasElement, HtmlInputElement,
-    InputEvent, KeyboardEvent, MouseEvent, TouchEvent, WheelEvent,
+    window, CanvasRenderingContext2d, HtmlCanvasElement, HtmlInputElement, InputEvent,
+    KeyboardEvent, MouseEvent, TouchEvent, WheelEvent,
 };
 
 #[cfg(target_arch = "wasm32")]
@@ -65,7 +68,10 @@ fn update_commit_info(document: &web_sys::Document) {
         };
 
         // GitHub commit URL
-        let commit_url = format!("https://github.com/Shivam-Bhardwaj/S3M2P/commit/{}", COMMIT_HASH);
+        let commit_url = format!(
+            "https://github.com/Shivam-Bhardwaj/S3M2P/commit/{}",
+            COMMIT_HASH
+        );
 
         // Update link
         let _ = commit_link.set_attribute("href", &commit_url);
@@ -176,7 +182,7 @@ fn run() {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |event: MouseEvent| {
             event.prevent_default();
-            let mut s = state.borrow_mut();
+            let Ok(mut s) = state.try_borrow_mut() else { return };
             s.view_heliosphere();
             s.view.tilt = 0.4; // Reset tilt
             s.view.rotation = 0.0; // Reset rotation
@@ -193,25 +199,34 @@ fn run() {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |event: MouseEvent| {
             event.prevent_default();
-            let mut s = state.borrow_mut();
-
-            // Determine drag mode based on button
-            // Button 0 = left (pan), 1 = middle (orbit), 2 = right (orbit)
-            let is_orbit = event.button() == 2 || event.button() == 1;
+            let Ok(mut s) = state.try_borrow_mut() else { return };
 
             s.view.drag_start_x = event.client_x() as f64;
             s.view.drag_start_y = event.client_y() as f64;
 
-            if is_orbit {
-                // Orbit mode - rotate camera around Sun
+            // In Sun-centered heliosphere mode we want primary (left) click
+            // to directly control the spherical camera (orbit), not pan.
+            if s.is_sun_centered_heliosphere() {
+                // Always orbit around the Sun with left click in heliosphere view
                 s.view.drag_mode = DragMode::Orbit;
                 s.view.last_tilt = s.view.tilt;
                 s.view.last_rotation = s.view.rotation;
             } else {
-                // Pan mode - move camera position
-                s.view.drag_mode = DragMode::Pan;
-                s.view.last_center_x = s.view.center_x;
-                s.view.last_center_y = s.view.center_y;
+                // Legacy behavior outside heliosphere view:
+                // Button 0 = left (pan), 1 = middle (orbit), 2 = right (orbit)
+                let is_orbit = event.button() == 2 || event.button() == 1;
+
+                if is_orbit {
+                    // Orbit mode - rotate camera around Sun
+                    s.view.drag_mode = DragMode::Orbit;
+                    s.view.last_tilt = s.view.tilt;
+                    s.view.last_rotation = s.view.rotation;
+                } else {
+                    // Pan mode - move camera position
+                    s.view.drag_mode = DragMode::Pan;
+                    s.view.last_center_x = s.view.center_x;
+                    s.view.last_center_y = s.view.center_y;
+                }
             }
         }) as Box<dyn FnMut(_)>);
         canvas
@@ -235,7 +250,9 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            state.borrow_mut().view.drag_mode = DragMode::None;
+            if let Ok(mut s) = state.try_borrow_mut() {
+                s.view.drag_mode = DragMode::None;
+            }
         }) as Box<dyn FnMut(_)>);
         canvas
             .add_event_listener_with_callback("mouseup", closure.as_ref().unchecked_ref())
@@ -247,7 +264,9 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            state.borrow_mut().view.drag_mode = DragMode::None;
+            if let Ok(mut s) = state.try_borrow_mut() {
+                s.view.drag_mode = DragMode::None;
+            }
         }) as Box<dyn FnMut(_)>);
         canvas
             .add_event_listener_with_callback("mouseleave", closure.as_ref().unchecked_ref())
@@ -259,15 +278,18 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |event: MouseEvent| {
-            let mut s = state.borrow_mut();
+            let Ok(mut s) = state.try_borrow_mut() else { return };
             let dx = event.client_x() as f64 - s.view.drag_start_x;
             let dy = event.client_y() as f64 - s.view.drag_start_y;
 
             match s.view.drag_mode {
                 DragMode::Pan => {
-                    // Pan: move the view center
-                    s.view.center_x = s.view.last_center_x - dx * s.view.zoom;
-                    s.view.center_y = s.view.last_center_y - dy * s.view.zoom;
+                    // In Sun-centered heliosphere view we disable world-space panning
+                    // so the left button always acts as an orbit control.
+                    if !s.is_sun_centered_heliosphere() {
+                        s.view.center_x = s.view.last_center_x - dx * s.view.zoom;
+                        s.view.center_y = s.view.last_center_y - dy * s.view.zoom;
+                    }
                 }
                 DragMode::Orbit => {
                     // Orbit: rotate camera around Sun (CAD-like)
@@ -298,7 +320,7 @@ fn run() {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |event: WheelEvent| {
             event.prevent_default();
-            let mut s = state.borrow_mut();
+            let Ok(mut s) = state.try_borrow_mut() else { return };
 
             // Zoom towards mouse position
             let mouse_x = event.client_x() as f64;
@@ -325,7 +347,7 @@ fn run() {
         let closure = Closure::wrap(Box::new(move |event: TouchEvent| {
             event.prevent_default();
             let touches = event.touches();
-            let mut s = state.borrow_mut();
+            let Ok(mut s) = state.try_borrow_mut() else { return };
 
             if touches.length() == 2 {
                 // Two fingers: pinch-to-zoom
@@ -364,7 +386,7 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: TouchEvent| {
-            let mut s = state.borrow_mut();
+            let Ok(mut s) = state.try_borrow_mut() else { return };
             s.view.drag_mode = DragMode::None;
             s.view.pinching = false;
         }) as Box<dyn FnMut(_)>);
@@ -380,7 +402,7 @@ fn run() {
         let closure = Closure::wrap(Box::new(move |event: TouchEvent| {
             event.prevent_default();
             let touches = event.touches();
-            let mut s = state.borrow_mut();
+            let Ok(mut s) = state.try_borrow_mut() else { return };
 
             if s.view.pinching && touches.length() == 2 {
                 // Two-finger gesture
@@ -439,7 +461,7 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |event: KeyboardEvent| {
-            let mut s = state.borrow_mut();
+            let Ok(mut s) = state.try_borrow_mut() else { return };
             match event.key().as_str() {
                 " " => s.toggle_pause(),
                 "1" => s.focus_on_planet(0), // Mercury
@@ -515,7 +537,7 @@ fn run() {
     if let Some(slider) = time_slider.clone() {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: InputEvent| {
-            let mut s = state.borrow_mut();
+            let Ok(mut s) = state.try_borrow_mut() else { return };
             let days_offset: f64 = slider.value().parse().unwrap_or(0.0);
             s.julian_date = simulation::J2000_EPOCH + 8766.0 + days_offset;
         }) as Box<dyn FnMut(_)>);
@@ -530,7 +552,9 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            state.borrow_mut().toggle_pause();
+            if let Ok(mut s) = state.try_borrow_mut() {
+                s.toggle_pause();
+            }
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("play-pause") {
             el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
@@ -543,7 +567,7 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            let mut s = state.borrow_mut();
+            let Ok(mut s) = state.try_borrow_mut() else { return };
             let ts = s.time_scale / 2.0;
             s.set_time_scale(ts);
         }) as Box<dyn FnMut(_)>);
@@ -558,7 +582,7 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            let mut s = state.borrow_mut();
+            let Ok(mut s) = state.try_borrow_mut() else { return };
             let ts = s.time_scale * 2.0;
             s.set_time_scale(ts);
         }) as Box<dyn FnMut(_)>);
@@ -576,7 +600,9 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            state.borrow_mut().focus_on_sun();
+            if let Ok(mut s) = state.try_borrow_mut() {
+                s.focus_on_sun();
+            }
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("nav-sun") {
             el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
@@ -600,7 +626,9 @@ fn run() {
     for (idx, id) in planet_ids.iter().enumerate() {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            state.borrow_mut().focus_on_planet(idx);
+            if let Ok(mut s) = state.try_borrow_mut() {
+                s.focus_on_planet(idx);
+            }
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id(id) {
             el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
@@ -613,7 +641,9 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            state.borrow_mut().view_heliosphere();
+            if let Ok(mut s) = state.try_borrow_mut() {
+                s.view_heliosphere();
+            }
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("nav-heliosphere") {
             el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
@@ -628,7 +658,9 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            state.borrow_mut().view_inner_system();
+            if let Ok(mut s) = state.try_borrow_mut() {
+                s.view_inner_system();
+            }
         }) as Box<dyn FnMut(_)>);
         if let Some(el) = document.get_element_by_id("view-inner") {
             el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
@@ -682,7 +714,7 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            let mut s = state.borrow_mut();
+            let Ok(mut s) = state.try_borrow_mut() else { return };
             let new_tilt = s.view.tilt + 0.15;
             s.view.set_tilt(new_tilt);
             s.mark_orbits_dirty();
@@ -698,7 +730,7 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            let mut s = state.borrow_mut();
+            let Ok(mut s) = state.try_borrow_mut() else { return };
             let new_tilt = s.view.tilt - 0.15;
             s.view.set_tilt(new_tilt);
             s.mark_orbits_dirty();
@@ -714,7 +746,7 @@ fn run() {
     {
         let state = state.clone();
         let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
-            let mut s = state.borrow_mut();
+            let Ok(mut s) = state.try_borrow_mut() else { return };
             s.view.tilt = 0.5; // Default ~30 degrees
             s.view.rotation = 0.0;
             s.mark_orbits_dirty();
@@ -723,6 +755,142 @@ fn run() {
             el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
                 .unwrap();
         }
+        closure.forget();
+    }
+
+    // === MOBILE UI CONTROLS ===
+
+    // Band selector buttons
+    let band_buttons = [
+        ("optical", star_data::Band::Optical),
+        ("uv", star_data::Band::UV),
+        ("xray", star_data::Band::XRay),
+        ("gamma", star_data::Band::Gamma),
+        ("ir", star_data::Band::IR),
+        ("radio", star_data::Band::Radio),
+        ("cmb", star_data::Band::CMB),
+    ];
+
+    for (band_id, band) in band_buttons.iter() {
+        let state = state.clone();
+        let band = *band;
+        let band_id_str = band_id.to_string();
+        let all_band_ids = vec!["optical", "uv", "xray", "gamma", "ir", "radio", "cmb"];
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            let Ok(mut s) = state.try_borrow_mut() else { return };
+            s.star_mgr.set_current_band(band);
+
+            // Update active button styling
+            if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+                // Remove active class from all band buttons
+                for other_id in &all_band_ids {
+                    if let Some(btn) = doc.get_element_by_id(&format!("band-{}", other_id)) {
+                        btn.class_list().remove_1("active").ok();
+                    }
+                }
+                // Add active class to clicked button
+                if let Some(btn) = doc.get_element_by_id(&format!("band-{}", band_id_str)) {
+                    btn.class_list().add_1("active").ok();
+                }
+            }
+        }) as Box<dyn FnMut(_)>);
+
+        if let Some(el) = document.get_element_by_id(&format!("band-{}", band_id)) {
+            // Add both click (desktop) and touchstart (mobile) for responsive interaction
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
+            el.add_event_listener_with_callback("touchstart", closure.as_ref().unchecked_ref())
+                .unwrap();
+        }
+        closure.forget();
+    }
+
+    // Filter toggles
+    let filter_toggles = [
+        ("filter-stars", "show_stars"),
+        ("filter-constellations", "show_constellations"),
+        ("filter-grid", "show_grid"),
+    ];
+
+    for (element_id, _filter_name) in filter_toggles.iter() {
+        let element_id_str = element_id.to_string();
+        let closure = Closure::wrap(Box::new(move |_: MouseEvent| {
+            // For now, just toggle the active class - full filter logic would need render integration
+            if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+                if let Some(btn) = doc.get_element_by_id(&element_id_str) {
+                    if btn.class_list().contains("active") {
+                        btn.class_list().remove_1("active").ok();
+                    } else {
+                        btn.class_list().add_1("active").ok();
+                    }
+                }
+            }
+        }) as Box<dyn FnMut(_)>);
+
+        if let Some(el) = document.get_element_by_id(element_id) {
+            // Add both click (desktop) and touchstart (mobile) for responsive interaction
+            el.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())
+                .unwrap();
+            el.add_event_listener_with_callback("touchstart", closure.as_ref().unchecked_ref())
+                .unwrap();
+        }
+        closure.forget();
+    }
+
+    // Magnitude slider
+    if let Some(slider) = document
+        .get_element_by_id("mag-slider")
+        .and_then(|el| el.dyn_into::<HtmlInputElement>().ok())
+    {
+        let state = state.clone();
+        let slider_clone = slider.clone();
+        let closure = Closure::wrap(Box::new(move |_: InputEvent| {
+            let Ok(mut s) = state.try_borrow_mut() else { return };
+            let mag_limit: f64 = slider_clone.value().parse().unwrap_or(6.0);
+            s.star_mgr.set_magnitude_limit(mag_limit);
+
+            // Update display value
+            if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+                if let Some(display) = doc.get_element_by_id("mag-value") {
+                    display.set_text_content(Some(&format!("{:.1}", mag_limit)));
+                }
+            }
+        }) as Box<dyn FnMut(_)>);
+
+        slider
+            .add_event_listener_with_callback("input", closure.as_ref().unchecked_ref())
+            .unwrap();
+        closure.forget();
+
+        // Initialize display value
+        if let Some(display) = document.get_element_by_id("mag-value") {
+            display.set_text_content(Some("6.0"));
+        }
+    }
+
+    // Capabilities POST on load
+    {
+        let closure = Closure::wrap(Box::new(move || {
+            // Send device capabilities to server (when server is implemented)
+            let screen_w = web_sys::window()
+                .and_then(|w| w.inner_width().ok())
+                .and_then(|w| w.as_f64())
+                .unwrap_or(1920.0) as u32;
+            let screen_h = web_sys::window()
+                .and_then(|w| w.inner_height().ok())
+                .and_then(|h| h.as_f64())
+                .unwrap_or(1080.0) as u32;
+
+            log(&format!(
+                "Device capabilities: device_class=desktop, target_fps=60, max_stars=4000, screen={}x{}",
+                screen_w, screen_h
+            ));
+            // TODO: POST to /api/capabilities when server is implemented
+        }) as Box<dyn FnMut()>);
+
+        window
+            .add_event_listener_with_callback("load", closure.as_ref().unchecked_ref())
+            .unwrap();
         closure.forget();
     }
 
@@ -833,6 +1001,19 @@ fn run() {
                     el.class_list().add_1("active").ok();
                 } else {
                     el.class_list().remove_1("active").ok();
+                }
+            }
+
+            // Update performance display
+            if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
+                if let Some(perf_el) = doc.get_element_by_id("perf-stars") {
+                    perf_el.set_text_content(Some(&format!(
+                        "{}",
+                        s.star_mgr.visible_instances().len()
+                    )));
+                }
+                if let Some(perf_el) = doc.get_element_by_id("perf-fps") {
+                    perf_el.set_text_content(Some(&format!("{:.0}", s.fps)));
                 }
             }
         }

@@ -262,7 +262,7 @@ mod tests {
         let bode = bode.unwrap();
 
         // Should have frequency points
-        assert!(bode.frequencies_hz.len() > 0);
+        assert!(!bode.frequencies_hz.is_empty());
         assert_eq!(bode.frequencies_hz.len(), bode.magnitude_db.len());
         assert_eq!(bode.frequencies_hz.len(), bode.phase_deg.len());
 

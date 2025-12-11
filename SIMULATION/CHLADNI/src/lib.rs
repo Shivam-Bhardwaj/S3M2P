@@ -17,8 +17,8 @@ use web_sys::{window, HtmlCanvasElement, WebGl2RenderingContext};
 
 pub mod renderer;
 
-pub use wave_engine::{ChladniMode, PlateMode, WaveSimulation};
 pub use renderer::WaveRenderer;
+pub use wave_engine::{ChladniMode, PlateMode, WaveSimulation};
 
 /// Configuration for the wave simulation
 #[derive(Clone, Debug)]
@@ -210,7 +210,7 @@ impl ChladniSimulation {
 
 // Thread-local storage for global simulation state
 thread_local! {
-    static APP: RefCell<Option<App>> = RefCell::new(None);
+    static APP: RefCell<Option<App>> = const { RefCell::new(None) };
 }
 
 /// Application state holding simulation and renderer
@@ -379,6 +379,7 @@ fn start_animation_loop() -> Result<(), JsValue> {
     let window = window().ok_or("No window found")?;
 
     // Create self-referential closure for animation loop
+    #[allow(clippy::type_complexity)]
     let f: Rc<RefCell<Option<Closure<dyn FnMut(f64)>>>> = Rc::new(RefCell::new(None));
     let g = f.clone();
 
@@ -397,12 +398,13 @@ fn start_animation_loop() -> Result<(), JsValue> {
                 // Handle canvas resize
                 let container_width = app.canvas.client_width() as u32;
                 let container_height = app.canvas.client_height() as u32;
-                if container_width != app.canvas.width() || container_height != app.canvas.height()
+                if (container_width != app.canvas.width()
+                    || container_height != app.canvas.height())
+                    && container_width > 0
+                    && container_height > 0
                 {
-                    if container_width > 0 && container_height > 0 {
-                        app.canvas.set_width(container_width);
-                        app.canvas.set_height(container_height);
-                    }
+                    app.canvas.set_width(container_width);
+                    app.canvas.set_height(container_height);
                 }
 
                 // Update simulation

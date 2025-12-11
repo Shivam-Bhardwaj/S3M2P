@@ -5,8 +5,8 @@
 //! LAYER: DNA (foundation)
 //! ═══════════════════════════════════════════════════════════════════════════════
 
-pub mod ode;
-pub mod pde;
+pub mod filters;
 pub mod linear;
 pub mod nonlinear;
-pub mod filters;
+pub mod ode;
+pub mod pde;

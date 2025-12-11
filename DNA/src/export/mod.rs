@@ -10,8 +10,8 @@
 //! This module implements PDF and Gerber generation from scratch,
 //! following the CLAUDE.md philosophy of minimizing external dependencies.
 
-pub mod pdf;
 pub mod gerber;
+pub mod pdf;
 
-pub use pdf::*;
 pub use gerber::*;
+pub use pdf::*;

@@ -12,6 +12,7 @@
 //! - topology/     - Toroidal wrap-around boundaries
 //! - grid/         - Spatial grids (future)
 //! - units.rs      - Physical units and conversions
+//! - cca/          - Conformal Celestial Algebra (CGA + SE(3) Lie groups)
 //!
 //! ═══════════════════════════════════════════════════════════════════════════════
 
@@ -19,8 +20,10 @@
 // SUBMODULES
 // ─────────────────────────────────────────────────────────────────────────────────
 
+pub mod cca;
 pub mod coordinates;
-pub mod transforms;
-pub mod topology;
 pub mod grid;
+pub mod stars;
+pub mod topology;
+pub mod transforms;
 pub mod units;

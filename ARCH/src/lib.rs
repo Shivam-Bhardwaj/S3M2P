@@ -7,15 +7,15 @@
 
 #![allow(unexpected_cfgs)]
 
+use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
-use serde::{Deserialize, Serialize};
 
 mod audit;
+mod events;
 mod graph;
 mod render;
-mod events;
 
 pub use audit::{CrateAudit, GitMetadata, ValidationStatus};
 pub use graph::{CrateInfo, CrateLayer, DependencyGraph};
@@ -46,7 +46,9 @@ pub enum ViewMode {
 }
 
 // Colors
+#[allow(dead_code)]
 struct Colors;
+#[allow(dead_code)]
 impl Colors {
     const BG: &'static str = "#0a0a0f";
     const TEXT: &'static str = "#ffffff";
@@ -64,10 +66,10 @@ impl Colors {
 pub enum LineAction {
     None,
     Back,
-    EnterFolder(String),     // Enter a folder/category
-    SelectFile(String),      // Select a file (leaf node)
-    NextFile,                // Navigate to next file
-    PreviousFile,            // Navigate to previous file
+    EnterFolder(String), // Enter a folder/category
+    SelectFile(String),  // Select a file (leaf node)
+    NextFile,            // Navigate to next file
+    PreviousFile,        // Navigate to previous file
 }
 
 #[derive(Clone)]
@@ -92,6 +94,7 @@ pub struct AppState {
     file_content_cache: HashMap<String, String>,
     line_height: f64,
     font_size: f64,
+    #[allow(dead_code)]
     graph: DependencyGraph,
     pub file_db: FileDatabase,
 }
@@ -163,7 +166,6 @@ impl AppState {
             // Navigate into directory
             self.build_directory_contents();
         }
-
     }
 
     fn build_root_categories(&mut self) {
@@ -195,9 +197,7 @@ impl AppState {
         for (path, file_info) in &self.file_db {
             if path.starts_with(&prefix) {
                 let relative = &path[prefix.len()..];
-                if relative.starts_with('/') {
-                    let relative = &relative[1..];
-
+                if let Some(relative) = relative.strip_prefix('/') {
                     if let Some(idx) = relative.find('/') {
                         // It's a subfolder
                         let folder = &relative[..idx];
@@ -251,7 +251,11 @@ impl AppState {
         let folder_name = name.trim_end_matches('/');
         self.lines.push(TreeLine {
             name: name.into(),
-            suffix: if desc.is_empty() { String::new() } else { format!("  {}", desc) },
+            suffix: if desc.is_empty() {
+                String::new()
+            } else {
+                format!("  {}", desc)
+            },
             color,
             action: LineAction::EnterFolder(folder_name.to_string()),
             file_info: None,
@@ -316,7 +320,8 @@ impl AppState {
         // Get from db.json (which now includes content)
         if let Some(file_info) = self.file_db.get(path) {
             if let Some(content) = &file_info.content {
-                self.file_content_cache.insert(path.to_string(), content.clone());
+                self.file_content_cache
+                    .insert(path.to_string(), content.clone());
                 return Ok(content.clone());
             }
         }
@@ -340,7 +345,7 @@ impl AppState {
 
         let mut files = Vec::new();
 
-        for (path, _) in &self.file_db {
+        for path in self.file_db.keys() {
             if prefix.is_empty() || path.starts_with(&prefix) {
                 let relative = if prefix.is_empty() {
                     path.as_str()
@@ -376,14 +381,22 @@ impl AppState {
 
             if let Some(current_index) = files.iter().position(|p| p == current_path) {
                 let new_index = match direction {
-                    1 => (current_index + 1) % files.len(),  // Next (circular)
-                    -1 => if current_index == 0 { files.len() - 1 } else { current_index - 1 },  // Previous (circular)
+                    1 => (current_index + 1) % files.len(), // Next (circular)
+                    -1 => {
+                        if current_index == 0 {
+                            files.len() - 1
+                        } else {
+                            current_index - 1
+                        }
+                    } // Previous (circular)
                     _ => current_index,
                 };
 
                 if let Some(new_path) = files.get(new_index) {
                     self.selected_file = Some(new_path.clone());
-                    self.view_mode = ViewMode::FileViewer { path: new_path.clone() };
+                    self.view_mode = ViewMode::FileViewer {
+                        path: new_path.clone(),
+                    };
                     let _ = self.load_file_content(new_path);
                 }
             }

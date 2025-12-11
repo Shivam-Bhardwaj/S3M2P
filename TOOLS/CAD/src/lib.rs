@@ -10,13 +10,13 @@ use std::cell::RefCell;
 use std::f32::consts::PI;
 use wasm_bindgen::prelude::*;
 use web_sys::{
-    CanvasRenderingContext2d, Document, Element, HtmlCanvasElement, HtmlElement,
-    HtmlInputElement, HtmlSelectElement, MouseEvent, WheelEvent,
+    CanvasRenderingContext2d, Document, Element, HtmlCanvasElement, HtmlElement, HtmlInputElement,
+    HtmlSelectElement, MouseEvent, WheelEvent,
 };
 
 use cad_engine::{
-    is_manifold, make_box, make_cone, make_cylinder, make_sphere, surface_area, volume,
-    Point3, Solid,
+    is_manifold, make_box, make_cone, make_cylinder, make_sphere, surface_area, volume, Point3,
+    Solid,
 };
 
 // Global state for the current solid and view
@@ -194,7 +194,8 @@ fn set_view(view: &str) {
                 state.rotation_x = 0.0;
                 state.rotation_y = PI / 2.0;
             }
-            "iso" | _ => {
+            _ => {
+                // "iso" or any other view defaults to isometric
                 state.rotation_x = 0.5;
                 state.rotation_y = 0.75;
             }
@@ -258,7 +259,12 @@ fn display_properties(document: &Document) -> Result<(), JsValue> {
     STATE.with(|state| {
         let state = state.borrow();
         if let Some(ref solid) = state.solid {
-            set_text(document, "result-vertices", &solid.vertices.len().to_string()).ok();
+            set_text(
+                document,
+                "result-vertices",
+                &solid.vertices.len().to_string(),
+            )
+            .ok();
             set_text(document, "result-edges", &solid.edges.len().to_string()).ok();
             set_text(document, "result-faces", &solid.faces.len().to_string()).ok();
 

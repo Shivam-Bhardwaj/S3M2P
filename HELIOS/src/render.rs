@@ -15,6 +15,7 @@
 #![allow(clippy::unnecessary_min_or_max)]
 
 use crate::simulation::{SimulationState, AU_KM, ORBIT_SEGMENTS, SOLAR_RADIUS_KM};
+use dna::world::cca::{Epoch, FrameId, TimeScale};
 use std::f64::consts::PI;
 use wasm_bindgen::JsValue;
 use web_sys::CanvasRenderingContext2d;
@@ -40,6 +41,17 @@ fn layered_breath(time: f64, base_amp: f64, activity: f64) -> f64 {
     1.0 + (slow + medium + fast) * (0.5 + activity * 0.5)
 }
 
+/// Safely create a transparent version of a hex color
+/// Handles malformed colors gracefully to prevent rendering artifacts
+#[inline]
+fn color_transparent(color: &str) -> String {
+    if color.len() >= 7 && color.starts_with('#') {
+        format!("{}00", &color[..7])
+    } else {
+        "transparent".to_string()
+    }
+}
+
 /// Draw the entire scene
 pub fn render(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) {
     let w = state.view.width;
@@ -63,9 +75,9 @@ pub fn render(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64
 // STARFIELD & CELESTIAL BACKGROUND
 // ============================================================================
 
-// Real bright stars with ecliptic coordinates (longitude, latitude in degrees)
-// and apparent magnitude. These are the brightest stars visible from Earth.
-// Coordinates are J2000 ecliptic.
+// NOTE: BRIGHT_STARS is deprecated - now using StarDatabase with 3D positions
+// Kept for reference / potential fallback
+#[allow(dead_code)]
 const BRIGHT_STARS: &[(&str, f64, f64, f64, &str)] = &[
     // (name, ecliptic_lon, ecliptic_lat, magnitude, color)
     ("Sirius", 104.0, -39.6, -1.46, "#A3CFFF"), // Alpha CMa - brightest star
@@ -89,207 +101,11 @@ const BRIGHT_STARS: &[(&str, f64, f64, f64, &str)] = &[
 ];
 
 // ============================================================================
-// CONSTELLATION DATA - Accurate ecliptic coordinates
+// CONSTELLATION DATA - Now from UniverseDataManager
 // ============================================================================
 
-// Major constellation stars for drawing stick figures
-// Each constellation is a list of stars: (name, ecliptic_lon, ecliptic_lat, magnitude, color)
-// Lines connect sequential stars; (skip) entries mark where to lift the pen
-
-// Orion - The Hunter (prominent winter constellation)
-const ORION_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Betelgeuse", 89.0, -16.0, 0.42, "#FF6B35"), // Left shoulder
-    ("Bellatrix", 82.0, -17.0, 1.64, "#B4CFFF"),  // Right shoulder
-    ("skip", 0.0, 0.0, 0.0, ""),                  // Lift pen
-    ("Alnitak", 85.5, -25.5, 1.77, "#B4CFFF"),    // Left belt
-    ("Alnilam", 84.0, -24.5, 1.69, "#B4CFFF"),    // Middle belt
-    ("Mintaka", 82.5, -23.5, 2.23, "#B4CFFF"),    // Right belt
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("Rigel", 78.0, -31.0, 0.13, "#B4CFFF"), // Right foot
-    ("Saiph", 87.0, -33.0, 2.06, "#B4CFFF"), // Left foot
-    ("skip", 0.0, 0.0, 0.0, ""),
-    // Connect body
-    ("Betelgeuse", 89.0, -16.0, 0.42, "#FF6B35"),
-    ("Alnilam", 84.0, -24.5, 1.69, "#B4CFFF"),
-    ("Saiph", 87.0, -33.0, 2.06, "#B4CFFF"),
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("Bellatrix", 82.0, -17.0, 1.64, "#B4CFFF"),
-    ("Alnilam", 84.0, -24.5, 1.69, "#B4CFFF"),
-    ("Rigel", 78.0, -31.0, 0.13, "#B4CFFF"),
-];
-
-// Ursa Major - The Big Dipper (circumpolar, always visible)
-const URSA_MAJOR_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Alkaid", 183.0, 55.0, 1.86, "#B4CFFF"), // End of handle
-    ("Mizar", 175.0, 56.0, 2.04, "#FFFFFF"),  // Handle bend
-    ("Alioth", 166.0, 54.0, 1.77, "#FFFFFF"), // Handle
-    ("Megrez", 157.0, 51.0, 3.31, "#FFFFFF"), // Bowl corner
-    ("Phecda", 151.0, 45.0, 2.44, "#FFFFFF"), // Bowl
-    ("Merak", 147.0, 48.0, 2.37, "#FFFFFF"),  // Pointer 1
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("Megrez", 157.0, 51.0, 3.31, "#FFFFFF"),
-    ("Dubhe", 149.0, 54.0, 1.79, "#FFD27F"), // Pointer 2
-    ("Merak", 147.0, 48.0, 2.37, "#FFFFFF"),
-];
-
-// Leo - The Lion (spring constellation on ecliptic)
-const LEO_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Regulus", 150.0, 0.5, 1.35, "#B4CFFF"),   // Heart
-    ("eta Leo", 145.0, 2.0, 3.52, "#FFFFFF"),   // Neck
-    ("gamma Leo", 142.0, 9.0, 2.61, "#FFD27F"), // Forehead
-    ("zeta Leo", 137.0, 10.0, 3.44, "#FFFFFF"), // Nose
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("gamma Leo", 142.0, 9.0, 2.61, "#FFD27F"),
-    ("delta Leo", 155.0, 8.0, 2.56, "#FFFFFF"), // Back
-    ("theta Leo", 162.0, 3.0, 3.34, "#FFFFFF"), // Haunch
-    ("beta Leo", 172.0, 9.0, 2.14, "#FFFFFF"),  // Tail (Denebola)
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("Regulus", 150.0, 0.5, 1.35, "#B4CFFF"),
-    ("theta Leo", 162.0, 3.0, 3.34, "#FFFFFF"),
-];
-
-// Scorpius - The Scorpion (summer constellation on ecliptic)
-const SCORPIUS_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Antares", 248.0, -4.5, 1.09, "#FF4500"),   // Heart
-    ("sigma Sco", 245.0, -4.0, 2.89, "#B4CFFF"), // Head
-    ("delta Sco", 243.0, -3.0, 2.32, "#B4CFFF"), // Upper head
-    ("beta Sco", 241.0, 1.0, 2.62, "#B4CFFF"),   // Upper claw
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("delta Sco", 243.0, -3.0, 2.32, "#B4CFFF"),
-    ("pi Sco", 242.0, -6.0, 2.89, "#B4CFFF"), // Lower claw
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("Antares", 248.0, -4.5, 1.09, "#FF4500"),
-    ("tau Sco", 251.0, -8.0, 2.82, "#B4CFFF"),      // Body
-    ("epsilon Sco", 254.0, -12.0, 2.29, "#FFD27F"), // Tail
-    ("mu Sco", 257.0, -15.0, 3.04, "#B4CFFF"),      // Tail
-    ("zeta Sco", 260.0, -17.0, 3.62, "#B4CFFF"),    // Tail
-    ("eta Sco", 263.0, -20.0, 3.33, "#B4CFFF"),     // Stinger area
-    ("lambda Sco", 265.0, -19.0, 1.63, "#B4CFFF"),  // Stinger (Shaula)
-];
-
-// Gemini - The Twins (winter/spring, on ecliptic)
-const GEMINI_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Castor", 113.5, 10.0, 1.58, "#A3CFFF"), // Castor's head
-    ("Pollux", 113.0, 6.7, 1.14, "#FFD27F"),  // Pollux's head
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("Castor", 113.5, 10.0, 1.58, "#A3CFFF"),
-    ("mu Gem", 107.0, 6.0, 2.88, "#FFFFFF"), // Castor's body
-    ("gamma Gem", 99.0, 0.0, 1.93, "#FFFFFF"), // Castor's foot
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("Pollux", 113.0, 6.7, 1.14, "#FFD27F"),
-    ("kappa Gem", 106.0, 2.0, 3.57, "#FFFFFF"), // Pollux's body
-    ("eta Gem", 96.0, -4.0, 3.31, "#FF8C42"),   // Pollux's foot
-];
-
-// Taurus - The Bull (winter, on ecliptic)
-const TAURUS_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Aldebaran", 69.0, -5.5, 0.85, "#FF8C42"),   // Eye
-    ("theta Tau", 66.0, -5.0, 3.84, "#FFFFFF"),   // Hyades
-    ("gamma Tau", 62.0, -7.5, 3.65, "#FFD27F"),   // Hyades
-    ("delta Tau", 61.0, -4.0, 3.77, "#FFFFFF"),   // Hyades
-    ("epsilon Tau", 64.0, -3.0, 3.54, "#FFD27F"), // Hyades
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("Aldebaran", 69.0, -5.5, 0.85, "#FF8C42"),
-    ("zeta Tau", 85.0, -2.0, 3.01, "#B4CFFF"), // Horn tip (north)
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("Aldebaran", 69.0, -5.5, 0.85, "#FF8C42"),
-    ("beta Tau", 89.0, 5.0, 1.65, "#B4CFFF"), // Horn tip (south) - El Nath
-];
-
-// Sagittarius - The Archer (summer, on ecliptic, near galactic center)
-const SAGITTARIUS_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    // The "Teapot" asterism
-    ("delta Sgr", 271.0, -6.0, 2.70, "#FFFFFF"), // Top of lid
-    ("gamma Sgr", 269.0, -8.0, 2.99, "#FFFFFF"), // Spout top
-    ("epsilon Sgr", 274.0, -10.0, 1.85, "#FFD27F"), // Handle bottom
-    ("delta Sgr", 271.0, -6.0, 2.70, "#FFFFFF"), // Back to top
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("gamma Sgr", 269.0, -8.0, 2.99, "#FFFFFF"),
-    ("zeta Sgr", 267.0, -12.0, 2.59, "#FFFFFF"), // Spout bottom
-    ("tau Sgr", 273.0, -15.0, 3.32, "#FFFFFF"),  // Base
-    ("sigma Sgr", 277.0, -11.0, 2.02, "#FFD27F"), // Handle
-    ("epsilon Sgr", 274.0, -10.0, 1.85, "#FFD27f"),
-];
-
-// Virgo - The Virgin (spring, on ecliptic)
-const VIRGO_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Spica", 204.0, -2.0, 1.04, "#B4CFFF"), // Alpha - brightest
-    ("gamma Vir", 191.0, 3.0, 2.74, "#FFFFFF"), // Porrima
-    ("delta Vir", 186.0, 8.0, 3.38, "#FF8C42"), // Auva
-    ("epsilon Vir", 177.0, 12.0, 2.83, "#FFD27F"), // Vindemiatrix
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("gamma Vir", 191.0, 3.0, 2.74, "#FFFFFF"),
-    ("eta Vir", 197.0, 0.0, 3.89, "#FFFFFF"),
-    ("Spica", 204.0, -2.0, 1.04, "#B4CFFF"),
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("delta Vir", 186.0, 8.0, 3.38, "#FF8C42"),
-    ("beta Vir", 177.0, 1.0, 3.61, "#FFFFFF"), // Zavijava
-];
-
-// Cygnus - The Swan (summer, cross-shaped, near Milky Way)
-const CYGNUS_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Deneb", 310.0, 60.0, 1.25, "#FFFFFF"),     // Tail (Alpha)
-    ("gamma Cyg", 301.0, 54.0, 2.20, "#FFD27F"), // Body (Sadr)
-    ("eta Cyg", 294.0, 47.0, 3.89, "#FFFFFF"),   // Wing
-    ("Albireo", 290.0, 48.0, 3.08, "#FFD27F"),   // Head (Beta) - famous double
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("gamma Cyg", 301.0, 54.0, 2.20, "#FFD27F"),
-    ("delta Cyg", 308.0, 53.0, 2.87, "#B4CFFF"), // Wing
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("gamma Cyg", 301.0, 54.0, 2.20, "#FFD27F"),
-    ("epsilon Cyg", 296.0, 55.0, 2.48, "#FFD27F"), // Wing (Gienah)
-];
-
-// Cassiopeia - The Queen (circumpolar W-shape)
-const CASSIOPEIA_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Schedar", 51.0, 46.0, 2.23, "#FFD27F"), // Alpha
-    ("Caph", 42.0, 46.0, 2.27, "#FFFFFF"),    // Beta
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("Schedar", 51.0, 46.0, 2.23, "#FFD27F"),
-    ("gamma Cas", 59.0, 43.0, 2.47, "#B4CFFF"),   // Gamma
-    ("delta Cas", 66.0, 46.0, 2.68, "#FFFFFF"),   // Ruchbah
-    ("epsilon Cas", 75.0, 44.0, 3.38, "#B4CFFF"), // Segin
-];
-
-// Aquila - The Eagle (summer, home of Altair)
-const AQUILA_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Altair", 296.0, 29.3, 0.77, "#FFFFFF"), // Alpha - bright!
-    ("gamma Aql", 294.0, 27.0, 2.72, "#FFD27F"), // Tarazed
-    ("beta Aql", 291.0, 32.0, 3.71, "#FFD27F"), // Alshain
-    ("skip", 0.0, 0.0, 0.0, ""),
-    ("Altair", 296.0, 29.3, 0.77, "#FFFFFF"),
-    ("theta Aql", 301.0, 24.0, 3.23, "#FFFFFF"), // South wing
-    ("delta Aql", 303.0, 20.0, 3.36, "#FFFFFF"),
-];
-
-// Lyra - The Lyre (summer, compact, home of Vega)
-const LYRA_STARS: &[(&str, f64, f64, f64, &str)] = &[
-    ("Vega", 285.0, 61.7, 0.03, "#A3CFFF"), // Alpha - brilliant blue
-    ("epsilon Lyr", 283.0, 58.0, 4.7, "#FFFFFF"), // Double-double
-    ("zeta Lyr", 282.0, 55.0, 4.36, "#FFFFFF"),
-    ("delta Lyr", 284.0, 53.0, 4.22, "#FF8C42"), // South
-    ("gamma Lyr", 286.0, 54.0, 3.24, "#B4CFFF"), // Sulafat
-    ("beta Lyr", 285.0, 56.0, 3.45, "#FFFFFF"),  // Sheliak
-    ("zeta Lyr", 282.0, 55.0, 4.36, "#FFFFFF"),
-];
-
-// Constellation metadata: name, center lon/lat for label
-const CONSTELLATION_METADATA: &[(&str, f64, f64)] = &[
-    ("Orion", 84.0, -22.0),
-    ("Ursa Major", 160.0, 52.0),
-    ("Leo", 152.0, 5.0),
-    ("Scorpius", 252.0, -10.0),
-    ("Gemini", 105.0, 5.0),
-    ("Taurus", 70.0, -3.0),
-    ("Sagittarius", 272.0, -10.0),
-    ("Virgo", 192.0, 3.0),
-    ("Cygnus", 300.0, 52.0),
-    ("Cassiopeia", 58.0, 45.0),
-    ("Aquila", 297.0, 27.0),
-    ("Lyra", 284.0, 56.0),
-];
-
-// Additional bright stars for better sky coverage
+// NOTE: ADDITIONAL_BRIGHT_STARS is deprecated - now using StarDatabase
+#[allow(dead_code)]
 const ADDITIONAL_BRIGHT_STARS: &[(&str, f64, f64, f64, &str)] = &[
     // Summer Triangle (complete with the ones already in BRIGHT_STARS)
     // Vega, Altair, Deneb already included
@@ -358,81 +174,9 @@ const GALACTIC_CENTER_LON: f64 = 266.4;
 const GALACTIC_CENTER_LAT: f64 = -5.5;
 
 fn draw_starfield(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) {
-    // At heliosphere scale, we show the celestial sphere background
-    // Stars are "at infinity" so their positions don't change with Sun-centered view
-    // but we rotate them with the camera view
-
-    // Draw the Milky Way band first (behind everything)
-    draw_milky_way(ctx, state);
-
-    // Draw distant background stars (faint, numerous)
-    draw_background_stars(ctx, state, time);
-
-    // Draw constellation lines (behind the stars themselves)
-    if state.view.zoom > 0.3 {
-        draw_constellations(ctx, state);
-    }
-
-    // Draw bright named stars
+    // DETERMINISTIC ONLY: All stars from database with true 3D positions
+    // No random procedural stars - pure dataset-driven rendering
     draw_bright_stars(ctx, state, time);
-
-    // Draw additional bright stars for complete sky coverage
-    draw_additional_stars(ctx, state, time);
-
-    // Draw directional indicators only at heliosphere scale
-    if state.view.zoom > 0.5 {
-        draw_celestial_directions(ctx, state);
-    }
-}
-
-/// Draw the Milky Way galactic plane as a luminous band
-fn draw_milky_way(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
-    let view = &state.view;
-
-    // Milky Way is most prominent at heliosphere scale
-    let alpha = if view.zoom > 0.5 { 0.15 } else { 0.05 };
-    if alpha < 0.01 {
-        return;
-    }
-
-    ctx.set_global_alpha(alpha);
-
-    // Draw the galactic band as a series of connected gaussian blobs
-    // The band width varies (wider at galactic center, narrower at anticenter)
-    for i in 0..360 {
-        let lon = i as f64;
-        // Calculate latitude of galactic plane at this longitude
-        let lat = interpolate_galactic_lat(lon);
-
-        // Band width (wider near galactic center at ~270°)
-        let dist_to_center =
-            ((lon - 270.0).abs()).min((lon - 270.0 + 360.0).abs().min((lon - 270.0 - 360.0).abs()));
-        let band_width = 15.0 + (1.0 - dist_to_center / 180.0) * 25.0;
-
-        // Convert celestial coords to screen position
-        if let Some((sx, sy)) = celestial_to_screen(lon, lat, state) {
-            // Brightness varies - brighter near galactic center
-            let brightness = 0.3 + (1.0 - dist_to_center / 180.0) * 0.7;
-
-            let gradient = ctx
-                .create_radial_gradient(sx, sy, 0.0, sx, sy, band_width * 3.0)
-                .ok();
-            if let Some(grad) = gradient {
-                grad.add_color_stop(0.0, &format!("rgba(200, 180, 255, {})", brightness * 0.4))
-                    .ok();
-                grad.add_color_stop(0.5, &format!("rgba(150, 140, 180, {})", brightness * 0.2))
-                    .ok();
-                grad.add_color_stop(1.0, "rgba(100, 100, 150, 0)").ok();
-                ctx.set_fill_style(&grad);
-                ctx.begin_path();
-                ctx.arc(sx, sy, band_width * 3.0, 0.0, 2.0 * PI)
-                    .unwrap_or(());
-                ctx.fill();
-            }
-        }
-    }
-
-    ctx.set_global_alpha(1.0);
 }
 
 /// Interpolate galactic plane latitude at given ecliptic longitude
@@ -452,48 +196,6 @@ fn interpolate_galactic_lat(lon: f64) -> f64 {
     let (l2, lat2) = GALACTIC_PLANE[0];
     let t = (lon - l1) / ((l2 + 360.0) - l1);
     lat1 + t * (lat2 - lat1)
-}
-
-/// Convert celestial ecliptic coordinates to screen position
-/// Returns None if the position is behind the camera or off-screen
-fn celestial_to_screen(lon_deg: f64, lat_deg: f64, state: &SimulationState) -> Option<(f64, f64)> {
-    let view = &state.view;
-
-    // Convert to radians
-    let lon = lon_deg.to_radians();
-    let lat = lat_deg.to_radians();
-
-    // Project celestial sphere to 2D
-    // We use the "dome" projection where lon maps to angle around, lat maps to distance from center
-    // The camera rotation affects how we see the celestial sphere
-
-    // Apply camera rotation
-    let adjusted_lon = lon - view.rotation;
-
-    // Simple projection: treat celestial sphere as surrounding the scene
-    // Distance from center represents latitude (90° lat at center, 0° at edge)
-    // But we want to show it at the "edge" of the visible area, scaled by zoom
-
-    // For heliosphere view, we project onto a circle at the edge of view
-    let celestial_dist = view.width.max(view.height) * 0.48; // Near edge of screen
-
-    // Position on the celestial circle
-    let x = celestial_dist * adjusted_lon.cos() * lat.cos();
-    let y = celestial_dist * adjusted_lon.sin() * lat.cos() * view.tilt.cos();
-
-    // Center of screen
-    let cx = view.width / 2.0;
-    let cy = view.height / 2.0;
-
-    let sx = cx + x;
-    let sy = cy - y; // Y inverted for screen coords
-
-    // Check if on screen
-    if sx >= 0.0 && sx <= view.width && sy >= 0.0 && sy <= view.height {
-        Some((sx, sy))
-    } else {
-        None
-    }
 }
 
 /// Draw faint background stars with natural random distribution
@@ -559,244 +261,160 @@ fn draw_background_stars(ctx: &CanvasRenderingContext2d, state: &SimulationState
         ctx.begin_path();
         ctx.arc(x, y, size, 0.0, 2.0 * PI).unwrap_or(());
         ctx.fill();
-
-        // Subtle glow for brightest stars
-        if brightness > 0.7 {
-            ctx.set_global_alpha(alpha * 0.15);
-            ctx.begin_path();
-            ctx.arc(x, y, size * 2.0, 0.0, 2.0 * PI).unwrap_or(());
-            ctx.fill();
-        }
     }
 
     ctx.set_global_alpha(1.0);
 }
 
-/// Draw bright named stars with accurate positions
+/// Calculate star visibility with smooth LOD fading
+/// Returns 0.0-1.0 where 1.0 = fully visible, 0.0 = not visible
+#[inline]
+fn star_visibility(magnitude: f64, mag_limit: f64) -> f64 {
+    const FADE_RANGE: f64 = 0.5; // Fade over 0.5 magnitude range
+    if magnitude >= mag_limit {
+        0.0
+    } else if magnitude > mag_limit - FADE_RANGE {
+        // Smooth fade near the limit
+        (mag_limit - magnitude) / FADE_RANGE
+    } else {
+        1.0
+    }
+}
+
+/// Draw bright named stars with true 3D positions from StarDatabase,
+/// filtered through the StarDataManager to enforce LOD and a hard cap
+/// on the number of stars drawn per frame.
 fn draw_bright_stars(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) {
-    for (name, lon, lat, mag, color) in BRIGHT_STARS.iter() {
-        if let Some((sx, sy)) = celestial_to_screen(*lon, *lat, state) {
-            // Size based on magnitude (brighter = larger negative mag = bigger)
-            let size = (3.0 - *mag).max(1.0).min(4.0);
+    let width = state.view.width;
+    let height = state.view.height;
 
-            // Twinkle for brightest stars
-            let twinkle = if *mag < 0.5 {
-                0.9 + ((time * 1.2 + lon * 0.1).sin() * 0.1)
-            } else {
-                1.0
-            };
+    // Magnitude limit based on scale level (with extra margin for fading)
+    let mag_limit = state.camera.scale_level.star_magnitude_limit();
 
-            // Draw star glow
-            ctx.set_global_alpha(0.3 * twinkle);
-            let glow = ctx
-                .create_radial_gradient(sx, sy, 0.0, sx, sy, size * 3.0)
-                .ok();
-            if let Some(g) = glow {
-                g.add_color_stop(0.0, color).ok();
-                g.add_color_stop(1.0, &format!("{}00", &color[..7])).ok();
-                ctx.set_fill_style(&g);
-                ctx.begin_path();
-                ctx.arc(sx, sy, size * 3.0, 0.0, 2.0 * PI).unwrap_or(());
-                ctx.fill();
-            }
-
-            // Draw star core
-            ctx.set_global_alpha(twinkle);
-            ctx.set_fill_style(&JsValue::from_str(color));
-            ctx.begin_path();
-            ctx.arc(sx, sy, size, 0.0, 2.0 * PI).unwrap_or(());
-            ctx.fill();
-
-            // Draw star name at heliosphere scale
-            if state.view.zoom > 0.8 && *mag < 0.5 {
-                ctx.set_font("500 10px 'Just Sans', sans-serif");
-                ctx.set_fill_style(&JsValue::from_str("rgba(200, 200, 255, 0.6)"));
-                ctx.fill_text(name, sx + size + 3.0, sy + 3.0).unwrap_or(());
-            }
-        }
-    }
-
-    ctx.set_global_alpha(1.0);
-}
-
-/// Draw additional bright stars for complete sky coverage
-fn draw_additional_stars(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) {
-    for (name, lon, lat, mag, color) in ADDITIONAL_BRIGHT_STARS.iter() {
-        // Skip stars that are duplicates (already in BRIGHT_STARS)
-        if *mag < 1.0 {
-            continue; // Skip the brightest ones that are already drawn
-        }
-
-        if let Some((sx, sy)) = celestial_to_screen(*lon, *lat, state) {
-            let size = (3.0 - *mag).max(0.8).min(3.0);
-
-            let twinkle = 0.95 + ((time * 0.8 + lon * 0.05).sin() * 0.05);
-
-            // Draw star glow (subtle for fainter stars)
-            ctx.set_global_alpha(0.2 * twinkle);
-            let glow = ctx
-                .create_radial_gradient(sx, sy, 0.0, sx, sy, size * 2.5)
-                .ok();
-            if let Some(g) = glow {
-                g.add_color_stop(0.0, color).ok();
-                g.add_color_stop(1.0, &format!("{}00", &color[..7])).ok();
-                ctx.set_fill_style(&g);
-                ctx.begin_path();
-                ctx.arc(sx, sy, size * 2.5, 0.0, 2.0 * PI).unwrap_or(());
-                ctx.fill();
-            }
-
-            // Draw star core
-            ctx.set_global_alpha(twinkle);
-            ctx.set_fill_style(&JsValue::from_str(color));
-            ctx.begin_path();
-            ctx.arc(sx, sy, size, 0.0, 2.0 * PI).unwrap_or(());
-            ctx.fill();
-
-            // Draw name for notable stars at heliosphere scale
-            if state.view.zoom > 0.8 && *mag < 2.0 {
-                ctx.set_font("400 9px 'Just Sans', sans-serif");
-                ctx.set_fill_style(&JsValue::from_str("rgba(180, 180, 220, 0.5)"));
-                ctx.fill_text(name, sx + size + 2.0, sy + 2.0).unwrap_or(());
-            }
-        }
-    }
-    ctx.set_global_alpha(1.0);
-}
-
-/// Draw constellation stick figures connecting bright stars
-fn draw_constellations(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
-    // Draw each constellation's stick figure
-    draw_constellation_lines(ctx, state, ORION_STARS, "rgba(100, 150, 255, 0.35)");
-    draw_constellation_lines(ctx, state, URSA_MAJOR_STARS, "rgba(100, 150, 255, 0.35)");
-    draw_constellation_lines(ctx, state, LEO_STARS, "rgba(100, 150, 255, 0.35)");
-    draw_constellation_lines(ctx, state, SCORPIUS_STARS, "rgba(100, 150, 255, 0.35)");
-    draw_constellation_lines(ctx, state, GEMINI_STARS, "rgba(100, 150, 255, 0.35)");
-    draw_constellation_lines(ctx, state, TAURUS_STARS, "rgba(100, 150, 255, 0.35)");
-    draw_constellation_lines(ctx, state, SAGITTARIUS_STARS, "rgba(100, 150, 255, 0.35)");
-    draw_constellation_lines(ctx, state, VIRGO_STARS, "rgba(100, 150, 255, 0.35)");
-    draw_constellation_lines(ctx, state, CYGNUS_STARS, "rgba(100, 150, 255, 0.35)");
-    draw_constellation_lines(ctx, state, CASSIOPEIA_STARS, "rgba(100, 150, 255, 0.35)");
-    draw_constellation_lines(ctx, state, AQUILA_STARS, "rgba(100, 150, 255, 0.35)");
-    draw_constellation_lines(ctx, state, LYRA_STARS, "rgba(100, 150, 255, 0.35)");
-
-    // Draw constellation labels
-    if state.view.zoom > 0.6 {
-        draw_constellation_labels(ctx, state);
-    }
-
-    // Draw the Summer Triangle and Winter Hexagon asterisms
-    if state.view.zoom > 0.5 {
-        draw_asterisms(ctx, state);
-    }
-}
-
-/// Draw lines connecting stars in a constellation
-fn draw_constellation_lines(
-    ctx: &CanvasRenderingContext2d,
-    state: &SimulationState,
-    stars: &[(&str, f64, f64, f64, &str)],
-    color: &str,
-) {
-    ctx.set_stroke_style(&JsValue::from_str(color));
-    ctx.set_line_width(1.0);
-
-    let mut drawing = false;
-    let mut last_pos: Option<(f64, f64)> = None;
-
-    for (name, lon, lat, _mag, _star_color) in stars.iter() {
-        // Check for "skip" marker to lift the pen
-        if *name == "skip" {
-            drawing = false;
-            last_pos = None;
+    for inst in state.star_mgr.visible_instances() {
+        // Calculate visibility with LOD fading
+        let visibility = star_visibility(inst.magnitude as f64, mag_limit);
+        if visibility <= 0.0 {
             continue;
         }
 
-        if let Some((sx, sy)) = celestial_to_screen(*lon, *lat, state) {
-            if drawing {
-                if let Some((lx, ly)) = last_pos {
-                    ctx.begin_path();
-                    ctx.move_to(lx, ly);
-                    ctx.line_to(sx, sy);
-                    ctx.stroke();
-                }
+        // Project star's 3D position to screen
+        let (sx, sy, depth) = state.project_3d(inst.position.x, inst.position.y, inst.position.z);
+
+        // Skip if off screen (with margin for glows)
+        if sx < -50.0 || sx > width + 50.0 || sy < -50.0 || sy > height + 50.0 {
+            continue;
+        }
+
+        // Skip if behind camera
+        if depth < 0.0 {
+            continue;
+        }
+
+        // Get star color from instance
+        let color = format!(
+            "#{:02x}{:02x}{:02x}",
+            inst.color_rgb[0], inst.color_rgb[1], inst.color_rgb[2]
+        );
+
+        // NASA Eyes style: Simple, clean, subtle
+        // Size: small points with slight variation by brightness
+        let core_size = (6.0 - inst.magnitude as f64).max(1.5).min(3.0);
+        let glow_radius = core_size * 1.8;
+
+        // Subtle twinkling (very gentle, like NASA Eyes)
+        let twinkle = 0.95 + ((time * 1.0 + inst.id as f64 * 0.1).sin() * 0.05);
+
+        // Apply visibility and twinkle
+        let base_alpha = twinkle * visibility;
+
+        // Subtle glow (NASA Eyes style - not overdone)
+        if inst.magnitude < 4.0 {
+            ctx.set_global_alpha(base_alpha * 0.3);
+
+            if let Ok(gradient) = ctx.create_radial_gradient(sx, sy, 0.0, sx, sy, glow_radius) {
+                gradient
+                    .add_color_stop(0.0, &format!("rgba({},{},{},0.8)", inst.color_rgb[0], inst.color_rgb[1], inst.color_rgb[2]))
+                    .ok();
+                gradient
+                    .add_color_stop(0.6, &format!("rgba({},{},{},0.2)", inst.color_rgb[0], inst.color_rgb[1], inst.color_rgb[2]))
+                    .ok();
+                gradient
+                    .add_color_stop(1.0, "rgba(255,255,255,0.0)")
+                    .ok();
+
+                ctx.set_fill_style(&gradient);
+                ctx.begin_path();
+                ctx.arc(sx, sy, glow_radius, 0.0, 2.0 * PI).unwrap_or(());
+                ctx.fill();
             }
-            drawing = true;
-            last_pos = Some((sx, sy));
-        } else {
-            // Star is off-screen, but keep drawing state
-            drawing = false;
-            last_pos = None;
         }
-    }
-}
 
-/// Draw constellation name labels
-fn draw_constellation_labels(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
-    ctx.set_font("500 11px 'Just Sans', sans-serif");
-
-    for (name, lon, lat) in CONSTELLATION_METADATA.iter() {
-        if let Some((sx, sy)) = celestial_to_screen(*lon, *lat, state) {
-            // Draw with subtle background for readability
-            ctx.set_fill_style(&JsValue::from_str("rgba(100, 140, 200, 0.5)"));
-            ctx.fill_text(name, sx, sy).unwrap_or(());
-        }
-    }
-}
-
-/// Draw famous asterisms (star patterns)
-fn draw_asterisms(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
-    // Summer Triangle: Vega, Altair, Deneb
-    draw_asterism_triangle(
-        ctx,
-        state,
-        (285.0, 61.7), // Vega
-        (296.0, 29.3), // Altair
-        (310.0, 60.0), // Deneb
-        "rgba(150, 200, 255, 0.2)",
-        "Summer Triangle",
-    );
-
-    // Winter Hexagon/Circle connecting major winter stars
-    // Only draw at very large scale to avoid clutter
-    if state.view.zoom > 0.8 {
-        draw_winter_hexagon(ctx, state);
-    }
-}
-
-/// Draw a triangle asterism
-fn draw_asterism_triangle(
-    ctx: &CanvasRenderingContext2d,
-    state: &SimulationState,
-    star1: (f64, f64),
-    star2: (f64, f64),
-    star3: (f64, f64),
-    color: &str,
-    _name: &str,
-) {
-    let pos1 = celestial_to_screen(star1.0, star1.1, state);
-    let pos2 = celestial_to_screen(star2.0, star2.1, state);
-    let pos3 = celestial_to_screen(star3.0, star3.1, state);
-
-    if let (Some((x1, y1)), Some((x2, y2)), Some((x3, y3))) = (pos1, pos2, pos3) {
-        // Draw filled triangle with very subtle color
-        ctx.set_fill_style(&JsValue::from_str(color));
+        // Core point (clean and simple like NASA Eyes)
+        ctx.set_global_alpha(base_alpha);
+        ctx.set_fill_style(&JsValue::from_str(&color));
         ctx.begin_path();
-        ctx.move_to(x1, y1);
-        ctx.line_to(x2, y2);
-        ctx.line_to(x3, y3);
-        ctx.close_path();
+        ctx.arc(sx, sy, core_size * 0.5, 0.0, 2.0 * PI).unwrap_or(());
         ctx.fill();
 
-        // Draw dashed outline using manual dashes
-        ctx.set_stroke_style(&JsValue::from_str("rgba(150, 200, 255, 0.3)"));
-        ctx.set_line_width(1.0);
-        // Draw dashed lines manually (since set_line_dash requires JsArray)
-        draw_dashed_line(ctx, x1, y1, x2, y2, 4.0, 4.0);
-        draw_dashed_line(ctx, x2, y2, x3, y3, 4.0, 4.0);
-        draw_dashed_line(ctx, x3, y3, x1, y1, 4.0, 4.0);
+        // Draw star name at heliosphere scale (only for fully visible stars)
+        if visibility > 0.9 && state.view.zoom > 0.8 && inst.magnitude < 0.5 && inst.name.is_some()
+        {
+            ctx.set_font("500 10px 'Just Sans', sans-serif");
+            ctx.set_fill_style(&JsValue::from_str("rgba(200, 200, 255, 0.6)"));
+            ctx.fill_text(&inst.name.as_ref().unwrap(), sx + core_size + 3.0, sy + 3.0)
+                .unwrap_or(());
+        }
     }
+
+    ctx.set_global_alpha(1.0);
 }
+
+// Removed: draw_additional_stars - used celestial_to_screen
+
+/// Draw constellation stick figures connecting bright stars
+fn draw_constellations(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
+    // Create lookup map from star ID to position
+    let mut star_positions = std::collections::HashMap::new();
+    for inst in state.star_mgr.visible_instances() {
+        star_positions.insert(inst.id, inst.position);
+    }
+
+    // Draw constellation lines from the manager's data
+    for edge in state.star_mgr.constellation_edges() {
+        // Look up star positions from visible instances
+        let star_a_pos = star_positions.get(&edge.star_a);
+        let star_b_pos = star_positions.get(&edge.star_b);
+
+        if let (Some(pos_a), Some(pos_b)) = (star_a_pos, star_b_pos) {
+            // Project to screen using 3D projection
+            let (sx1, sy1, _) = state.project_3d(pos_a.x, pos_a.y, pos_a.z);
+            let (sx2, sy2, _) = state.project_3d(pos_b.x, pos_b.y, pos_b.z);
+
+            // Draw line
+            ctx.set_stroke_style(&JsValue::from_str("rgba(100, 150, 255, 0.35)"));
+            ctx.set_line_width(1.0);
+            ctx.begin_path();
+            ctx.move_to(sx1, sy1);
+            ctx.line_to(sx2, sy2);
+            ctx.stroke();
+        }
+    }
+
+    // Draw constellation labels (simplified - could be enhanced later)
+    if state.view.zoom > 0.6 {
+        // For now, skip constellation labels since we removed the metadata
+        // Could add back if needed from manager
+    }
+
+    // Asterisms removed for now - used celestial_to_screen
+}
+
+// Removed: draw_constellation_labels - used celestial_to_screen
+
+// Removed: draw_asterisms - used celestial_to_screen
+
+// Removed: draw_asterism_triangle - used celestial_to_screen
 
 /// Draw a dashed line manually
 fn draw_dashed_line(
@@ -842,95 +460,9 @@ fn draw_dashed_line(
     ctx.stroke();
 }
 
-/// Draw the Winter Hexagon asterism
-fn draw_winter_hexagon(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
-    // Winter Hexagon stars in order (approximate ecliptic coords)
-    let stars = [
-        (79.0, 23.0),   // Capella
-        (113.0, 6.7),   // Pollux
-        (116.0, -16.0), // Procyon
-        (104.0, -39.6), // Sirius
-        (78.0, -31.0),  // Rigel
-        (69.0, -5.5),   // Aldebaran
-    ];
+// Removed: draw_winter_hexagon - used celestial_to_screen
 
-    ctx.set_stroke_style(&JsValue::from_str("rgba(255, 220, 150, 0.2)"));
-    ctx.set_line_width(1.0);
-
-    let mut positions: Vec<(f64, f64)> = Vec::new();
-
-    for (lon, lat) in stars.iter() {
-        if let Some((sx, sy)) = celestial_to_screen(*lon, *lat, state) {
-            positions.push((sx, sy));
-        }
-    }
-
-    // Draw dashed lines between consecutive stars
-    for i in 0..positions.len() {
-        let (x1, y1) = positions[i];
-        let (x2, y2) = positions[(i + 1) % positions.len()];
-        draw_dashed_line(ctx, x1, y1, x2, y2, 6.0, 4.0);
-    }
-}
-
-/// Draw celestial direction indicators (solar apex, galactic center)
-fn draw_celestial_directions(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
-    // Solar apex - direction the Sun is moving through interstellar medium
-    // This is the direction the heliosphere "nose" points
-    if let Some((sx, sy)) = celestial_to_screen(SOLAR_APEX_LON, SOLAR_APEX_LAT, state) {
-        // Arrow pointing toward apex
-        ctx.set_stroke_style(&JsValue::from_str("rgba(100, 200, 255, 0.5)"));
-        ctx.set_line_width(1.5);
-        ctx.begin_path();
-
-        // Draw small triangle marker
-        let size = 8.0;
-        ctx.move_to(sx, sy - size);
-        ctx.line_to(sx - size * 0.6, sy + size * 0.5);
-        ctx.line_to(sx + size * 0.6, sy + size * 0.5);
-        ctx.close_path();
-        ctx.stroke();
-
-        // Label
-        ctx.set_font("400 9px 'Just Sans', monospace");
-        ctx.set_fill_style(&JsValue::from_str("rgba(100, 200, 255, 0.6)"));
-        ctx.fill_text("Solar Apex", sx + 10.0, sy).unwrap_or(());
-        ctx.set_font("300 8px 'Just Sans', monospace");
-        ctx.fill_text("(Sun's motion)", sx + 10.0, sy + 10.0)
-            .unwrap_or(());
-    }
-
-    // Galactic center direction
-    if let Some((sx, sy)) = celestial_to_screen(GALACTIC_CENTER_LON, GALACTIC_CENTER_LAT, state) {
-        // Spiral galaxy symbol
-        ctx.set_stroke_style(&JsValue::from_str("rgba(255, 200, 100, 0.5)"));
-        ctx.set_line_width(1.0);
-
-        // Simple spiral hint
-        ctx.begin_path();
-        for i in 0..20 {
-            let angle = i as f64 * 0.5;
-            let r = 3.0 + i as f64 * 0.5;
-            let x = sx + r * angle.cos();
-            let y = sy + r * angle.sin();
-            if i == 0 {
-                ctx.move_to(x, y);
-            } else {
-                ctx.line_to(x, y);
-            }
-        }
-        ctx.stroke();
-
-        // Label
-        ctx.set_font("400 9px 'Just Sans', monospace");
-        ctx.set_fill_style(&JsValue::from_str("rgba(255, 200, 100, 0.6)"));
-        ctx.fill_text("Galactic Center", sx + 15.0, sy)
-            .unwrap_or(());
-        ctx.set_font("300 8px 'Just Sans', monospace");
-        ctx.fill_text("(26,000 ly)", sx + 15.0, sy + 10.0)
-            .unwrap_or(());
-    }
-}
+// Removed: draw_celestial_directions - used celestial_to_screen
 
 // ============================================================================
 // HELIOSPHERE BOUNDARIES
@@ -945,7 +477,7 @@ fn draw_celestial_directions(ctx: &CanvasRenderingContext2d, state: &SimulationS
 
 const HELIO_NOSE_DIRECTION: f64 = std::f64::consts::PI; // Nose points in -X direction
 
-fn draw_heliosphere_boundaries(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) {
+fn draw_heliosphere_boundaries(ctx: &CanvasRenderingContext2d, state: &SimulationState, _time: f64) {
     let view = &state.view;
 
     // Only draw if zoomed out enough
@@ -959,8 +491,8 @@ fn draw_heliosphere_boundaries(ctx: &CanvasRenderingContext2d, state: &Simulatio
     }
 
     // Breathing effect linked to solar activity
-    let activity = (state.solar_cycle_phase * 2.0 * PI).sin() * 0.5 + 0.5;
-    let boundary_breath = breath_factor(time, 0.15, 0.02, 0.0) * (0.5 + activity * 0.5);
+    let _activity = (state.solar_cycle_phase * 2.0 * PI).sin() * 0.5 + 0.5;
+    let boundary_breath = 1.0;
 
     // Draw boundaries from outermost to innermost with breathing
     // Bow shock - may not exist (debated), drawn faintly
@@ -1048,7 +580,8 @@ fn draw_heliosphere_boundaries(ctx: &CanvasRenderingContext2d, state: &Simulatio
 /// Draw interstellar wind/medium flowing around the heliosphere
 fn draw_interstellar_wind(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
     let view = &state.view;
-    let (sun_x, sun_y) = view.au_to_screen(0.0, 0.0);
+    // Use unified projection for Sun position (object-centric camera)
+    let (sun_x, sun_y, _) = state.project_3d(0.0, 0.0, 0.0);
 
     // The Local Interstellar Medium (LISM) flows at ~26 km/s
     // from the direction of the constellation Ophiuchus
@@ -1213,6 +746,9 @@ fn draw_comet_boundary(
     let view = &state.view;
     let r_pixels = radius_au / view.zoom;
 
+    // Use unified projection function for object-centric camera
+    let project = |x: f64, y: f64, z: f64| -> (f64, f64, f64) { state.project_3d(x, y, z) };
+
     // Don't draw if too small or too large
     if r_pixels < 10.0 || r_pixels > view.width * 3.0 {
         return;
@@ -1239,7 +775,7 @@ fn draw_comet_boundary(
         for i in 0..=points_per_line {
             let lon = 2.0 * PI * (i as f64 / points_per_line as f64);
             let (x, y, z) = heliosphere_point(radius_au, lat1, lon, nose_factor, tail_factor);
-            let (sx, sy, _) = view.au_to_screen_3d(x, y, z);
+            let (sx, sy, _) = project(x, y, z);
 
             if i == 0 {
                 ctx.move_to(sx, sy);
@@ -1252,7 +788,7 @@ fn draw_comet_boundary(
         for i in (0..=points_per_line).rev() {
             let lon = 2.0 * PI * (i as f64 / points_per_line as f64);
             let (x, y, z) = heliosphere_point(radius_au, lat2, lon, nose_factor, tail_factor);
-            let (sx, sy, _) = view.au_to_screen_3d(x, y, z);
+            let (sx, sy, _) = project(x, y, z);
             ctx.line_to(sx, sy);
         }
 
@@ -1260,11 +796,7 @@ fn draw_comet_boundary(
 
         // Calculate average depth for this band
         let mid_lat = (lat1 + lat2) / 2.0;
-        let (_, _, depth) = view.au_to_screen_3d(
-            0.0,
-            radius_au * mid_lat.cos(),
-            radius_au * mid_lat.sin(),
-        );
+        let (_, _, depth) = project(0.0, radius_au * mid_lat.cos(), radius_au * mid_lat.sin());
 
         // Depth-based alpha (back faces are dimmer)
         let depth_factor = (depth / (radius_au * 2.0) + 0.5).clamp(0.2, 1.0);
@@ -1293,7 +825,7 @@ fn draw_comet_boundary(
         for i in 0..=points_per_line {
             let lon = 2.0 * PI * (i as f64 / points_per_line as f64);
             let (x, y, z) = heliosphere_point(radius_au, lat, lon, nose_factor, tail_factor);
-            let (sx, sy, depth) = view.au_to_screen_3d(x, y, z);
+            let (sx, sy, depth) = project(x, y, z);
 
             if first {
                 ctx.move_to(sx, sy);
@@ -1335,7 +867,7 @@ fn draw_comet_boundary(
         for i in 0..=points_per_line {
             let lat = PI * (i as f64 / points_per_line as f64) - PI / 2.0;
             let (x, y, z) = heliosphere_point(radius_au, lat, lon, nose_factor, tail_factor);
-            let (sx, sy, depth) = view.au_to_screen_3d(x, y, z);
+            let (sx, sy, depth) = project(x, y, z);
 
             if first {
                 ctx.move_to(sx, sy);
@@ -1367,7 +899,7 @@ fn draw_comet_boundary(
     for i in 0..=points_per_line {
         let lon = 2.0 * PI * (i as f64 / points_per_line as f64);
         let (x, y, z) = heliosphere_point(radius_au, 0.0, lon, nose_factor, tail_factor);
-        let (sx, sy, _) = view.au_to_screen_3d(x, y, z);
+        let (sx, sy, _) = project(x, y, z);
 
         if i == 0 {
             ctx.move_to(sx, sy);
@@ -1378,7 +910,10 @@ fn draw_comet_boundary(
     ctx.close_path();
     ctx.set_stroke_style(&JsValue::from_str(&format!(
         "rgba({}, {}, {}, {})",
-        base_r, base_g, base_b, base_a * 1.5
+        base_r,
+        base_g,
+        base_b,
+        base_a * 1.5
     )));
     ctx.set_line_width(line_width * 1.5);
     ctx.stroke();
@@ -1464,7 +999,8 @@ fn draw_helio_label(
     label: &str,
     color: &str,
 ) {
-    let (sx, sy) = state.view.au_to_screen(x_au, y_au);
+    // Use unified projection for object-centric camera
+    let (sx, sy, _) = state.project_3d(x_au, y_au, 0.0);
 
     ctx.set_font("500 11px 'Just Sans', monospace");
     ctx.set_fill_style(&JsValue::from_str(color));
@@ -1489,8 +1025,8 @@ fn draw_voyager_boundary_context(ctx: &CanvasRenderingContext2d, state: &Simulat
         let y = state.mission_y[m];
         let dist = (x * x + y * y).sqrt();
 
-        // Draw status indicator
-        let (sx, sy) = view.au_to_screen(x, y);
+        // Draw status indicator (use unified projection)
+        let (sx, sy, _) = state.project_3d(x, y, 0.0);
 
         let status = if dist > state.heliopause_au {
             ("INTERSTELLAR", "rgba(200, 100, 255, 0.8)")
@@ -1510,7 +1046,7 @@ fn draw_voyager_boundary_context(ctx: &CanvasRenderingContext2d, state: &Simulat
 // ORBIT PATHS
 // ============================================================================
 
-fn draw_orbits(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) {
+fn draw_orbits(ctx: &CanvasRenderingContext2d, state: &SimulationState, _time: f64) {
     let view = &state.view;
 
     for p in 0..state.planet_count {
@@ -1529,19 +1065,19 @@ fn draw_orbits(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f6
         let mut min_depth = f64::INFINITY;
         let mut max_depth = f64::NEG_INFINITY;
         for i in 0..ORBIT_SEGMENTS {
-            let (_, _, depth) = view.au_to_screen_3d(path[i * 3], path[i * 3 + 1], path[i * 3 + 2]);
+            let (_, _, depth) = state.project_3d(path[i * 3], path[i * 3 + 1], path[i * 3 + 2]);
             min_depth = min_depth.min(depth);
             max_depth = max_depth.max(depth);
         }
         let depth_range = (max_depth - min_depth).max(0.01);
 
         // Breathing glow - phase offset per orbit for cascading effect
-        let orbit_breath = breath_factor(time, 0.2, 0.15, p as f64 * 0.5);
+        let orbit_breath = 1.0;
         let base_alpha = 0.25;
 
         // Draw orbit segments with depth-based opacity variation
         // This creates the illusion of 3D by making far parts of orbit dimmer
-        let base_line_width = 1.0 + orbit_breath * 0.3;
+        let base_line_width = 1.0;
 
         // Draw segments individually with varying opacity based on depth
         for i in 0..ORBIT_SEGMENTS {
@@ -1554,8 +1090,8 @@ fn draw_orbits(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f6
             let y2 = path[next_i * 3 + 1];
             let z2 = path[next_i * 3 + 2];
 
-            let (sx1, sy1, depth1) = view.au_to_screen_3d(x1, y1, z1);
-            let (sx2, sy2, depth2) = view.au_to_screen_3d(x2, y2, z2);
+            let (sx1, sy1, depth1) = state.project_3d(x1, y1, z1);
+            let (sx2, sy2, depth2) = state.project_3d(x2, y2, z2);
 
             // Calculate average depth for this segment
             let avg_depth = (depth1 + depth2) / 2.0;
@@ -1590,7 +1126,8 @@ fn draw_orbits(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f6
 
 fn draw_sun(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) {
     let view = &state.view;
-    let (cx, cy) = view.au_to_screen(0.0, 0.0);
+    // Use CCA projection for sun position
+    let (cx, cy, _) = state.project_3d(0.0, 0.0, 0.0);
 
     // Sun radius in pixels (with minimum size for visibility)
     let sun_radius_au = SOLAR_RADIUS_KM / AU_KM;
@@ -1600,36 +1137,13 @@ fn draw_sun(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) 
     let activity = (state.solar_cycle_phase * 2.0 * PI).sin() * 0.5 + 0.5;
 
     // Multi-frequency breathing - organic, living star
-    let breath = layered_breath(time, 0.08, activity);
-    let corona_radius = base_radius * (2.5 + activity * 1.0) * breath;
+    let breath = 1.0;
+    let _corona_radius = base_radius * (2.5 + activity * 1.0) * breath;
 
     // Solar wind streamers (coronal streamers)
     if base_radius > 15.0 {
         draw_solar_wind(ctx, cx, cy, base_radius, time, activity);
     }
-
-    // Outer corona glow
-    let gradient = ctx
-        .create_radial_gradient(cx, cy, base_radius, cx, cy, corona_radius)
-        .unwrap();
-    gradient
-        .add_color_stop(0.0, "rgba(255, 220, 100, 0.9)")
-        .unwrap();
-    gradient
-        .add_color_stop(0.2, "rgba(255, 180, 80, 0.6)")
-        .unwrap();
-    gradient
-        .add_color_stop(0.4, "rgba(255, 140, 60, 0.3)")
-        .unwrap();
-    gradient
-        .add_color_stop(0.7, "rgba(255, 100, 40, 0.1)")
-        .unwrap();
-    gradient.add_color_stop(1.0, "rgba(255, 50, 0, 0)").unwrap();
-
-    ctx.set_fill_style(&gradient);
-    ctx.begin_path();
-    ctx.arc(cx, cy, corona_radius, 0.0, 2.0 * PI).unwrap_or(());
-    ctx.fill();
 
     // Solar prominences (arcs of plasma) - more during solar maximum
     if base_radius > 20.0 {
@@ -1640,7 +1154,7 @@ fn draw_sun(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) 
     }
 
     // Sun body with limb darkening and core breathing
-    let sun_breath = breath_factor(time, 0.4, 0.02, 0.0);
+    let sun_breath = 1.0;
     let breathing_radius = base_radius * sun_breath;
 
     let body_gradient = ctx
@@ -1662,7 +1176,8 @@ fn draw_sun(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) 
 
     ctx.set_fill_style(&body_gradient);
     ctx.begin_path();
-    ctx.arc(cx, cy, breathing_radius, 0.0, 2.0 * PI).unwrap_or(());
+    ctx.arc(cx, cy, breathing_radius, 0.0, 2.0 * PI)
+        .unwrap_or(());
     ctx.fill();
 
     // Granulation (convection cells) - only when zoomed in
@@ -2059,15 +1574,15 @@ fn apply_planet_breathing(base_radius: f64, time: f64, planet_idx: usize) -> f64
     // Planet-specific breathing parameters (frequency, amplitude, phase offset)
     // Gas giants breathe slower/stronger, rocky planets faster/subtler
     let (frequency, amplitude, phase) = match planet_idx {
-        0 => (1.2, 0.02, 0.0),    // Mercury - small, active
-        1 => (0.6, 0.03, 0.5),    // Venus - thick atmosphere
-        2 => (0.5, 0.025, 1.0),   // Earth - baseline
-        3 => (0.7, 0.02, 1.5),    // Mars - thin atmosphere
-        4 => (0.2, 0.04, 2.0),    // Jupiter - massive, slow rhythm
-        5 => (0.25, 0.035, 2.5),  // Saturn - large gas giant
-        6 => (0.3, 0.03, 3.0),    // Uranus - ice giant
-        7 => (0.35, 0.03, 3.5),   // Neptune - ice giant
-        _ => (0.5, 0.025, 0.0),   // Default
+        0 => (1.2, 0.02, 0.0),   // Mercury - small, active
+        1 => (0.6, 0.03, 0.5),   // Venus - thick atmosphere
+        2 => (0.5, 0.025, 1.0),  // Earth - baseline
+        3 => (0.7, 0.02, 1.5),   // Mars - thin atmosphere
+        4 => (0.2, 0.04, 2.0),   // Jupiter - massive, slow rhythm
+        5 => (0.25, 0.035, 2.5), // Saturn - large gas giant
+        6 => (0.3, 0.03, 3.0),   // Uranus - ice giant
+        7 => (0.35, 0.03, 3.5),  // Neptune - ice giant
+        _ => (0.5, 0.025, 0.0),  // Default
     };
 
     base_radius * breath_factor(time, frequency, amplitude, phase)
@@ -2079,14 +1594,16 @@ fn draw_planets(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f
 
     // Collect planet data with depth for sorting (back to front rendering)
     // This provides proper depth ordering for 3D perception
-    let mut planets_with_depth: Vec<(usize, f64, f64, f64, f64)> = Vec::with_capacity(state.planet_count);
+    let mut planets_with_depth: Vec<(usize, f64, f64, f64, f64)> =
+        Vec::with_capacity(state.planet_count);
 
     for p in 0..state.planet_count {
         let x = state.planet_x[p];
         let y = state.planet_y[p];
         let z = state.planet_z[p];
 
-        let (sx, sy, depth) = view.au_to_screen_3d(x, y, z);
+        // Use CCA projection for proper 3D view
+        let (sx, sy, depth) = state.project_3d(x, y, z);
 
         // Planet radius in pixels (with minimum for visibility)
         // NASA Eyes style: allow very large planets when zoomed in close
@@ -2107,8 +1624,14 @@ fn draw_planets(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f
 
     // Calculate depth range for perspective effects
     let (min_depth, max_depth) = if !planets_with_depth.is_empty() {
-        let min = planets_with_depth.iter().map(|p| p.3).fold(f64::INFINITY, f64::min);
-        let max = planets_with_depth.iter().map(|p| p.3).fold(f64::NEG_INFINITY, f64::max);
+        let min = planets_with_depth
+            .iter()
+            .map(|p| p.3)
+            .fold(f64::INFINITY, f64::min);
+        let max = planets_with_depth
+            .iter()
+            .map(|p| p.3)
+            .fold(f64::NEG_INFINITY, f64::max);
         (min, max)
     } else {
         (0.0, 1.0)
@@ -2177,12 +1700,11 @@ fn draw_ecliptic_height_indicator(
     planet_radius: f64,
 ) {
     let z = state.planet_z[planet_idx];
-    let view = &state.view;
 
     // Calculate where the planet would be if it were in the ecliptic plane (z=0)
     let x = state.planet_x[planet_idx];
     let y = state.planet_y[planet_idx];
-    let (ecliptic_x, ecliptic_y, _) = view.au_to_screen_3d(x, y, 0.0);
+    let (ecliptic_x, ecliptic_y, _) = state.project_3d(x, y, 0.0);
 
     // Draw a vertical line from the ecliptic plane position to the planet
     let color = state.planet_colors[planet_idx];
@@ -2194,7 +1716,8 @@ fn draw_ecliptic_height_indicator(
     // Dashed line style
     ctx.begin_path();
     let start_y = ecliptic_y;
-    let end_y = screen_y - planet_radius.signum() * (planet_radius + 2.0) * if z > 0.0 { 1.0 } else { -1.0 };
+    let end_y = screen_y
+        - planet_radius.signum() * (planet_radius + 2.0) * if z > 0.0 { 1.0 } else { -1.0 };
 
     // Draw dashed line manually
     let dash_len = 4.0;
@@ -2224,7 +1747,8 @@ fn draw_ecliptic_height_indicator(
     // Small circle at ecliptic intersection point
     ctx.set_fill_style(&JsValue::from_str(&format!("{}40", color)));
     ctx.begin_path();
-    ctx.arc(ecliptic_x, ecliptic_y, 3.0, 0.0, 2.0 * PI).unwrap_or(());
+    ctx.arc(ecliptic_x, ecliptic_y, 3.0, 0.0, 2.0 * PI)
+        .unwrap_or(());
     ctx.fill();
 
     // Optional: show Z value label for significant inclinations
@@ -2237,7 +1761,8 @@ fn draw_ecliptic_height_indicator(
             format!("{:.2} AU", z)
         };
         let label_y = (start_y + screen_y) / 2.0;
-        ctx.fill_text(&z_label, ecliptic_x + 5.0, label_y).unwrap_or(());
+        ctx.fill_text(&z_label, ecliptic_x + 5.0, label_y)
+            .unwrap_or(());
     }
 }
 
@@ -3050,7 +2575,7 @@ fn draw_missions(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: 
             continue;
         }
 
-        let (sx, sy) = view.au_to_screen(x, y);
+        let (sx, sy, _) = state.project_3d(x, y, 0.0);
         let color = state.mission_colors[m];
         let name = state.mission_names[m];
 
@@ -3267,11 +2792,11 @@ fn draw_mission_trail(ctx: &CanvasRenderingContext2d, state: &SimulationState, i
     ctx.set_line_width(1.0);
     ctx.begin_path();
 
-    let (sx, sy) = state.view.au_to_screen(wps[0].1, wps[0].2);
+    let (sx, sy, _) = state.project_3d(wps[0].1, wps[0].2, 0.0);
     ctx.move_to(sx, sy);
 
     for i in 1..count {
-        let (sx, sy) = state.view.au_to_screen(wps[i].1, wps[i].2);
+        let (sx, sy, _) = state.project_3d(wps[i].1, wps[i].2, 0.0);
         ctx.line_to(sx, sy);
     }
 
@@ -3316,6 +2841,18 @@ fn draw_ui_overlay(ctx: &CanvasRenderingContext2d, state: &SimulationState) {
     };
     ctx.set_text_align("right");
     ctx.fill_text(&zoom_str, w - 20.0, 30.0).unwrap_or(());
+
+    // CCA frame indicator (below zoom level)
+    let epoch = Epoch::from_jd(state.julian_date, TimeScale::TDB);
+    let frame = FrameId::HCI; // Heliocentric Inertial
+    ctx.set_font("500 10px 'Just Sans', monospace");
+    ctx.set_fill_style(&JsValue::from_str("rgba(100, 200, 255, 0.7)"));
+    ctx.fill_text(
+        &format!("CCA Frame: {:?} | JD: {:.2}", frame, epoch.jd()),
+        w - 20.0,
+        50.0,
+    )
+    .unwrap_or(());
     ctx.set_text_align("start");
 
     // FPS (bottom-left, only if debugging)
@@ -3374,4 +2911,106 @@ fn parse_hex(hex: &str) -> Option<(u8, u8, u8)> {
     let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
     let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
     Some((r, g, b))
+}
+
+// ============================================================================
+// 3D STAR RENDERING (with parallax)
+// ============================================================================
+
+/// Draw stars from the StarDatabase at their true 3D positions
+/// NOTE: Deprecated - now integrated into draw_bright_stars
+#[allow(dead_code)]
+fn draw_stars_3d(ctx: &CanvasRenderingContext2d, state: &SimulationState, time: f64) {
+    use crate::cca_projection::ScaleLevel;
+
+    let width = state.view.width;
+    let height = state.view.height;
+
+    // Get current scale level from camera
+    let scale_level = state.camera.scale_level;
+
+    // Only draw 3D stars at heliosphere scale and beyond
+    // At smaller scales, the celestial sphere projection is sufficient
+    let (enabled, mag_limit, show_labels) = match scale_level {
+        ScaleLevel::Planet | ScaleLevel::Inner | ScaleLevel::Outer => return,
+        ScaleLevel::Heliosphere => (true, 2.0, true), // Brightest stars only
+        ScaleLevel::NearStars => (true, 5.0, true),   // Naked eye stars
+        ScaleLevel::FarStars => (true, 7.0, false),   // Many stars, no labels
+    };
+
+    if !enabled {
+        return;
+    }
+
+    // Calculate star size scaling based on zoom
+    // At stellar scales, we want stars to be visible but not huge
+    let size_scale = match scale_level {
+        ScaleLevel::Heliosphere => 1.5,
+        ScaleLevel::NearStars => 1.2,
+        ScaleLevel::FarStars => 1.0,
+        _ => 1.0,
+    };
+
+    // Draw stars from the database, filtered by magnitude
+    for star in state.stars.brighter_than(mag_limit) {
+        // Project star's 3D position to screen
+        let (sx, sy, depth) = state.project_3d(star.position.x, star.position.y, star.position.z);
+
+        // Skip if off screen (with large margin for star names)
+        if sx < -100.0 || sx > width + 100.0 || sy < -100.0 || sy > height + 100.0 {
+            continue;
+        }
+
+        // Skip if behind camera
+        if depth < 0.0 {
+            continue;
+        }
+
+        // Get star color from B-V index
+        let (r, g, b) = star.color_rgb();
+        let color = format!("rgb({}, {}, {})", r, g, b);
+
+        // Size based on magnitude (brighter = larger)
+        let base_size = star.apparent_size() * size_scale;
+
+        // Twinkle effect for brighter stars
+        let twinkle = if star.magnitude < 1.0 {
+            0.9 + ((time * 1.5 + star.hip_id as f64 * 0.1).sin() * 0.1)
+        } else {
+            1.0
+        };
+
+        let size = base_size * twinkle;
+
+        // Draw star glow for bright stars
+        if star.magnitude < 3.0 {
+            ctx.set_global_alpha(0.3 * twinkle);
+            if let Ok(glow) = ctx.create_radial_gradient(sx, sy, 0.0, sx, sy, size * 3.0) {
+                let _ = glow.add_color_stop(0.0, &color);
+                let _ = glow.add_color_stop(1.0, "transparent");
+                ctx.set_fill_style(&glow);
+                ctx.begin_path();
+                let _ = ctx.arc(sx, sy, size * 3.0, 0.0, std::f64::consts::PI * 2.0);
+                ctx.fill();
+            }
+        }
+
+        // Draw star core
+        ctx.set_global_alpha(twinkle);
+        ctx.set_fill_style(&JsValue::from_str(&color));
+        ctx.begin_path();
+        let _ = ctx.arc(sx, sy, size, 0.0, std::f64::consts::PI * 2.0);
+        ctx.fill();
+
+        // Draw star name for bright stars (if labels enabled at this scale)
+        if show_labels && star.magnitude < 2.0 && !star.name.is_empty() {
+            ctx.set_global_alpha(0.8);
+            ctx.set_fill_style(&JsValue::from_str("#aaa"));
+            ctx.set_font("11px sans-serif");
+            ctx.set_text_align("left");
+            let _ = ctx.fill_text(&star.name, sx + size + 4.0, sy + 3.0);
+        }
+    }
+
+    ctx.set_global_alpha(1.0);
 }

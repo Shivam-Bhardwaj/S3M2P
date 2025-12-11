@@ -264,7 +264,10 @@ pub fn is_variable_name(s: &str) -> bool {
     // Check for common variable patterns
     let all_alphanum_underscore = s.chars().all(|c| c.is_alphanumeric() || c == '_');
     let has_lowercase = s.chars().any(|c| c.is_lowercase());
-    let starts_with_letter_or_underscore = s.chars().next().map_or(false, |c| c.is_alphabetic() || c == '_');
+    let starts_with_letter_or_underscore = s
+        .chars()
+        .next()
+        .is_some_and(|c| c.is_alphabetic() || c == '_');
 
     // Secrets typically have high ratio of mixed case or lots of numbers
     let uppercase_count = s.chars().filter(|c| c.is_uppercase()).count();

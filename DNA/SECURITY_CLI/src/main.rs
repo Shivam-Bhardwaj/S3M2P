@@ -80,10 +80,12 @@ fn main() -> Result<()> {
             no_secrets,
         } => {
             let min_severity = parse_severity(&severity)?;
-            let mut config = ScanConfig::default();
-            config.min_severity = min_severity;
-            config.detect_pii = !no_pii;
-            config.detect_secrets = !no_secrets;
+            let config = ScanConfig {
+                min_severity,
+                detect_pii: !no_pii,
+                detect_secrets: !no_secrets,
+                ..Default::default()
+            };
 
             let scanner = Scanner::with_config(config);
 
@@ -211,8 +213,17 @@ fn print_finding(finding: &dna::security::Finding) {
     let severity_icon = finding.severity.emoji();
     let severity_text = format!("{:?}", finding.severity);
 
-    println!("  {} {} {}", severity_icon, severity_text.bold(), finding.finding_type.name());
-    println!("     📄 {}:{}", finding.file_path.cyan(), finding.line_number);
+    println!(
+        "  {} {} {}",
+        severity_icon,
+        severity_text.bold(),
+        finding.finding_type.name()
+    );
+    println!(
+        "     📄 {}:{}",
+        finding.file_path.cyan(),
+        finding.line_number
+    );
     println!("     🔍 {}", finding.matched_text.yellow());
     println!("     💡 {}", finding.description.dimmed());
     println!();
@@ -260,7 +271,12 @@ fn print_scan_result(result: &dna::security::ScanResult) {
         ] {
             let findings = result.by_severity(severity);
             if !findings.is_empty() {
-                println!("  {} {:?}: {} findings", severity.emoji(), severity, findings.len());
+                println!(
+                    "  {} {:?}: {} findings",
+                    severity.emoji(),
+                    severity,
+                    findings.len()
+                );
             }
         }
 

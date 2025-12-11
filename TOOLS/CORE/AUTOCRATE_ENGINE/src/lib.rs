@@ -46,16 +46,27 @@
 
 // Re-export all autocrate types from DNA
 pub use dna::autocrate::{
-    // Types
-    ProductDimensions, Clearances, CrateSpec, CrateGeometry,
-    // Constants
-    LumberSize,
-    // Geometry
-    Point3, BoundingBox, SkidGeometry, BoardGeometry, CleatGeometry,
-    PanelType, PanelGeometry, PanelSet, KlimpPosition, LagScrewPosition,
-    PanelStopGeometry,
     // Calculator
     calculate_crate,
+    BoardGeometry,
+    BoundingBox,
+    Clearances,
+    CleatGeometry,
+    CrateGeometry,
+    CrateSpec,
+    KlimpPosition,
+    LagScrewPosition,
+    // Constants
+    LumberSize,
+    PanelGeometry,
+    PanelSet,
+    PanelStopGeometry,
+    PanelType,
+    // Geometry
+    Point3,
+    // Types
+    ProductDimensions,
+    SkidGeometry,
 };
 
 /// Quick crate design with standard defaults

@@ -59,7 +59,7 @@ impl GitHubClient {
             .issues(&self.owner, &self.repo)
             .list()
             .state(octocrab::params::State::Open)
-            .labels(&[self.auto_label.clone()])
+            .labels(std::slice::from_ref(&self.auto_label))
             .per_page(20)
             .send()
             .await?;
@@ -78,7 +78,7 @@ impl GitHubClient {
             let has_trigger = comments.items.iter().any(|c| {
                 c.body
                     .as_ref()
-                    .map_or(false, |b| b.contains(&self.trigger_pattern))
+                    .is_some_and(|b| b.contains(&self.trigger_pattern))
             });
 
             if has_trigger {
@@ -234,11 +234,11 @@ impl GitHubClient {
             .await?;
 
         let mut result = Vec::new();
+        let re = regex::Regex::new(r"(?:Closes|Implements|Fixes)\s+#(\d+)").unwrap();
         for pr in prs.items {
             // Check if PR body contains "Closes #" or "Implements #"
             if let Some(ref body) = pr.body {
                 // Extract issue number from PR body
-                let re = regex::Regex::new(r"(?:Closes|Implements|Fixes)\s+#(\d+)").unwrap();
                 if let Some(cap) = re.captures(body) {
                     if let Some(issue_num) = cap.get(1) {
                         if let Ok(num) = issue_num.as_str().parse::<u64>() {

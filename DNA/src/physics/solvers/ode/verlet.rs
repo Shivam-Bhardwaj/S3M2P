@@ -64,7 +64,8 @@ mod tests {
         let mut acc = Vec3::new(-1.0, 0.0, 0.0);
 
         let dt = 0.01;
-        for _ in 0..628 { // ~2π seconds
+        for _ in 0..628 {
+            // ~2π seconds
             let (p, v, a) = verlet_step(pos, vel, acc, dt, |x| -x);
             pos = p;
             vel = v;

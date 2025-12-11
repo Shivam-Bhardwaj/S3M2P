@@ -122,7 +122,7 @@ mod tests {
     fn test_random_angle_range() {
         for _ in 0..100 {
             let angle = random_angle();
-            assert!(angle >= 0.0 && angle < std::f32::consts::TAU);
+            assert!((0.0..std::f32::consts::TAU).contains(&angle));
         }
     }
 

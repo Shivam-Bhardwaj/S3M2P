@@ -100,9 +100,7 @@ fn find_closest(element: &Element, class_name: &str) -> Option<Element> {
 }
 
 fn handle_line_click(line_el: &Element) {
-    let action = line_el
-        .get_attribute("data-action")
-        .unwrap_or_default();
+    let action = line_el.get_attribute("data-action").unwrap_or_default();
 
     APP.with(|app| {
         if let Some(ref mut state) = *app.borrow_mut() {
@@ -137,9 +135,7 @@ fn handle_close_click(_button_el: &Element) {
 }
 
 fn handle_nav_click(button_el: &Element) {
-    let action = button_el
-        .get_attribute("data-action")
-        .unwrap_or_default();
+    let action = button_el.get_attribute("data-action").unwrap_or_default();
 
     APP.with(|app| {
         if let Some(ref mut state) = *app.borrow_mut() {

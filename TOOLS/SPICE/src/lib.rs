@@ -8,8 +8,8 @@
 #![allow(unexpected_cfgs)]
 use wasm_bindgen::prelude::*;
 use web_sys::{
-    CanvasRenderingContext2d, Document, Element, HtmlCanvasElement, HtmlElement,
-    HtmlInputElement, HtmlTextAreaElement,
+    CanvasRenderingContext2d, Document, Element, HtmlCanvasElement, HtmlElement, HtmlInputElement,
+    HtmlTextAreaElement,
 };
 
 use spice_engine::{
@@ -444,8 +444,7 @@ fn draw_bode_curve(
     };
 
     let y_to_pixel = |val: f64| -> f64 {
-        margin_top
-            + (1.0 - (val - (y_min - y_padding)) / (y_range + 2.0 * y_padding)) * plot_height
+        margin_top + (1.0 - (val - (y_min - y_padding)) / (y_range + 2.0 * y_padding)) * plot_height
     };
 
     // Draw grid

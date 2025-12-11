@@ -161,7 +161,7 @@ impl BubbleLayout {
             max_radius.max(min_radius).min(max_practical)
         } else {
             // Single bubble: center it, make it reasonably sized
-            (big_circle_radius * 0.35).min(50.0).max(15.0)
+            (big_circle_radius * 0.35).clamp(15.0, 50.0)
         };
 
         // Calculate all derived values from bubble_radius
@@ -506,7 +506,7 @@ fn render_bubbles(document: &Document, bubbles: &[Bubble], show_back: bool) {
     // Get telemetry bar height (if exists)
     let telemetry_height = document
         .get_element_by_id("telemetry-bar")
-        .and_then(|el| Some(el.get_bounding_client_rect().height()))
+        .map(|el| el.get_bounding_client_rect().height())
         .unwrap_or(0.0);
 
     // Available vertical space = viewport - telemetry
