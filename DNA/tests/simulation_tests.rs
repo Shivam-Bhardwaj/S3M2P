@@ -19,8 +19,10 @@ fn populate_arena_specific<const CAP: usize>(
 ) {
     for i in 0..count {
         let pos = Vec2::new(i as f32 * 2.0, 0.0);
-        let mut genes = Genome::default();
-        genes.role = role;
+        let genes = Genome {
+            role,
+            ..Genome::default()
+        };
         arena.spawn(pos, Vec2::ZERO, genes);
     }
 }

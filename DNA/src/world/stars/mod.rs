@@ -71,6 +71,10 @@ pub struct Star {
     /// Derived from RA/Dec/parallax
     pub position: DVec3,
 
+    /// Velocity in HCI frame (AU/year)
+    /// Proper motion from catalog data
+    pub velocity: DVec3,
+
     /// Distance from Sun in parsecs
     pub distance_pc: f64,
 
@@ -109,6 +113,34 @@ impl Star {
         color_bv: f64,
         constellation: &str,
     ) -> Self {
+        Self::from_catalog_with_motion(
+            hip_id,
+            name,
+            ra_deg,
+            dec_deg,
+            parallax_mas,
+            magnitude,
+            color_bv,
+            constellation,
+            0.0,
+            0.0, // No proper motion data in basic catalog
+        )
+    }
+
+    /// Create star with proper motion data
+    #[allow(clippy::too_many_arguments)]
+    pub fn from_catalog_with_motion(
+        hip_id: u32,
+        name: &str,
+        ra_deg: f64,
+        dec_deg: f64,
+        parallax_mas: f64,
+        magnitude: f64,
+        color_bv: f64,
+        constellation: &str,
+        pm_ra_mas_yr: f64,  // Proper motion in RA (mas/yr)
+        pm_dec_mas_yr: f64, // Proper motion in Dec (mas/yr)
+    ) -> Self {
         // Calculate distance
         let distance_pc = if parallax_mas > 0.0 {
             1000.0 / parallax_mas
@@ -119,10 +151,23 @@ impl Star {
         // Convert to Cartesian position in AU
         let position = ra_dec_distance_to_cartesian(ra_deg, dec_deg, distance_pc);
 
+        // Convert proper motion to velocity vector (AU/year)
+        // Proper motion is in mas/yr, convert to AU/yr
+        let pm_ra_rad_yr = pm_ra_mas_yr * (std::f64::consts::PI / (180.0 * 3600000.0)); // mas/yr to rad/yr
+        let pm_dec_rad_yr = pm_dec_mas_yr * (std::f64::consts::PI / (180.0 * 3600000.0));
+
+        // Velocity components in AU/yr
+        let vx = -pm_ra_rad_yr * distance_pc * PC_TO_AU * dec_deg.to_radians().cos();
+        let vy = pm_ra_rad_yr * distance_pc * PC_TO_AU * dec_deg.to_radians().sin();
+        let vz = pm_dec_rad_yr * distance_pc * PC_TO_AU;
+
+        let velocity = DVec3::new(vx, vy, vz);
+
         Self {
             hip_id,
             name: name.to_string(),
             position,
+            velocity,
             distance_pc,
             magnitude,
             color_bv,

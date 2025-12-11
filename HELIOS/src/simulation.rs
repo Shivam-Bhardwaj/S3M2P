@@ -13,6 +13,7 @@
 #![allow(clippy::manual_clamp)]
 
 use crate::cca_projection::{CelestialCamera, ObjectId, ScaleLevel};
+use crate::star_data::{Band, UniverseDataManager};
 use dna::world::stars::{create_bright_stars, StarDatabase};
 use glam::DVec3;
 use std::f64::consts::PI;
@@ -484,6 +485,9 @@ pub struct SimulationState {
     // === STAR DATABASE ===
     pub stars: StarDatabase,
 
+    // Local star LOD manager (phase 1 - local DB only)
+    pub star_mgr: UniverseDataManager,
+
     // === HELIOSPHERE ===
     pub termination_shock_au: f64,
     pub heliopause_au: f64,
@@ -540,6 +544,7 @@ impl SimulationState {
             camera: CelestialCamera::default(),
             selected_object: ObjectId::Sun, // Default: focused on Sun
             stars: create_bright_stars(),   // ~35 brightest stars with 3D positions
+            star_mgr: UniverseDataManager::new(4000), // hard cap on stars per frame (phase 1)
 
             termination_shock_au: 94.0,
             heliopause_au: 121.0,
@@ -771,6 +776,10 @@ impl SimulationState {
         // This ensures camera follows view changes and target object movements
         self.sync_camera();
 
+        // Update star data manager with current camera and time
+        self.star_mgr
+            .update_view(&self.camera, self.julian_date, Band::Optical);
+
         self.frame_count += 1;
     }
 
@@ -901,6 +910,7 @@ impl SimulationState {
         self.camera.target = self.selected_object;
         match self.selected_object {
             ObjectId::Sun => {
+                // Strict Sun-centered target in HCI for spherical camera
                 self.camera.target_position = DVec3::ZERO;
             }
             ObjectId::Planet(idx) if idx < self.planet_count => {
@@ -913,16 +923,26 @@ impl SimulationState {
                 if let Some(star) = self.stars.get_by_hip(hip_id) {
                     self.camera.target_position = star.position;
                 } else {
-                    // Star not found, use view center
+                    // Star not found, fall back to view center in AU
                     self.camera.target_position =
                         DVec3::new(self.view.center_x, self.view.center_y, 0.0);
                 }
             }
             _ => {
-                // Free position mode - target is view center
+                // Free position mode - target is view center in AU
                 self.camera.target_position =
                     DVec3::new(self.view.center_x, self.view.center_y, 0.0);
             }
+        }
+
+        // In heliosphere scale with the Sun selected, enforce a pure
+        // spherical coordinate view: the Sun stays at the screen center
+        // and any attempted world panning is neutralized.
+        if self.camera.scale_level == ScaleLevel::Heliosphere
+            && matches!(self.selected_object, ObjectId::Sun)
+        {
+            self.view.center_x = 0.0;
+            self.view.center_y = 0.0;
         }
 
         // Update epoch
@@ -1014,25 +1034,32 @@ impl SimulationState {
         self.zoom_to(0.15); // Shows out to Neptune
     }
 
+    /// Heliosphere view: Sun-centered spherical camera.
+    ///
+    /// This configures the camera so that:
+    /// - The Sun is always the target (at the origin in HCI)
+    /// - The Sun stays at the visual center of the screen
+    /// - User interaction is interpreted as rotations on the sphere
+    ///   plus zoom, not as world-space panning.
+    ///
+    /// We still render the full physical heliosphere (termination shock,
+    /// heliopause, bow shock and interstellar wind), but without offsetting
+    /// the camera away from the Sun.
     pub fn view_heliosphere(&mut self) {
-        self.selected_object = ObjectId::Position; // Free position mode
-                                                   // Position sun at 2/3 of screen to show heliosphere with direction of motion
-                                                   // Sun moves through interstellar medium roughly in the +X direction (towards "nose")
-                                                   // Desktop (landscape): sun at 2/3 from left, shows tail to right
-                                                   // Mobile (portrait): sun at 2/3 from bottom, shows tail above
-        let is_portrait = self.view.height > self.view.width;
+        // Lock camera target to the Sun for spherical coordinates
+        self.selected_object = ObjectId::Sun;
 
-        if is_portrait {
-            // Mobile: sun at 2/3 from bottom (1/3 from top)
-            // Offset in Y to show more of the tail above
-            self.view.center_x = 0.0;
-            self.view.center_y = -self.bow_shock_au * 0.3; // Shift view down, sun appears higher
-        } else {
-            // Desktop: sun at 2/3 from left (1/3 from right)
-            // Offset in X to show more of the tail to the right
-            self.view.center_x = self.bow_shock_au * 0.3; // Shift view right, sun appears left
-            self.view.center_y = 0.0;
-        }
+        // No world offset: keep heliosphere centered on the Sun
+        self.view.center_x = 0.0;
+        self.view.center_y = 0.0;
+
+        // Keep current tilt/rotation so the user can orbit,
+        // but make sure they are within safe bounds.
+        self.view.set_tilt(self.view.tilt);
+        self.view.set_rotation(self.view.rotation);
+
+        // Zoom so that the full heliosphere (including bow shock) is visible,
+        // while preserving AU/pixel semantics.
         self.zoom_to(1.2); // Shows full heliosphere including bow shock
     }
 
@@ -1060,6 +1087,15 @@ impl SimulationState {
     /// Get current scale level for LOD rendering decisions
     pub fn scale_level(&self) -> ScaleLevel {
         self.camera.scale_level
+    }
+
+    /// Check if we are in a Sun-centered heliosphere view.
+    /// In this mode the camera target is the Sun at the origin and
+    /// all user motion should be interpreted as spherical rotations
+    /// plus zoom, not world-space translation.
+    pub fn is_sun_centered_heliosphere(&self) -> bool {
+        matches!(self.selected_object, ObjectId::Sun)
+            && self.camera.scale_level == ScaleLevel::Heliosphere
     }
 
     /// Get human-readable scale description

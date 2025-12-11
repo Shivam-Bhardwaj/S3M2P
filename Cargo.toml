@@ -26,6 +26,7 @@ members = [
     # L1 Bubbles (deployed)
     "WELCOME",
     "HELIOS",
+    "HELIOS/server",
     "BLOG",
     "ARCH",
 

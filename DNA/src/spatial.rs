@@ -434,7 +434,7 @@ mod tests {
             "The loaded key should not be reported as missing"
         );
         assert!(
-            missing.len() > 0,
+            !missing.is_empty(),
             "Should report missing keys for the rest of the visible area"
         );
     }

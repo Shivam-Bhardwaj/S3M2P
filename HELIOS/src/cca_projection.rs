@@ -96,13 +96,16 @@ impl ScaleLevel {
 
     /// Get the maximum magnitude of stars to render at this scale
     pub fn star_magnitude_limit(&self) -> f64 {
+        // FIXED: Stars should be visible at ALL zoom levels
+        // Close to Earth = night sky view = show all visible stars
+        // Far away = deep space = still show stars
         match self {
-            ScaleLevel::Planet => 1.0,      // Only brightest (Sirius, Vega)
-            ScaleLevel::Inner => 2.0,       // Very bright stars
-            ScaleLevel::Outer => 3.0,       // Bright stars
-            ScaleLevel::Heliosphere => 4.0, // Moderately bright
-            ScaleLevel::NearStars => 5.5,   // Naked eye limit
-            ScaleLevel::FarStars => 7.0,    // Faint stars visible
+            ScaleLevel::Planet => 6.0,      // Full night sky (naked eye limit)
+            ScaleLevel::Inner => 6.0,       // Full night sky
+            ScaleLevel::Outer => 5.0,       // Bright night sky
+            ScaleLevel::Heliosphere => 5.0, // Bright stars
+            ScaleLevel::NearStars => 6.0,   // Naked eye limit
+            ScaleLevel::FarStars => 8.0,    // Telescope limit
         }
     }
 }
