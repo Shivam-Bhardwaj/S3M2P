@@ -52,10 +52,15 @@ pub use dna::autocrate::{
     BoundingBox,
     Clearances,
     CleatGeometry,
+    CrateDesign,
     CrateGeometry,
+    CratePart,
+    CratePartKind,
     CrateSpec,
     KlimpPosition,
     LagScrewPosition,
+    PartCategory,
+    PartMaterial,
     // Constants
     LumberSize,
     PanelGeometry,
@@ -68,6 +73,14 @@ pub use dna::autocrate::{
     ProductDimensions,
     SkidGeometry,
 };
+
+// Re-export report generation (BOM + Cut List CSV)
+pub use dna::autocrate::reports::{
+    bom_to_csv, cut_list_to_csv, generate_bom, generate_cut_list, BomRow, CutListRow,
+};
+
+// Re-export STEP export (NX-importable assembly, inches)
+pub use dna::export::step::{export_step_ap242, StepExportOptions};
 
 /// Quick crate design with standard defaults
 ///
@@ -85,6 +98,28 @@ pub fn quick_design(length: f32, width: f32, height: f32, weight: f32) -> CrateG
     };
 
     calculate_crate(&spec)
+}
+
+/// Build the canonical `CrateDesign` (parts graph) from a spec.
+pub fn design_from_spec(spec: &CrateSpec) -> CrateDesign {
+    CrateDesign::from_spec(spec)
+}
+
+/// Export STEP (Part-21) assembly for the given design.
+pub fn export_step(design: &CrateDesign) -> String {
+    export_step_ap242(design, &StepExportOptions::default())
+}
+
+/// Export BOM as CSV for the given design.
+pub fn export_bom_csv(design: &CrateDesign) -> String {
+    let bom = generate_bom(design);
+    bom_to_csv(&bom)
+}
+
+/// Export cut list as CSV for the given design.
+pub fn export_cut_list_csv(design: &CrateDesign) -> String {
+    let cut = generate_cut_list(design);
+    cut_list_to_csv(&cut)
 }
 
 /// Design a heavy-duty crate for weights over 5000 lbs
@@ -107,6 +142,7 @@ pub fn heavy_duty_design(length: f32, width: f32, height: f32, weight: f32) -> C
         skid_size: LumberSize::L4x6,
         floorboard_size: LumberSize::L2x8,
         cleat_size: LumberSize::L2x4,
+        ..CrateSpec::default()
     };
 
     calculate_crate(&spec)
@@ -169,5 +205,22 @@ mod tests {
 
         // Should have some board feet
         assert!(bf > 0.0);
+    }
+
+    #[test]
+    fn test_design_and_exports_are_non_empty() {
+        let spec = CrateSpec::default();
+        let design = design_from_spec(&spec);
+        assert!(!design.parts.is_empty());
+
+        let bom = export_bom_csv(&design);
+        assert!(bom.contains("item,size,quantity"));
+
+        let cut = export_cut_list_csv(&design);
+        assert!(cut.contains("item,material,nominal"));
+
+        let step = export_step(&design);
+        assert!(step.contains("ISO-10303-21;"));
+        assert!(step.contains("CONVERSION_BASED_UNIT('INCH'"));
     }
 }

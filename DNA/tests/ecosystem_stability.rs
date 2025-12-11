@@ -74,7 +74,6 @@ fn test_population_convergence() {
 
     // Run 5 minutes
     let history = eco.run(18000);
-    let report = analyze_stability(&history, 15000);
 
     // Check final population is within 30% of target
     let final_metrics = history.last().unwrap();
@@ -101,7 +100,6 @@ fn test_no_excessive_oscillation() {
     eco.seed_population(3000, 1500);
 
     let history = eco.run(3600); // 1 minute
-    let report = analyze_stability(&history, 15000);
 
     // Sample every 10 frames for oscillation detection
     let samples: Vec<usize> = history.iter().step_by(10).map(|m| m.total).collect();

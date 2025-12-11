@@ -7,31 +7,112 @@ MODIFIED: 2025-12-02
 -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoCrate - ASTM Crate Generator</title>
-    <link data-trunk rel="rust" data-wasm-opt="z"/>
-    <link data-trunk rel="css" href="style.css"/>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background: #0a0a0f;
-            overflow: hidden;
-            font-family: 'JustSans', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        #canvas {
-            display: block;
-            width: 100vw;
-            height: 100vh;
-        }
-    </style>
+    <title>AutoCrate - NX STEP + Viewer</title>
+    <link data-trunk rel="rust" href="Cargo.toml" data-wasm-opt="z" />
+    <link data-trunk rel="css" href="style.css" />
 </head>
+
 <body>
-    <canvas id="canvas"></canvas>
+    <div class="container">
+        <header>
+            <h1>AutoCrate</h1>
+            <p class="subtitle">MBD-first crate design: CrateSpec → CrateDesign → STEP/BOM/Cut List</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="panel-left">
+                <h2>Crate Inputs <span class="unit">(in / lb)</span></h2>
+
+                <div class="input-group">
+                    <label>Product Dimensions</label>
+                    <div class="dimension-inputs">
+                        <div>
+                            <label for="prod-length">L</label>
+                            <input type="number" id="prod-length" value="48" step="0.25" min="1">
+                        </div>
+                        <div>
+                            <label for="prod-width">W</label>
+                            <input type="number" id="prod-width" value="36" step="0.25" min="1">
+                        </div>
+                        <div>
+                            <label for="prod-height">H</label>
+                            <input type="number" id="prod-height" value="24" step="0.25" min="1">
+                        </div>
+                        <div>
+                            <label for="prod-weight">lb</label>
+                            <input type="number" id="prod-weight" value="500" step="1" min="1">
+                        </div>
+                    </div>
+                </div>
+
+                <button id="generate-btn">Generate / Update</button>
+
+                <div class="divider"></div>
+
+                <h2>Outputs</h2>
+                <div class="button-row">
+                    <button id="download-step" class="secondary">Download STEP</button>
+                </div>
+                <div class="button-row">
+                    <button id="download-bom" class="secondary">Download BOM (CSV)</button>
+                    <button id="download-cut" class="secondary">Download Cut List (CSV)</button>
+                </div>
+
+                <p class="info-text">
+                    Viewer renders <strong>CrateDesign</strong> directly (visualization moat). STEP is just an output.
+                </p>
+            </div>
+
+            <div class="panel-right">
+                <div class="viewport-section">
+                    <div class="view-controls">
+                        <button class="view-btn" onclick="setView('front')">Front</button>
+                        <button class="view-btn" onclick="setView('top')">Top</button>
+                        <button class="view-btn" onclick="setView('right')">Right</button>
+                        <button class="view-btn active" onclick="setView('iso')">Isometric</button>
+                    </div>
+                    <canvas id="viewport-canvas"></canvas>
+                </div>
+
+                <div class="details-section">
+                    <div class="section-title">Design</div>
+                    <div class="details-grid">
+                        <div class="detail-card">
+                            <div class="detail-label">Overall (in)</div>
+                            <div class="detail-value" id="overall-dims">-</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="detail-label">Parts</div>
+                            <div class="detail-value" id="parts-count">-</div>
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="margin-top: 1rem;">
+                        <label for="part-select">Inspect Part</label>
+                        <select id="part-select" class="select"></select>
+                    </div>
+
+                    <pre id="part-details" class="mono">Select a part…</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setView(view) {
+            const buttons = document.querySelectorAll('.view-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (window.setViewAngle) {
+                window.setViewAngle(view);
+            }
+        }
+    </script>
 </body>
+
 </html>

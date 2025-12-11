@@ -283,14 +283,298 @@ fn calculate_panel_cleats(
     center: Point3,
     spec: &CrateSpec,
 ) -> Vec<CleatGeometry> {
-    let cleat_dims = spec.cleat_size.actual();
-    let mut cleats = Vec::new();
+    let (cleat_thickness, cleat_width) = spec.cleat_size.actual(); // (height/thickness, width)
+    let panel_thickness = spec.materials.panel_thickness;
 
-    // Simplified cleat calculation - perimeter cleats only
-    // Full implementation would include intermediate cleats based on MAX_VERTICAL_SPACING
+    // Reconstruct panel bounds using the same logic as `calculate_single_panel`.
+    // (We want cleats positioned deterministically relative to panel geometry.)
+    let bounds = match panel_type {
+        PanelType::Front | PanelType::Back => BoundingBox::new(
+            Point3::new(center.x - panel_width / 2.0, center.y - panel_thickness / 2.0, center.z),
+            Point3::new(
+                center.x + panel_width / 2.0,
+                center.y + panel_thickness / 2.0,
+                center.z + panel_height,
+            ),
+        ),
+        PanelType::Left | PanelType::Right => BoundingBox::new(
+            Point3::new(center.x - panel_thickness / 2.0, center.y - panel_width / 2.0, center.z),
+            Point3::new(
+                center.x + panel_thickness / 2.0,
+                center.y + panel_width / 2.0,
+                center.z + panel_height,
+            ),
+        ),
+        PanelType::Top => BoundingBox::new(
+            Point3::new(
+                center.x - panel_width / 2.0,
+                center.y - panel_height / 2.0,
+                center.z - panel_thickness / 2.0,
+            ),
+            Point3::new(
+                center.x + panel_width / 2.0,
+                center.y + panel_height / 2.0,
+                center.z + panel_thickness / 2.0,
+            ),
+        ),
+    };
 
-    // For now, add corner/edge cleats
-    // This is a placeholder - full implementation via issues
+    let mut cleats: Vec<CleatGeometry> = Vec::new();
+
+    // Helper: compute evenly spaced centers between two endpoints (inclusive endpoints handled by caller).
+    fn intermediate_centers(start_center: f32, end_center: f32, max_spacing: f32) -> Vec<f32> {
+        if max_spacing <= 0.0 {
+            return Vec::new();
+        }
+        let span = (end_center - start_center).abs();
+        if span <= max_spacing {
+            return Vec::new();
+        }
+        let intervals = (span / max_spacing).ceil() as usize;
+        if intervals <= 1 {
+            return Vec::new();
+        }
+        let step = span / (intervals as f32);
+        (1..intervals)
+            .map(|i| start_center + (end_center - start_center).signum() * (step * i as f32))
+            .collect()
+    }
+
+    let max_spacing = super::constants::cleat::MAX_VERTICAL_SPACING;
+
+    // Cleat placement differs by panel orientation.
+    match panel_type {
+        // FRONT/BACK: panel plane is XZ, thickness axis is Y.
+        PanelType::Front | PanelType::Back => {
+            // Choose the "outer" side of the panel (where cleats live within the panel thickness stack).
+            let (y0, y1) = if panel_type == PanelType::Front {
+                (bounds.min.y, bounds.min.y + cleat_thickness)
+            } else {
+                (bounds.max.y - cleat_thickness, bounds.max.y)
+            };
+
+            let x_min = bounds.min.x;
+            let x_max = bounds.max.x;
+            let z_min = bounds.min.z;
+            let z_max = bounds.max.z;
+
+            // Perimeter: bottom & top horizontals.
+            cleats.push(CleatGeometry {
+                bounds: BoundingBox::new(
+                    Point3::new(x_min, y0, z_min),
+                    Point3::new(x_max, y1, (z_min + cleat_width).min(z_max)),
+                ),
+                lumber_size: spec.cleat_size,
+                panel: panel_type,
+                is_vertical: false,
+            });
+            cleats.push(CleatGeometry {
+                bounds: BoundingBox::new(
+                    Point3::new(x_min, y0, (z_max - cleat_width).max(z_min)),
+                    Point3::new(x_max, y1, z_max),
+                ),
+                lumber_size: spec.cleat_size,
+                panel: panel_type,
+                is_vertical: false,
+            });
+
+            // Perimeter: left & right verticals (between horizontals).
+            let vz0 = (z_min + cleat_width).min(z_max);
+            let vz1 = (z_max - cleat_width).max(z_min);
+            if vz1 > vz0 {
+                cleats.push(CleatGeometry {
+                    bounds: BoundingBox::new(
+                        Point3::new(x_min, y0, vz0),
+                        Point3::new((x_min + cleat_width).min(x_max), y1, vz1),
+                    ),
+                    lumber_size: spec.cleat_size,
+                    panel: panel_type,
+                    is_vertical: true,
+                });
+                cleats.push(CleatGeometry {
+                    bounds: BoundingBox::new(
+                        Point3::new((x_max - cleat_width).max(x_min), y0, vz0),
+                        Point3::new(x_max, y1, vz1),
+                    ),
+                    lumber_size: spec.cleat_size,
+                    panel: panel_type,
+                    is_vertical: true,
+                });
+            }
+
+            // Intermediate vertical cleats across width.
+            let left_center = x_min + cleat_width / 2.0;
+            let right_center = x_max - cleat_width / 2.0;
+            for (i, c) in intermediate_centers(left_center, right_center, max_spacing)
+                .into_iter()
+                .enumerate()
+            {
+                let cx0 = (c - cleat_width / 2.0).max(x_min);
+                let cx1 = (c + cleat_width / 2.0).min(x_max);
+                if cx1 <= cx0 || vz1 <= vz0 {
+                    continue;
+                }
+                cleats.push(CleatGeometry {
+                    bounds: BoundingBox::new(Point3::new(cx0, y0, vz0), Point3::new(cx1, y1, vz1)),
+                    lumber_size: spec.cleat_size,
+                    panel: panel_type,
+                    is_vertical: true,
+                });
+
+                // Keep deterministic ordering by index (i) even if we don't store it yet.
+                let _ = i;
+            }
+        }
+
+        // LEFT/RIGHT: panel plane is YZ, thickness axis is X.
+        PanelType::Left | PanelType::Right => {
+            let (x0, x1) = if panel_type == PanelType::Left {
+                (bounds.min.x, bounds.min.x + cleat_thickness)
+            } else {
+                (bounds.max.x - cleat_thickness, bounds.max.x)
+            };
+
+            let y_min = bounds.min.y;
+            let y_max = bounds.max.y;
+            let z_min = bounds.min.z;
+            let z_max = bounds.max.z;
+
+            // Perimeter: vertical cleats at front/back edges (full height).
+            cleats.push(CleatGeometry {
+                bounds: BoundingBox::new(
+                    Point3::new(x0, y_min, z_min),
+                    Point3::new(x1, (y_min + cleat_width).min(y_max), z_max),
+                ),
+                lumber_size: spec.cleat_size,
+                panel: panel_type,
+                is_vertical: true,
+            });
+            cleats.push(CleatGeometry {
+                bounds: BoundingBox::new(
+                    Point3::new(x0, (y_max - cleat_width).max(y_min), z_min),
+                    Point3::new(x1, y_max, z_max),
+                ),
+                lumber_size: spec.cleat_size,
+                panel: panel_type,
+                is_vertical: true,
+            });
+
+            // Perimeter: bottom/top horizontals between vertical edges.
+            let hy0 = (y_min + cleat_width).min(y_max);
+            let hy1 = (y_max - cleat_width).max(y_min);
+            if hy1 > hy0 {
+                cleats.push(CleatGeometry {
+                    bounds: BoundingBox::new(
+                        Point3::new(x0, hy0, z_min),
+                        Point3::new(x1, hy1, (z_min + cleat_width).min(z_max)),
+                    ),
+                    lumber_size: spec.cleat_size,
+                    panel: panel_type,
+                    is_vertical: false,
+                });
+                cleats.push(CleatGeometry {
+                    bounds: BoundingBox::new(
+                        Point3::new(x0, hy0, (z_max - cleat_width).max(z_min)),
+                        Point3::new(x1, hy1, z_max),
+                    ),
+                    lumber_size: spec.cleat_size,
+                    panel: panel_type,
+                    is_vertical: false,
+                });
+            }
+
+            // Intermediate vertical cleats along Y, between horizontals.
+            let z0 = (z_min + cleat_width).min(z_max);
+            let z1 = (z_max - cleat_width).max(z_min);
+            let front_center = y_min + cleat_width / 2.0;
+            let back_center = y_max - cleat_width / 2.0;
+            for c in intermediate_centers(front_center, back_center, max_spacing) {
+                let cy0 = (c - cleat_width / 2.0).max(y_min);
+                let cy1 = (c + cleat_width / 2.0).min(y_max);
+                if cy1 <= cy0 || z1 <= z0 {
+                    continue;
+                }
+                cleats.push(CleatGeometry {
+                    bounds: BoundingBox::new(Point3::new(x0, cy0, z0), Point3::new(x1, cy1, z1)),
+                    lumber_size: spec.cleat_size,
+                    panel: panel_type,
+                    is_vertical: true,
+                });
+            }
+        }
+
+        // TOP: panel plane is XY, thickness axis is Z. We place cleats on the underside (min.z side).
+        PanelType::Top => {
+            let z0 = bounds.min.z;
+            let z1 = (bounds.min.z + cleat_thickness).min(bounds.max.z);
+
+            let x_min = bounds.min.x;
+            let x_max = bounds.max.x;
+            let y_min = bounds.min.y;
+            let y_max = bounds.max.y;
+
+            // Perimeter: vertical cleats at left/right edges (full length).
+            cleats.push(CleatGeometry {
+                bounds: BoundingBox::new(
+                    Point3::new(x_min, y_min, z0),
+                    Point3::new((x_min + cleat_width).min(x_max), y_max, z1),
+                ),
+                lumber_size: spec.cleat_size,
+                panel: panel_type,
+                is_vertical: true,
+            });
+            cleats.push(CleatGeometry {
+                bounds: BoundingBox::new(
+                    Point3::new((x_max - cleat_width).max(x_min), y_min, z0),
+                    Point3::new(x_max, y_max, z1),
+                ),
+                lumber_size: spec.cleat_size,
+                panel: panel_type,
+                is_vertical: true,
+            });
+
+            // Perimeter: horizontals at front/back edges between vertical cleats.
+            let hx0 = (x_min + cleat_width).min(x_max);
+            let hx1 = (x_max - cleat_width).max(x_min);
+            if hx1 > hx0 {
+                cleats.push(CleatGeometry {
+                    bounds: BoundingBox::new(
+                        Point3::new(hx0, y_min, z0),
+                        Point3::new(hx1, (y_min + cleat_width).min(y_max), z1),
+                    ),
+                    lumber_size: spec.cleat_size,
+                    panel: panel_type,
+                    is_vertical: false,
+                });
+                cleats.push(CleatGeometry {
+                    bounds: BoundingBox::new(
+                        Point3::new(hx0, (y_max - cleat_width).max(y_min), z0),
+                        Point3::new(hx1, y_max, z1),
+                    ),
+                    lumber_size: spec.cleat_size,
+                    panel: panel_type,
+                    is_vertical: false,
+                });
+            }
+
+            // Intermediate vertical cleats along X (run full Y length).
+            let left_center = x_min + cleat_width / 2.0;
+            let right_center = x_max - cleat_width / 2.0;
+            for c in intermediate_centers(left_center, right_center, max_spacing) {
+                let cx0 = (c - cleat_width / 2.0).max(x_min);
+                let cx1 = (c + cleat_width / 2.0).min(x_max);
+                if cx1 <= cx0 {
+                    continue;
+                }
+                cleats.push(CleatGeometry {
+                    bounds: BoundingBox::new(Point3::new(cx0, y_min, z0), Point3::new(cx1, y_max, z1)),
+                    lumber_size: spec.cleat_size,
+                    panel: panel_type,
+                    is_vertical: true,
+                });
+            }
+        }
+    }
 
     cleats
 }

@@ -41,7 +41,8 @@ cmd_up() {
             lsof -t -i :"$port" | xargs -r kill 2>/dev/null || true
 
             if [[ -f "$path/Trunk.toml" ]] || [[ -f "$path/index.html" ]]; then
-                (cd "$path" && trunk serve index.html --port "$port" > "$log" 2>&1) &
+                # trunk reads NO_COLOR as a boolean env var; some environments set NO_COLOR=1 which breaks parsing.
+                (cd "$path" && NO_COLOR=true trunk serve index.html --port "$port" > "$log" 2>&1) &
                 pids+=($!)
                 printf "%-15s %-10s %s\n" "$project" "$port" "✅ Started"
             else
@@ -64,7 +65,8 @@ cmd_up() {
         echo "🚀 Starting $target on port $port..."
         echo "Dir: $REPO_ROOT/$dir"
         cd "$REPO_ROOT/$dir"
-        trunk serve index.html --port "$port" --open
+        # trunk reads NO_COLOR as a boolean env var; some environments set NO_COLOR=1 which breaks parsing.
+        NO_COLOR=true trunk serve index.html --port "$port" --open
     fi
 }
 

@@ -50,6 +50,9 @@ pub use dna::export::gerber::{
 // Re-export PDF types from DNA
 pub use dna::export::pdf::{PdfDocument, PdfPage, TextAlign};
 
+// Re-export STEP export types from DNA
+pub use dna::export::step::{export_step_ap242, StepExportOptions};
+
 /// Export format enumeration
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ExportFormat {
@@ -88,7 +91,7 @@ impl Default for ExportConfig {
 
 /// Check if a format is supported for export
 pub fn is_format_supported(format: ExportFormat) -> bool {
-    matches!(format, ExportFormat::GerberX2 | ExportFormat::Pdf)
+    matches!(format, ExportFormat::GerberX2 | ExportFormat::Pdf | ExportFormat::Step)
 }
 
 #[cfg(test)]
@@ -99,7 +102,7 @@ mod tests {
     fn test_format_support() {
         assert!(is_format_supported(ExportFormat::GerberX2));
         assert!(is_format_supported(ExportFormat::Pdf));
-        assert!(!is_format_supported(ExportFormat::Step));
+        assert!(is_format_supported(ExportFormat::Step));
         assert!(!is_format_supported(ExportFormat::GCode));
     }
 

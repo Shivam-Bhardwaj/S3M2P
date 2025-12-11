@@ -12,6 +12,8 @@
 
 pub mod gerber;
 pub mod pdf;
+pub mod step;
 
 pub use gerber::*;
 pub use pdf::*;
+pub use step::*;

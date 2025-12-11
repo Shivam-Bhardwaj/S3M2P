@@ -91,7 +91,8 @@ build_project() {
         return
     fi
 
-    trunk build --release
+    # trunk reads NO_COLOR as a boolean env var; some environments set NO_COLOR=1 which breaks parsing.
+    NO_COLOR=true trunk build --release
     if [[ -d "dist" ]]; then
         success "Built $name -> $dir/dist/"
     else
