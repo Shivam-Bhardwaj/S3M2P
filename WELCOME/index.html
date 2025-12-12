@@ -371,6 +371,34 @@ MODIFIED: 2025-12-09
             font-size: 0.6rem;
             color: rgba(255, 255, 255, 0.4);
             text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        #tech-info .tech-line {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        #tech-info .tech-stack {
+            opacity: 0.6;
+        }
+
+        #commit-link {
+            font-size: 0.55rem;
+            opacity: 0.6;
+            color: #00ffff;
+            text-decoration: none;
+            margin-top: 2px;
+            display: inline-block;
+        }
+
+        #commit-link:hover {
+            text-decoration: underline;
         }
 
         #whitepaper-link {
@@ -378,7 +406,7 @@ MODIFIED: 2025-12-09
             text-decoration: none;
             cursor: pointer;
             border-bottom: 1px dotted #00ffff;
-            margin-left: 10px;
+            margin-left: 0;
         }
 
         @media (max-width: 600px) {
@@ -420,20 +448,17 @@ MODIFIED: 2025-12-09
 
             #tech-info {
                 grid-area: tech;
-                display: block;
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
                 font-size: 0.55rem;
                 text-align: left;
                 line-height: 1.25;
+                gap: 4px;
             }
 
-            #tech-info span {
-                display: block;
-                margin-right: 0 !important;
-                font-size: 0.75rem !important;
-            }
-
-            #whitepaper-link {
-                margin-left: 8px;
+            #tech-info .tech-line {
+                justify-content: space-between;
             }
 
             #mission-btn {
@@ -759,13 +784,11 @@ MODIFIED: 2025-12-09
                 <span id="console-log">System Online...</span>
             </div>
             <div id="tech-info">
-                <span style="font-size: 0.9rem; color: rgba(0, 255, 255, 0.8); margin-right: 1rem;">शिवम्
-                    भारद्वाज</span>
-                RUST • WASM • WGPU
-                <a id="whitepaper-link">FIELD MANUAL</a>
-                <br>
-                <a id="commit-link" href="#" target="_blank"
-                    style="font-size: 0.55rem; opacity: 0.6; color: #00ffff; text-decoration: none; margin-top: 2px; display: inline-block;">Loading...</a>
+                <div class="tech-line">
+                    <span class="tech-stack">RUST • WASM • WGPU</span>
+                    <a id="whitepaper-link">FIELD MANUAL</a>
+                </div>
+                <a id="commit-link" href="#" target="_blank" rel="noopener noreferrer">Loading...</a>
             </div>
         </div>
     </div>
