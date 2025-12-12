@@ -11,7 +11,24 @@ MODIFIED: 2025-12-09
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>antimony-labs</title>
+    <title>too.foo — Antimony Labs</title>
+    <meta name="description" content="Antimony Labs builds open-source engineering tools, simulations, and manufacturing compilers — in Rust/WASM/WebGPU.">
+    <meta name="theme-color" content="#050508">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Antimony Labs">
+    <meta property="og:title" content="too.foo — Antimony Labs">
+    <meta property="og:description" content="Antimony Labs builds open-source engineering tools, simulations, and manufacturing compilers — in Rust/WASM/WebGPU.">
+    <meta property="og:url" content="https://too.foo">
+    <meta property="og:image" content="https://too.foo/assets/og.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="too.foo — Antimony Labs">
+    <meta name="twitter:description" content="Antimony Labs builds open-source engineering tools, simulations, and manufacturing compilers.">
+    <meta name="twitter:image" content="https://too.foo/assets/og.png">
+
     <link data-trunk rel="rust" href="Cargo.toml" data-wasm-opt="z" />
     <link data-trunk rel="copy-dir" href="assets" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -318,6 +335,7 @@ MODIFIED: 2025-12-09
             gap: 20px;
             color: #00ffff;
             font-size: 0.7rem;
+            margin-right: auto;
         }
 
         #stats-row span {
@@ -365,19 +383,34 @@ MODIFIED: 2025-12-09
 
         @media (max-width: 600px) {
             #telemetry-bar {
-                flex-direction: column;
+                flex-direction: row;
+                flex-wrap: wrap;
                 height: auto;
-                padding: 8px;
-                gap: 4px;
+                padding: 8px 12px;
+                padding-bottom: calc(8px + env(safe-area-inset-bottom));
+                gap: 8px;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            #stats-row {
+                display: none;
             }
 
             #log-row {
                 position: static;
                 transform: none;
+                flex: 1;
+                font-size: 0.65rem;
             }
 
             #tech-info {
                 display: none;
+            }
+
+            #mission-btn {
+                display: block;
+                margin-right: 0;
             }
         }
 
@@ -453,6 +486,212 @@ MODIFIED: 2025-12-09
         #whitepaper-content li {
             margin-bottom: 5px;
         }
+
+        /* ============================================
+           MISSION OVERLAY (First-time visitor intro)
+           ============================================ */
+        #mission-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(12px);
+            z-index: 10001;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        #mission-overlay.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        #mission-panel {
+            position: relative;
+            background: rgba(10, 15, 20, 0.95);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            max-width: 420px;
+            width: 90%;
+            padding: 32px 24px;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(0, 255, 255, 0.1);
+        }
+
+        #mission-panel h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.8rem;
+            color: #00ffff;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        #mission-panel .tagline {
+            font-size: 1.1rem;
+            color: #fff;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+
+        #mission-panel .description {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.75);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        #mission-panel .instruction {
+            font-size: 0.85rem;
+            color: rgba(0, 255, 255, 0.8);
+            margin-bottom: 24px;
+        }
+
+        .mission-ctas {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mission-cta {
+            display: block;
+            padding: 12px 20px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            background: rgba(0, 255, 255, 0.05);
+            color: #00ffff;
+            transition: all 0.2s ease;
+        }
+
+        .mission-cta:hover {
+            background: rgba(0, 255, 255, 0.15);
+            border-color: rgba(0, 255, 255, 0.7);
+        }
+
+        #mission-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: #00ffff;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        /* Mission Button (always visible in telemetry bar) */
+        #mission-btn {
+            background: none;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #00ffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            padding: 4px 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-right: 12px;
+        }
+
+        #mission-btn:hover {
+            border-color: rgba(0, 255, 255, 0.6);
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        /* Vision View Styling */
+        #mission-vision {
+            text-align: left;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        #mission-vision h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #mission-vision h2 {
+            color: #00ffff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+            padding-bottom: 4px;
+        }
+
+        #mission-vision p {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        #mission-vision ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        #mission-vision li {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        #mission-vision strong {
+            color: #00ffff;
+        }
+
+        .lang-switcher {
+            text-align: center;
+            font-size: 0.75rem;
+            margin-bottom: 16px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .lang-switcher a {
+            color: rgba(0, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .lang-switcher a:hover {
+            color: #00ffff;
+            text-decoration: underline;
+        }
+
+        .lang-switcher a.lang-active {
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        .vision-back-btn {
+            background: none;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #00ffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            cursor: pointer;
+            margin-bottom: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .vision-back-btn:hover {
+            border-color: rgba(0, 255, 255, 0.6);
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        /* Make CTA button look like link */
+        button.mission-cta {
+            width: 100%;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -476,6 +715,7 @@ MODIFIED: 2025-12-09
         </div>
 
         <div id="telemetry-bar">
+            <button id="mission-btn">MISSION</button>
             <div id="stats-row">
                 <span id="stat-pop">POP: 0</span>
                 <span id="stat-gen">GEN: 0</span>
@@ -560,6 +800,247 @@ S3M2P/
         </div>
     </div>
 
+    <!-- Mission Overlay (first-time visitor intro) -->
+    <div id="mission-overlay">
+        <div id="mission-panel">
+            <button id="mission-close">&times;</button>
+            <!-- Intro View -->
+            <div id="mission-intro">
+                <h1>Antimony Labs</h1>
+                <p class="tagline">Let AI design, humans build.</p>
+                <p class="description">Open-source engineering tools, simulations, and manufacturing compilers — built in Rust/WASM/WebGPU.</p>
+                <p class="instruction">Tap a bubble to open a project.</p>
+                <div class="mission-ctas">
+                    <a href="#/tools" class="mission-cta" id="cta-tools">Explore Tools</a>
+                    <a href="https://helios.too.foo" class="mission-cta" id="cta-helios">Open Helios</a>
+                    <button class="mission-cta" id="cta-vision">Read Vision</button>
+                </div>
+            </div>
+            <!-- Vision View -->
+            <div id="mission-vision" style="display: none;">
+                <button id="vision-back" class="vision-back-btn">&larr; Back</button>
+                <h1 id="vision-title">Vision</h1>
+                <p class="lang-switcher">
+                    <a href="#" data-lang="en" class="lang-active">English</a> |
+                    <a href="#" data-lang="hi">हिन्दी</a> |
+                    <a href="#" data-lang="zh">中文</a> |
+                    <a href="#" data-lang="es">Español</a> |
+                    <a href="#" data-lang="ar">العربية</a>
+                </p>
+
+                <!-- English -->
+                <div class="vision-content" data-lang="en">
+                    <h2>A product for making products</h2>
+                    <p><strong>Antimony Labs</strong> is a compiler for physical products — one unified system that outputs manufacturing-ready artifacts.</p>
+                    <p>Today's landscape is fragmented: G-code for CAM, dozens of CAD formats, Gerber files, netlists, BOMs in spreadsheets. <strong>The goal: one file for manufacturing.</strong></p>
+
+                    <h2>Why now</h2>
+                    <p>LLMs can generate code, but engineering needs <strong>correctness, repeatability, and auditability</strong>. The winning stack is "LLM + deterministic kernel + tests."</p>
+                    <p>Every piece of software will eventually be rewritten with AI assistance. <strong>Rust</strong> is the foundation — memory-safe, fast, compiles to WASM for the browser. Build it right once.</p>
+
+                    <h2>The architecture</h2>
+                    <ul>
+                        <li><strong>DNA</strong>: The kernel — math, physics, CAD primitives, exporters. Deterministic and tested.</li>
+                        <li><strong>CORE</strong>: Engines — domain workflows (CAD, SPICE, export).</li>
+                        <li><strong>TOOLS</strong>: Products — thin UIs that share the kernel.</li>
+                    </ul>
+
+                    <h2>Capturing attention to create value</h2>
+                    <p>AI generates value when humans engage. Our ecosystem:</p>
+                    <ul>
+                        <li><strong>SIMULATIONS</strong>: Interactive demos that teach physics concepts</li>
+                        <li><strong>LEARN</strong>: Tutorials on AI, embedded systems, robotics</li>
+                        <li><strong>BLOG</strong>: Technical writing and project documentation</li>
+                    </ul>
+                    <p>Attention flows to tools. Tools generate manufacturing artifacts. <strong>The funnel is: Learn → Simulate → Build → Export.</strong></p>
+
+                    <h2>The wedge: Autocrate</h2>
+                    <p>Already sold to clients. Proves the model:</p>
+                    <ul>
+                        <li><strong>Input</strong>: Crate spec (dims, weight, compliance)</li>
+                        <li><strong>Output</strong>: STEP assembly + BOM + Cut List</li>
+                    </ul>
+                    <p><strong>MBD-first</strong>: one STEP file sufficient for manufacturing.</p>
+
+                    <h2>What's next</h2>
+                    <ul>
+                        <li>Unified export: STEP + Gerber + G-code from the same design graph</li>
+                        <li>More products: power circuits, parametric CAD, PCB layout</li>
+                        <li>AI-assisted iteration with kernel tests as the safety net</li>
+                    </ul>
+                </div>
+
+                <!-- Hindi -->
+                <div class="vision-content" data-lang="hi" style="display: none;">
+                    <h2>उत्पाद बनाने के लिए एक उत्पाद</h2>
+                    <p><strong>Antimony Labs</strong> भौतिक उत्पादों के लिए एक compiler है — एक unified system जो manufacturing-ready artifacts output करता है।</p>
+                    <p>आज का landscape fragmented है: CAM के लिए G-code, दर्जनों CAD formats, Gerber files, netlists, spreadsheets में BOMs। <strong>लक्ष्य: manufacturing के लिए एक file।</strong></p>
+
+                    <h2>अभी क्यों</h2>
+                    <p>LLMs code generate कर सकते हैं, लेकिन engineering को <strong>correctness, repeatability, और auditability</strong> चाहिए। Winning stack है "LLM + deterministic kernel + tests।"</p>
+                    <p>हर software AI assistance से rewrite होगा। <strong>Rust</strong> foundation है — memory-safe, fast, browser के लिए WASM में compile होता है। एक बार सही बनाओ।</p>
+
+                    <h2>Architecture</h2>
+                    <ul>
+                        <li><strong>DNA</strong>: Kernel — math, physics, CAD primitives, exporters। Deterministic और tested।</li>
+                        <li><strong>CORE</strong>: Engines — domain workflows (CAD, SPICE, export)।</li>
+                        <li><strong>TOOLS</strong>: Products — thin UIs जो kernel share करते हैं।</li>
+                    </ul>
+
+                    <h2>Value create करने के लिए attention capture करना</h2>
+                    <p>AI value generate करता है जब humans engage करते हैं। हमारा ecosystem:</p>
+                    <ul>
+                        <li><strong>SIMULATIONS</strong>: Interactive demos जो physics concepts सिखाते हैं</li>
+                        <li><strong>LEARN</strong>: AI, embedded systems, robotics पर tutorials</li>
+                        <li><strong>BLOG</strong>: Technical writing और project documentation</li>
+                    </ul>
+                    <p>Attention tools की ओर flow होता है। Tools manufacturing artifacts generate करते हैं। <strong>Funnel है: Learn → Simulate → Build → Export।</strong></p>
+
+                    <h2>Wedge: Autocrate</h2>
+                    <p>पहले से clients को बेचा जा चुका है। Model prove करता है:</p>
+                    <ul>
+                        <li><strong>Input</strong>: Crate spec (dims, weight, compliance)</li>
+                        <li><strong>Output</strong>: STEP assembly + BOM + Cut List</li>
+                    </ul>
+                    <p><strong>MBD-first</strong>: manufacturing के लिए एक STEP file पर्याप्त।</p>
+
+                    <h2>आगे क्या है</h2>
+                    <ul>
+                        <li>Unified export: same design graph से STEP + Gerber + G-code</li>
+                        <li>More products: power circuits, parametric CAD, PCB layout</li>
+                        <li>AI-assisted iteration जिसमें kernel tests safety net हैं</li>
+                    </ul>
+                </div>
+
+                <!-- Chinese -->
+                <div class="vision-content" data-lang="zh" style="display: none;">
+                    <h2>制造产品的产品</h2>
+                    <p><strong>Antimony Labs</strong> 是实体产品的编译器——一个输出制造就绪工件的统一系统。</p>
+                    <p>当今的格局是碎片化的：CAM 用 G-code，数十种 CAD 格式，Gerber 文件，网表，电子表格中的 BOM。<strong>目标：制造只需一个文件。</strong></p>
+
+                    <h2>为什么是现在</h2>
+                    <p>LLM 可以生成代码，但工程需要<strong>正确性、可重复性和可审计性</strong>。制胜组合是"LLM + 确定性内核 + 测试"。</p>
+                    <p>每个软件最终都会在 AI 辅助下重写。<strong>Rust</strong> 是基础——内存安全、快速、编译为浏览器的 WASM。一次构建正确。</p>
+
+                    <h2>架构</h2>
+                    <ul>
+                        <li><strong>DNA</strong>：内核——数学、物理、CAD 原语、导出器。确定性且经过测试。</li>
+                        <li><strong>CORE</strong>：引擎——领域工作流（CAD、SPICE、导出）。</li>
+                        <li><strong>TOOLS</strong>：产品——共享内核的轻量 UI。</li>
+                    </ul>
+
+                    <h2>捕获注意力以创造价值</h2>
+                    <p>当人类参与时，AI 创造价值。我们的生态系统：</p>
+                    <ul>
+                        <li><strong>SIMULATIONS</strong>：教授物理概念的交互式演示</li>
+                        <li><strong>LEARN</strong>：AI、嵌入式系统、机器人教程</li>
+                        <li><strong>BLOG</strong>：技术写作和项目文档</li>
+                    </ul>
+                    <p>注意力流向工具。工具生成制造工件。<strong>漏斗是：Learn → Simulate → Build → Export。</strong></p>
+
+                    <h2>楔子：Autocrate</h2>
+                    <p>已售给客户。证明模型：</p>
+                    <ul>
+                        <li><strong>输入</strong>：Crate 规格（尺寸、重量、合规性）</li>
+                        <li><strong>输出</strong>：STEP 装配体 + BOM + 切割清单</li>
+                    </ul>
+                    <p><strong>MBD 优先</strong>：一个 STEP 文件足以制造。</p>
+
+                    <h2>下一步</h2>
+                    <ul>
+                        <li>统一导出：从同一设计图导出 STEP + Gerber + G-code</li>
+                        <li>更多产品：电源电路、参数化 CAD、PCB 布局</li>
+                        <li>以内核测试为安全网的 AI 辅助迭代</li>
+                    </ul>
+                </div>
+
+                <!-- Spanish -->
+                <div class="vision-content" data-lang="es" style="display: none;">
+                    <h2>Un producto para hacer productos</h2>
+                    <p><strong>Antimony Labs</strong> es un compilador para productos físicos — un sistema unificado que produce artefactos listos para fabricación.</p>
+                    <p>El panorama actual está fragmentado: G-code para CAM, docenas de formatos CAD, archivos Gerber, netlists, BOMs en hojas de cálculo. <strong>El objetivo: un archivo para fabricación.</strong></p>
+
+                    <h2>Por qué ahora</h2>
+                    <p>Los LLMs pueden generar código, pero la ingeniería necesita <strong>corrección, repetibilidad y auditabilidad</strong>. La combinación ganadora es "LLM + kernel determinista + tests."</p>
+                    <p>Todo software eventualmente será reescrito con asistencia de IA. <strong>Rust</strong> es la base — memory-safe, rápido, compila a WASM para el navegador. Constrúyelo bien una vez.</p>
+
+                    <h2>La arquitectura</h2>
+                    <ul>
+                        <li><strong>DNA</strong>: El kernel — matemáticas, física, primitivas CAD, exportadores. Determinista y testeado.</li>
+                        <li><strong>CORE</strong>: Motores — flujos de trabajo de dominio (CAD, SPICE, export).</li>
+                        <li><strong>TOOLS</strong>: Productos — UIs ligeras que comparten el kernel.</li>
+                    </ul>
+
+                    <h2>Capturar atención para crear valor</h2>
+                    <p>La IA genera valor cuando los humanos participan. Nuestro ecosistema:</p>
+                    <ul>
+                        <li><strong>SIMULATIONS</strong>: Demos interactivas que enseñan conceptos de física</li>
+                        <li><strong>LEARN</strong>: Tutoriales sobre IA, sistemas embebidos, robótica</li>
+                        <li><strong>BLOG</strong>: Escritura técnica y documentación de proyectos</li>
+                    </ul>
+                    <p>La atención fluye hacia las herramientas. Las herramientas generan artefactos de fabricación. <strong>El embudo es: Learn → Simulate → Build → Export.</strong></p>
+
+                    <h2>La cuña: Autocrate</h2>
+                    <p>Ya vendido a clientes. Demuestra el modelo:</p>
+                    <ul>
+                        <li><strong>Input</strong>: Especificación de crate (dimensiones, peso, cumplimiento)</li>
+                        <li><strong>Output</strong>: Ensamblaje STEP + BOM + Lista de corte</li>
+                    </ul>
+                    <p><strong>MBD-first</strong>: un archivo STEP suficiente para fabricación.</p>
+
+                    <h2>Qué sigue</h2>
+                    <ul>
+                        <li>Exportación unificada: STEP + Gerber + G-code desde el mismo grafo de diseño</li>
+                        <li>Más productos: circuitos de potencia, CAD paramétrico, layout PCB</li>
+                        <li>Iteración asistida por IA con tests del kernel como red de seguridad</li>
+                    </ul>
+                </div>
+
+                <!-- Arabic -->
+                <div class="vision-content" data-lang="ar" style="display: none;" dir="rtl">
+                    <h2>منتج لصنع المنتجات</h2>
+                    <p><strong>Antimony Labs</strong> هو مُجمِّع للمنتجات المادية — نظام موحد ينتج مخرجات جاهزة للتصنيع.</p>
+                    <p>المشهد الحالي مجزأ: G-code لـ CAM، عشرات تنسيقات CAD، ملفات Gerber، قوائم الشبكات، BOMs في جداول البيانات. <strong>الهدف: ملف واحد للتصنيع.</strong></p>
+
+                    <h2>لماذا الآن</h2>
+                    <p>يمكن لـ LLMs توليد الكود، لكن الهندسة تحتاج <strong>الصحة، والتكرارية، والقابلية للتدقيق</strong>. التركيبة الفائزة هي "LLM + نواة حتمية + اختبارات."</p>
+                    <p>كل برنامج سيُعاد كتابته في النهاية بمساعدة الذكاء الاصطناعي. <strong>Rust</strong> هو الأساس — آمن للذاكرة، سريع، يُجمَّع إلى WASM للمتصفح. ابنِه بشكل صحيح مرة واحدة.</p>
+
+                    <h2>البنية</h2>
+                    <ul>
+                        <li><strong>DNA</strong>: النواة — الرياضيات، الفيزياء، أساسيات CAD، المُصدِّرون. حتمي ومُختبر.</li>
+                        <li><strong>CORE</strong>: المحركات — سير عمل المجال (CAD، SPICE، التصدير).</li>
+                        <li><strong>TOOLS</strong>: المنتجات — واجهات مستخدم خفيفة تشارك النواة.</li>
+                    </ul>
+
+                    <h2>جذب الانتباه لخلق القيمة</h2>
+                    <p>الذكاء الاصطناعي يولد قيمة عندما يشارك البشر. منظومتنا:</p>
+                    <ul>
+                        <li><strong>SIMULATIONS</strong>: عروض تفاعلية تُعلِّم مفاهيم الفيزياء</li>
+                        <li><strong>LEARN</strong>: دروس عن الذكاء الاصطناعي، الأنظمة المدمجة، الروبوتات</li>
+                        <li><strong>BLOG</strong>: الكتابة التقنية وتوثيق المشاريع</li>
+                    </ul>
+                    <p>الانتباه يتدفق نحو الأدوات. الأدوات تولد مخرجات التصنيع. <strong>القمع هو: Learn ← Simulate ← Build ← Export.</strong></p>
+
+                    <h2>الوتد: Autocrate</h2>
+                    <p>بيعت بالفعل للعملاء. تثبت النموذج:</p>
+                    <ul>
+                        <li><strong>المدخل</strong>: مواصفات الصندوق (الأبعاد، الوزن، الامتثال)</li>
+                        <li><strong>المخرج</strong>: تجميع STEP + BOM + قائمة القطع</li>
+                    </ul>
+                    <p><strong>MBD أولاً</strong>: ملف STEP واحد يكفي للتصنيع.</p>
+
+                    <h2>ما التالي</h2>
+                    <ul>
+                        <li>تصدير موحد: STEP + Gerber + G-code من نفس رسم التصميم</li>
+                        <li>المزيد من المنتجات: دوائر الطاقة، CAD البارامتري، تخطيط PCB</li>
+                        <li>التكرار بمساعدة الذكاء الاصطناعي مع اختبارات النواة كشبكة أمان</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Architecture Diagram Container -->
     <div id="arch-container"
         style="display: none; position: fixed; inset: 0; background: rgba(5, 5, 8, 0.95); z-index: 5000; justify-content: center; align-items: center;">
@@ -614,6 +1095,104 @@ S3M2P/
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') overlay.classList.remove('visible');
         });
+    </script>
+
+    <script>
+        // Mission Overlay Logic
+        (function() {
+            const missionOverlay = document.getElementById('mission-overlay');
+            const missionCloseBtn = document.getElementById('mission-close');
+            const missionBtn = document.getElementById('mission-btn');
+            const missionIntro = document.getElementById('mission-intro');
+            const missionVision = document.getElementById('mission-vision');
+            const ctaVision = document.getElementById('cta-vision');
+            const visionBack = document.getElementById('vision-back');
+            const storageKey = 'toofoo_intro_dismissed_v1';
+
+            // Check for ?intro=false param (for Playwright tests)
+            const urlParams = new URLSearchParams(window.location.search);
+            const introParam = urlParams.get('intro');
+
+            function showMission() {
+                missionOverlay.classList.add('visible');
+                // Reset to intro view when opening
+                missionIntro.style.display = 'block';
+                missionVision.style.display = 'none';
+            }
+
+            function hideMission() {
+                missionOverlay.classList.remove('visible');
+                localStorage.setItem(storageKey, 'true');
+            }
+
+            function showVision() {
+                missionIntro.style.display = 'none';
+                missionVision.style.display = 'block';
+            }
+
+            function showIntro() {
+                missionVision.style.display = 'none';
+                missionIntro.style.display = 'block';
+            }
+
+            // Show on first visit unless intro=false
+            if (introParam !== 'false' && !localStorage.getItem(storageKey)) {
+                showMission();
+            }
+
+            // Close button
+            missionCloseBtn.addEventListener('click', hideMission);
+
+            // Click outside to close
+            missionOverlay.addEventListener('click', (e) => {
+                if (e.target === missionOverlay) hideMission();
+            });
+
+            // Escape key to close
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && missionOverlay.classList.contains('visible')) {
+                    hideMission();
+                }
+            });
+
+            // Mission button to reopen
+            if (missionBtn) {
+                missionBtn.addEventListener('click', showMission);
+            }
+
+            // Vision toggle
+            if (ctaVision) {
+                ctaVision.addEventListener('click', showVision);
+            }
+            if (visionBack) {
+                visionBack.addEventListener('click', showIntro);
+            }
+
+            // Language switcher for Vision
+            const visionTitle = document.getElementById('vision-title');
+            const visionTitles = { en: 'Vision', hi: 'विज़न', zh: '愿景', es: 'Visión', ar: 'الرؤية' };
+            document.querySelectorAll('.lang-switcher a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const lang = link.dataset.lang;
+                    // Hide all content, show selected
+                    document.querySelectorAll('.vision-content').forEach(c => c.style.display = 'none');
+                    document.querySelector(`.vision-content[data-lang="${lang}"]`).style.display = 'block';
+                    // Update active link
+                    document.querySelectorAll('.lang-switcher a').forEach(l => l.classList.remove('lang-active'));
+                    link.classList.add('lang-active');
+                    // Update title
+                    if (visionTitle) visionTitle.textContent = visionTitles[lang] || 'Vision';
+                });
+            });
+
+            // CTA links close overlay (except vision button)
+            document.querySelectorAll('.mission-cta:not(#cta-vision)').forEach(cta => {
+                cta.addEventListener('click', () => {
+                    hideMission();
+                });
+            });
+        })();
     </script>
 </body>
 

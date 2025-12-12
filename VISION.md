@@ -1,5 +1,7 @@
 # VISION — Autocrate (Antimony Labs) in S3M2P
 
+**Languages:** [English](VISION.md) | [हिन्दी](VISION.hi.md) | [中文](VISION.zh.md) | [Español](VISION.es.md) | [العربية](VISION.ar.md)
+
 ## What we are building
 
 **Autocrate** is a standards-driven “compiler” for physical products: it turns structured intent into **deterministic manufacturing artifacts**.
