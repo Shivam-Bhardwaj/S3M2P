@@ -61,6 +61,10 @@ MODIFIED: 2025-12-02
                     <button id="download-bom" class="secondary">Download BOM (CSV)</button>
                     <button id="download-cut" class="secondary">Download Cut List (CSV)</button>
                 </div>
+                <div class="button-row">
+                    <button id="view-bom" class="secondary">View BOM</button>
+                    <button id="view-cut" class="secondary">View Cut List</button>
+                </div>
 
                 <p class="info-text">
                     Viewer renders <strong>CrateDesign</strong> directly (visualization moat). STEP is just an output.
@@ -113,6 +117,18 @@ MODIFIED: 2025-12-02
             }
         }
     </script>
+
+    <!-- Read-only report modal (BOM / Cut List) -->
+    <div id="report-modal" class="modal" hidden>
+        <div id="report-modal-backdrop" class="modal-backdrop"></div>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+            <div class="modal-header">
+                <div id="report-modal-title" class="modal-title">Report</div>
+                <button id="report-modal-close" class="modal-close">Close</button>
+            </div>
+            <pre id="report-modal-body" class="modal-body mono">Loading…</pre>
+        </div>
+    </div>
 </body>
 
 </html>

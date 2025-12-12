@@ -80,6 +80,11 @@ fn init_ui() -> Result<(), JsValue> {
     hook_download_button(&document, "download-bom", DownloadKind::Bom)?;
     hook_download_button(&document, "download-cut", DownloadKind::CutList)?;
 
+    // View reports (read-only modal)
+    hook_view_button(&document, "view-bom", ViewKind::Bom)?;
+    hook_view_button(&document, "view-cut", ViewKind::CutList)?;
+    hook_modal_close(&document)?;
+
     // Part select
     if let Some(select) = document.get_element_by_id("part-select") {
         let select: HtmlSelectElement = select.dyn_into()?;
@@ -111,6 +116,12 @@ enum DownloadKind {
     CutList,
 }
 
+#[derive(Clone, Copy)]
+enum ViewKind {
+    Bom,
+    CutList,
+}
+
 fn hook_download_button(document: &Document, id: &str, kind: DownloadKind) -> Result<(), JsValue> {
     let btn = document
         .get_element_by_id(id)
@@ -123,6 +134,49 @@ fn hook_download_button(document: &Document, id: &str, kind: DownloadKind) -> Re
     }) as Box<dyn FnMut()>);
     btn.set_onclick(Some(closure.as_ref().unchecked_ref()));
     closure.forget();
+    Ok(())
+}
+
+fn hook_view_button(document: &Document, id: &str, kind: ViewKind) -> Result<(), JsValue> {
+    let btn = document
+        .get_element_by_id(id)
+        .ok_or_else(|| format!("Button {id} not found"))?;
+    let btn: HtmlElement = btn.dyn_into()?;
+    let closure = Closure::wrap(Box::new(move || {
+        if let Err(e) = open_report_modal(kind) {
+            web_sys::console::error_1(&format!("View report failed: {:?}", e).into());
+        }
+    }) as Box<dyn FnMut()>);
+    btn.set_onclick(Some(closure.as_ref().unchecked_ref()));
+    closure.forget();
+    Ok(())
+}
+
+fn hook_modal_close(document: &Document) -> Result<(), JsValue> {
+    // Close button
+    if let Some(btn) = document.get_element_by_id("report-modal-close") {
+        let btn: HtmlElement = btn.dyn_into()?;
+        let closure = Closure::wrap(Box::new(move || {
+            if let Err(e) = close_report_modal() {
+                web_sys::console::error_1(&format!("Close modal failed: {:?}", e).into());
+            }
+        }) as Box<dyn FnMut()>);
+        btn.set_onclick(Some(closure.as_ref().unchecked_ref()));
+        closure.forget();
+    }
+
+    // Backdrop click
+    if let Some(backdrop) = document.get_element_by_id("report-modal-backdrop") {
+        let backdrop: HtmlElement = backdrop.dyn_into()?;
+        let closure = Closure::wrap(Box::new(move || {
+            if let Err(e) = close_report_modal() {
+                web_sys::console::error_1(&format!("Close modal failed: {:?}", e).into());
+            }
+        }) as Box<dyn FnMut()>);
+        backdrop.set_onclick(Some(closure.as_ref().unchecked_ref()));
+        closure.forget();
+    }
+
     Ok(())
 }
 
@@ -219,6 +273,50 @@ fn update_ui(document: &Document) -> Result<(), JsValue> {
         }
     });
 
+    Ok(())
+}
+
+fn open_report_modal(kind: ViewKind) -> Result<(), JsValue> {
+    let window = web_sys::window().ok_or("No window")?;
+    let document = window.document().ok_or("No document")?;
+
+    let (title, body) = STATE.with(|state| -> Result<(String, String), JsValue> {
+        let state = state.borrow();
+        let design = state
+            .design
+            .as_ref()
+            .ok_or_else(|| JsValue::from_str("No design"))?;
+
+        match kind {
+            ViewKind::Bom => Ok(("BOM (CSV)".to_string(), export_bom_csv(design))),
+            ViewKind::CutList => Ok(("Cut List (CSV)".to_string(), export_cut_list_csv(design))),
+        }
+    })?;
+
+    // Fill content
+    set_text(&document, "report-modal-title", &title)?;
+    if let Some(elem) = document.get_element_by_id("report-modal-body") {
+        let elem: HtmlElement = elem.dyn_into()?;
+        elem.set_inner_text(&body);
+    }
+
+    // Show modal
+    let modal = document
+        .get_element_by_id("report-modal")
+        .ok_or("report-modal not found")?;
+    let modal: HtmlElement = modal.dyn_into()?;
+    modal.set_hidden(false);
+    Ok(())
+}
+
+fn close_report_modal() -> Result<(), JsValue> {
+    let window = web_sys::window().ok_or("No window")?;
+    let document = window.document().ok_or("No document")?;
+    let modal = document
+        .get_element_by_id("report-modal")
+        .ok_or("report-modal not found")?;
+    let modal: HtmlElement = modal.dyn_into()?;
+    modal.set_hidden(true);
     Ok(())
 }
 

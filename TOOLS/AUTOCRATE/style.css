@@ -297,6 +297,73 @@ button.secondary:hover {
     }
 }
 
+/* Modal (reports: BOM/Cut List) */
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+}
+
+.modal-card {
+    position: relative;
+    width: min(1100px, 96vw);
+    max-height: min(80vh, 900px);
+    background: rgba(10, 10, 18, 0.92);
+    border: 1px solid rgba(255, 107, 53, 0.2);
+    border-radius: 14px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modal-title {
+    color: #ff6b35;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+}
+
+.modal-close {
+    padding: 0.45rem 0.75rem;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    color: #e0e0e0;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    border-color: rgba(255, 107, 53, 0.35);
+    color: #ff6b35;
+}
+
+.modal-body {
+    margin: 0;
+    max-height: calc(80vh - 70px);
+    overflow: auto;
+    white-space: pre;
+}
+
 
 /* Input panel (for future UI) */
 .input-panel {
