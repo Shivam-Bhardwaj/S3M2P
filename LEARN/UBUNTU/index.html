@@ -1,8 +1,8 @@
 <!--
 ═══════════════════════════════════════════════════════════════════════════════
 FILE: index.html | UBUNTU/index.html
-PURPOSE: Web application entry point with HTML structure
-MODIFIED: 2025-12-02
+PURPOSE: Ubuntu learning platform - filesystem, permissions, administration
+MODIFIED: 2025-12-11
 ═══════════════════════════════════════════════════════════════════════════════
 -->
 <!DOCTYPE html>
@@ -10,38 +10,338 @@ MODIFIED: 2025-12-02
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ubuntu TITLE_PLACEHOLDER Linux</title>
+    <title>Ubuntu | Linux Permissions</title>
     <link data-trunk rel="rust" href="Cargo.toml" data-wasm-opt="z" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Rajdhani:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #050508;
+            --surface: #0a0a12;
+            --surface-hover: #12121a;
+            --accent: #e95420;
+            --accent-dim: rgba(233, 84, 32, 0.2);
+            --text: #e0e0e0;
+            --text-muted: #888;
+            --border: rgba(233, 84, 32, 0.15);
+            --terminal-bg: #1a1a24;
+            --terminal-green: #44ff88;
+            --terminal-red: #ff6644;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
             min-height: 100vh;
+        }
+
+        #app {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 60px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #ffaa44);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+
+        /* Phase sections */
+        .phase {
+            margin-bottom: 50px;
+        }
+
+        .phase h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .lesson-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        /* Lesson cards */
+        .lesson-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lesson-card:hover {
+            background: var(--surface-hover);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .lesson-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .lesson-card h3 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .lesson-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Lesson view */
+        .lesson-view {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .lesson-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .back-btn, .nav-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover, .nav-btn:hover {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+        }
+
+        .lesson-header {
             display: flex;
             align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #050508 0%, #0a0a12 100%);
-            font-family: 'Monaco', 'Courier New', monospace;
-            color: #e0e0e0;
+            gap: 20px;
+            margin-bottom: 40px;
         }
-        .container { text-align: center; padding: 2rem; max-width: 600px; }
-        h1 { font-size: 2.5rem; margin-bottom: 1rem; color: #00ffaa; text-shadow: 0 0 20px rgba(0, 255, 170, 0.5); }
-        .description { font-size: 1.2rem; margin-bottom: 2rem; color: #b0b0b0; line-height: 1.6; }
-        .status { font-size: 1.5rem; margin-bottom: 2rem; color: #ffaa00; font-weight: bold; }
-        .back-link {
-            display: inline-block; margin-top: 2rem; padding: 0.8rem 1.5rem;
-            background: rgba(0, 255, 170, 0.1); border: 1px solid rgba(0, 255, 170, 0.3);
-            color: #00ffaa; text-decoration: none; border-radius: 4px; transition: all 0.3s ease;
+
+        .lesson-icon-large {
+            font-size: 4rem;
         }
-        .back-link:hover { background: rgba(0, 255, 170, 0.2); border-color: #00ffaa; }
-        @media (max-width: 768px) { h1 { font-size: 1.8rem; } .description { font-size: 1rem; } }
+
+        .lesson-header h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2.5rem;
+            color: #fff;
+        }
+
+        .lesson-header .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Content sections */
+        .lesson-content section {
+            margin-bottom: 40px;
+        }
+
+        .lesson-content h3 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .description p {
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+
+        .intuition {
+            background: var(--surface);
+            border-left: 3px solid var(--accent);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .intuition p {
+            color: var(--text);
+            font-style: italic;
+        }
+
+        /* Concepts */
+        .concept-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .concept {
+            background: var(--accent-dim);
+            color: var(--accent);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        /* Terminal section */
+        .terminal-section {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .terminal {
+            background: var(--terminal-bg);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            min-height: 300px;
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terminal-output {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+
+        .terminal-line {
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: var(--terminal-green);
+            line-height: 1.4;
+        }
+
+        .terminal-line.error {
+            color: var(--terminal-red);
+        }
+
+        .terminal-input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .terminal-prompt {
+            color: var(--terminal-green);
+            white-space: nowrap;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            caret-color: var(--terminal-green);
+        }
+
+        .terminal-hints {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(233, 84, 32, 0.05);
+            border-radius: 6px;
+        }
+
+        .terminal-hints p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .terminal-hints code {
+            background: var(--surface);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+        }
+
+        .canvas-hint {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        /* Footer nav */
+        .lesson-footer {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 2rem; }
+            .lesson-header { flex-direction: column; text-align: center; }
+            .lesson-icon-large { font-size: 3rem; }
+            .terminal { font-size: 12px; min-height: 250px; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Ubuntu TITLE_PLACEHOLDER Linux</h1>
-        <p class="description">Linux system administration, shell scripting, server management, and DevOps fundamentals.</p>
-        <p class="status">Coming Soon</p>
-        <a href="https://too.foo" class="back-link">← Back to antimony-labs</a>
+    <div id="app">
+        <div class="loading">Loading...</div>
     </div>
 </body>
 </html>

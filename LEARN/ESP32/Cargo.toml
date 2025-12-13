@@ -1,7 +1,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # FILE: Cargo.toml | ESP32/Cargo.toml
 # PURPOSE: Rust package manifest with dependencies and build configuration
-# MODIFIED: 2025-12-02
+# MODIFIED: 2025-12-11
 # ═══════════════════════════════════════════════════════════════════════════════
 [package]
 name = "esp32-learn"
@@ -15,8 +15,17 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 wasm-bindgen = "=0.2.93"
 console_error_panic_hook = "0.1"
-web-sys = { version = "0.3", features = ["console"] }
-
-[profile.release]
-opt-level = "z"
-lto = true
+js-sys = "0.3"
+web-sys = { version = "0.3", features = [
+    "console",
+    "Window",
+    "Document",
+    "Element",
+    "HtmlElement",
+    "HtmlCanvasElement",
+    "HtmlInputElement",
+    "CanvasRenderingContext2d",
+    "Performance",
+] }
+learn_core = { path = "../learn_core" }
+learn_web = { path = "../learn_web" }

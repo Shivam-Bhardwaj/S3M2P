@@ -702,6 +702,9 @@ name = "esp32-learn"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
+ "js-sys",
+ "learn_core",
+ "learn_web",
  "wasm-bindgen",
  "web-sys",
 ]
@@ -1471,6 +1474,39 @@ name = "lazy_static"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
+
+[[package]]
+name = "learn"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "learn_core",
+ "learn_web",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
+name = "learn_core"
+version = "0.1.0"
+dependencies = [
+ "rand",
+]
+
+[[package]]
+name = "learn_web"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "learn_core",
+ "wasm-bindgen",
+ "web-sys",
+]
 
 [[package]]
 name = "libc"
@@ -2452,6 +2488,9 @@ name = "slam-learn"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
+ "js-sys",
+ "learn_core",
+ "learn_web",
  "wasm-bindgen",
  "web-sys",
 ]
@@ -3159,6 +3198,9 @@ name = "ubuntu-learn"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
+ "js-sys",
+ "learn_core",
+ "learn_web",
  "wasm-bindgen",
  "web-sys",
 ]

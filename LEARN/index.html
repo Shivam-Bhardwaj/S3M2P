@@ -10,7 +10,7 @@ MODIFIED: 2025-11-29
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learn | Zero to AGI</title>
+    <title>Learn | ML Fundamentals</title>
     <link data-trunk rel="rust" data-wasm-opt="z" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Rajdhani:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -273,6 +273,76 @@ MODIFIED: 2025-11-29
             color: var(--text-muted);
             font-size: 0.85rem;
             margin-top: 10px;
+        }
+
+        /* Demo controls */
+        .demo-controls {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            gap: 15px;
+        }
+
+        .control-row label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            min-width: 180px;
+        }
+
+        .control-row label span {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .control-row input[type="range"] {
+            flex: 1;
+            height: 6px;
+            background: var(--surface);
+            border-radius: 3px;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .control-row input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .demo-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .demo-btn:hover {
+            background: var(--accent-dim);
+            border-color: var(--accent);
         }
 
         /* Footer nav */

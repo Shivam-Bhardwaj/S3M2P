@@ -4,7 +4,7 @@
 //! MODIFIED: 2025-11-29
 //! LAYER: LEARN → src
 //! ═══════════════════════════════════════════════════════════════════════════════
-// Lesson definitions - Zero to AGI curriculum
+// Lesson definitions - ML curriculum
 
 /// A single lesson
 pub struct Lesson {
@@ -126,12 +126,12 @@ pub static LESSONS: &[Lesson] = &[
         key_concepts: &["Tree Search", "UCB", "Rollouts", "Exploration vs Exploitation"],
     },
 
-    // Phase 4: Towards AGI
+    // Phase 4: Advanced
     Lesson {
         id: 9,
         title: "AlphaZero",
         subtitle: "Self-Play Mastery",
-        phase: "Towards AGI",
+        phase: "Advanced",
         icon: "♟️",
         description: "Combine neural networks with MCTS. Learn entirely from self-play, no human knowledge.",
         intuition: "Play against yourself millions of times. Use a neural net to evaluate positions and guide search.",
@@ -142,7 +142,7 @@ pub static LESSONS: &[Lesson] = &[
         id: 10,
         title: "LLMs",
         subtitle: "Transformers & Attention",
-        phase: "Towards AGI",
+        phase: "Advanced",
         icon: "💬",
         description: "Large language models and the transformer architecture. Attention is all you need.",
         intuition: "Each word attends to every other word. Relevance determined by learned queries and keys.",
@@ -151,11 +151,11 @@ pub static LESSONS: &[Lesson] = &[
     },
     Lesson {
         id: 11,
-        title: "AGI Architecture",
+        title: "System Architecture",
         subtitle: "Putting It Together",
-        phase: "Towards AGI",
+        phase: "Advanced",
         icon: "🌌",
-        description: "Multimodal processing, memory systems, reasoning engines. The path to general intelligence.",
+        description: "Multimodal processing, memory systems, reasoning engines. Building integrated AI systems.",
         intuition: "Combine perception (vision, language), memory (short/long term), and reasoning (planning, inference) into one system.",
         math: "",
         key_concepts: &["Multimodal", "Memory", "Reasoning", "World Models"],

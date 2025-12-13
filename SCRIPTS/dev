@@ -18,37 +18,65 @@ cmd_docs() {
 
 cmd_up() {
     local target="${1:-all}"
-    
+
     mkdir -p "$LOG_DIR"
-    
+
     if [[ "$target" == "all" ]]; then
         cmd_docs
         echo "🚀 Starting ALL services..."
         echo "Logs: $LOG_DIR"
         echo ""
-        printf "%-15s %-10s %s\n" "PROJECT" "PORT" "STATUS"
-        echo "────────────────────────────────────────"
 
         local pids=()
 
-        for project in "${!PROJECT_PORTS[@]}"; do
+        # Define project groups
+        local -a MAIN_PROJECTS=(welcome helios blog arch)
+        local -a ML_PROJECTS=(learn)
+        local -a LEARN_PROJECTS=(ubuntu esp32 slam ai opencv arduino swarm)
+        local -a TOOLS_PROJECTS=(pll autocrate sensors power crm)
+        local -a SIM_PROJECTS=(chladni coming_soon)
+
+        # Function to start a project
+        start_project() {
+            local project="$1"
             local port="${PROJECT_PORTS[$project]}"
             local dir="${PROJECT_DIRS[$project]}"
             local path="$REPO_ROOT/$dir"
             local log="$LOG_DIR/$project.log"
+            local url="http://127.0.0.1:$port"
 
             # Kill existing
             lsof -t -i :"$port" | xargs -r kill 2>/dev/null || true
 
+            # Create clickable hyperlink using OSC 8 escape sequence
+            local link=$'\e]8;;'"${url}"$'\e\\'"${url}"$'\e]8;;\e\\'
+
             if [[ -f "$path/Trunk.toml" ]] || [[ -f "$path/index.html" ]]; then
-                # trunk reads NO_COLOR as a boolean env var; some environments set NO_COLOR=1 which breaks parsing.
                 (cd "$path" && NO_COLOR=true trunk serve index.html --port "$port" > "$log" 2>&1) &
                 pids+=($!)
-                printf "%-15s %-10s %s\n" "$project" "$port" "✅ Started"
+                printf "  %-13s %s %s\n" "$project" "$link" "✅"
             else
-                 printf "%-15s %-10s %s\n" "$project" "$port" "⚠️  No Entry"
+                printf "  %-13s %s %s\n" "$project" "$link" "⚠️"
             fi
-        done
+        }
+
+        # Start each group with header
+        echo "┌─ MAIN ────────────────────────────────────────────────────"
+        for project in "${MAIN_PROJECTS[@]}"; do start_project "$project"; done
+
+        echo "├─ ML ──────────────────────────────────────────────────────"
+        for project in "${ML_PROJECTS[@]}"; do start_project "$project"; done
+
+        echo "├─ LEARN ───────────────────────────────────────────────────"
+        for project in "${LEARN_PROJECTS[@]}"; do start_project "$project"; done
+
+        echo "├─ TOOLS ───────────────────────────────────────────────────"
+        for project in "${TOOLS_PROJECTS[@]}"; do start_project "$project"; done
+
+        echo "├─ SIMULATION ───────────────────────────────────────────────"
+        for project in "${SIM_PROJECTS[@]}"; do start_project "$project"; done
+
+        echo "└──────────────────────────────────────────────────────────"
         echo ""
         echo "Press Ctrl+C to stop all."
         wait

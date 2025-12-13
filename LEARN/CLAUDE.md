@@ -1,4 +1,4 @@
-# Learn - Zero to AGI Platform
+# Learn - ML Fundamentals Platform
 
 Interactive ML learning platform built with Rust/WASM. Client-side rendering, no server needed.
 
@@ -37,10 +37,10 @@ learn/
 - Policy Gradients
 - MCTS
 
-### Phase 4: Towards AGI (9-11)
+### Phase 4: Advanced (9-11)
 - AlphaZero
 - LLMs
-- AGI Architecture
+- System Architecture
 
 ## Features
 

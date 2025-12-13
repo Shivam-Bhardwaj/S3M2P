@@ -1,0 +1,23 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# FILE: Cargo.toml | LEARN/learn_core/Cargo.toml
+# PURPOSE: Pure Rust simulation logic - no web dependencies
+# MODIFIED: 2025-12-11
+# LAYER: LEARN → learn_core
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[package]
+name = "learn_core"
+version.workspace = true
+edition.workspace = true
+description = "Pure Rust simulation logic for LEARN apps"
+
+[dependencies]
+# No external dependencies - pure Rust only
+# This keeps the crate testable without WASM
+
+[dev-dependencies]
+# For comparison testing only
+rand = "0.8"
+
+[lints]
+workspace = true

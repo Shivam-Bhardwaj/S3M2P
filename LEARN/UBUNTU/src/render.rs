@@ -1,10 +1,9 @@
 //! ═══════════════════════════════════════════════════════════════════════════════
-//! FILE: render.rs | src/render.rs
-//! PURPOSE: DOM rendering and canvas visualization logic
-//! MODIFIED: 2025-11-29
-//! LAYER: LEARN → src
+//! FILE: render.rs | UBUNTU/src/render.rs
+//! PURPOSE: DOM rendering for Ubuntu lessons
+//! MODIFIED: 2025-12-11
+//! LAYER: LEARN → UBUNTU
 //! ═══════════════════════════════════════════════════════════════════════════════
-// DOM rendering for lessons
 
 use crate::lessons::Lesson;
 use wasm_bindgen::prelude::*;
@@ -31,56 +30,35 @@ impl LessonRenderer {
     }
 
     pub fn render_home(&self, lessons: &[Lesson]) -> Result<(), JsValue> {
-        let phases = [
-            "Foundations",
-            "Deep Learning",
-            "Reinforcement Learning",
-            "Advanced",
-        ];
-
         let mut html = String::from(
             r#"
             <header class="hero">
-                <h1>ML Fundamentals</h1>
-                <p class="subtitle">Learn machine learning from scratch, implemented in Rust</p>
+                <h1>Ubuntu Linux</h1>
+                <p class="subtitle">System Administration & Permissions</p>
             </header>
+            <section class="phase">
+                <h2>Filesystem & Permissions</h2>
+                <div class="lesson-grid">
         "#,
         );
 
-        for phase in phases {
-            let phase_lessons: Vec<_> = lessons.iter().filter(|l| l.phase == phase).collect();
-
-            if phase_lessons.is_empty() {
-                continue;
-            }
-
+        for lesson in lessons {
             html.push_str(&format!(
                 r#"
-                <section class="phase">
-                    <h2>{}</h2>
-                    <div class="lesson-grid">
+                <div class="lesson-card" onclick="go_to_lesson({})">
+                    <span class="lesson-icon">{}</span>
+                    <h3>{}</h3>
+                    <p class="lesson-subtitle">{}</p>
+                </div>
             "#,
-                phase
+                lesson.id, lesson.icon, lesson.title, lesson.subtitle
             ));
-
-            for lesson in phase_lessons {
-                html.push_str(&format!(
-                    r#"
-                    <div class="lesson-card" onclick="go_to_lesson({})">
-                        <span class="lesson-icon">{}</span>
-                        <h3>{}</h3>
-                        <p class="lesson-subtitle">{}</p>
-                    </div>
-                "#,
-                    lesson.id, lesson.icon, lesson.title, lesson.subtitle
-                ));
-            }
-
-            html.push_str("</div></section>");
         }
 
         html.push_str(
             r#"
+                </div>
+            </section>
             <footer>
                 <a href="https://too.foo">← back to too.foo</a>
             </footer>
@@ -99,42 +77,25 @@ impl LessonRenderer {
             .collect::<Vec<_>>()
             .join("");
 
-        let math_html = if lesson.math.is_empty() {
-            String::new()
-        } else {
-            format!(
-                r#"
-                <div class="math-section">
-                    <h3>Mathematics</h3>
-                    <div class="math" data-formula="{}">{}</div>
-                </div>
-            "#,
-                lesson.math, lesson.math
-            )
-        };
-
-        // Demo controls for specific lessons
-        let demo_controls = if lesson.id == 1 {
-            // Linear Regression controls
+        // Terminal-based demo for lesson 0
+        let demo_section = if lesson.id == 0 {
             r#"
-            <div class="demo-controls" id="demo-controls">
-                <div class="control-row">
-                    <label>Learning Rate: <span id="lr-value">0.100</span></label>
-                    <input type="range" id="lr-slider" min="0.001" max="1" step="0.01" value="0.1">
+            <section class="terminal-section">
+                <h3>Interactive Terminal</h3>
+                <div class="terminal" id="terminal">
+                    <div class="terminal-output" id="terminal-output"></div>
+                    <div class="terminal-input-line">
+                        <span class="terminal-prompt" id="terminal-prompt">user@ubuntu:~$ </span>
+                        <input type="text" id="terminal-input" class="terminal-input" autocomplete="off" spellcheck="false" autofocus>
+                    </div>
                 </div>
-                <div class="control-row">
-                    <label>Noise: <span id="noise-value">0.20</span></label>
-                    <input type="range" id="noise-slider" min="0" max="1" step="0.05" value="0.2">
+                <div class="terminal-hints">
+                    <p>Try: <code>ls -l</code>, <code>cat readme.txt</code>, <code>chmod 777 readme.txt</code>, <code>su root</code>, <code>help</code></p>
                 </div>
-                <div class="control-buttons">
-                    <button id="reset-btn" class="demo-btn">🔄 Reset</button>
-                    <button id="pause-btn" class="demo-btn">⏸ Pause</button>
-                    <button id="step-btn" class="demo-btn">⏭ Step</button>
-                </div>
-            </div>
+            </section>
             "#.to_string()
         } else {
-            r#"<p class="canvas-hint">Coming soon: interactive visualization</p>"#.to_string()
+            r#"<p class="canvas-hint">Coming soon: interactive terminal</p>"#.to_string()
         };
 
         let html = format!(
@@ -142,7 +103,6 @@ impl LessonRenderer {
             <article class="lesson-view">
                 <nav class="lesson-nav">
                     <button onclick="go_home()" class="back-btn">← All Lessons</button>
-                    <span class="phase-badge">{}</span>
                 </nav>
 
                 <header class="lesson-header">
@@ -163,18 +123,12 @@ impl LessonRenderer {
                         <p>{}</p>
                     </section>
 
-                    {}
-
                     <section class="concepts">
                         <h3>Key Concepts</h3>
                         <div class="concept-list">{}</div>
                     </section>
 
-                    <section class="visualization">
-                        <h3>Interactive Demo</h3>
-                        <canvas id="lesson-canvas" width="600" height="400"></canvas>
-                        {}
-                    </section>
+                    {}
                 </div>
 
                 <nav class="lesson-footer">
@@ -183,15 +137,13 @@ impl LessonRenderer {
                 </nav>
             </article>
         "#,
-            lesson.phase,
             lesson.icon,
             lesson.title,
             lesson.subtitle,
             lesson.description,
             lesson.intuition,
-            math_html,
             concepts_html,
-            demo_controls,
+            demo_section,
             if lesson.id > 0 {
                 format!(
                     r#"<button onclick="go_to_lesson({})" class="nav-btn">← Previous</button>"#,
@@ -200,7 +152,7 @@ impl LessonRenderer {
             } else {
                 String::from(r#"<span></span>"#)
             },
-            if lesson.id < 11 {
+            if lesson.id < 3 {
                 format!(
                     r#"<button onclick="go_to_lesson({})" class="nav-btn">Next →</button>"#,
                     lesson.id + 1
@@ -211,10 +163,6 @@ impl LessonRenderer {
         );
 
         self.root.set_inner_html(&html);
-
-        // Trigger KaTeX rendering if available
-        let _ = js_sys::eval("if(typeof renderMath === 'function') renderMath();");
-
         Ok(())
     }
 }
