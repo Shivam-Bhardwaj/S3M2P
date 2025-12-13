@@ -229,8 +229,8 @@ MODIFIED: 2025-12-11
 
         #lesson-canvas {
             width: 100%;
-            max-width: 600px;
-            height: 400px;
+            max-width: 800px;
+            height: 500px;
             background: #0a0a12;
             border-radius: 8px;
             display: block;
@@ -337,6 +337,203 @@ MODIFIED: 2025-12-11
             text-decoration: underline;
         }
 
+        /* Phase intro */
+        .phase-intro {
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        /* Why It Matters - Hook */
+        .why-it-matters {
+            margin-bottom: 30px;
+        }
+
+        .hook {
+            font-size: 1.15rem;
+            color: var(--text);
+            font-weight: 500;
+            line-height: 1.7;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(100, 255, 218, 0.1), rgba(0, 255, 136, 0.05));
+            border-radius: 10px;
+            border-left: 4px solid var(--accent);
+        }
+
+        /* Intuition - styled block */
+        .intuition-text {
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+
+        .intuition-text strong {
+            color: var(--accent);
+        }
+
+        /* Demo explanation */
+        .demo-explanation {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .demo-explanation p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        /* Demo hint */
+        .demo-hint {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(100, 255, 218, 0.08);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .demo-hint strong {
+            color: var(--accent);
+        }
+
+        /* Control groups */
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group h4 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+
+        /* Key Takeaways */
+        .takeaways {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .takeaway-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .takeaway-item {
+            position: relative;
+            padding: 10px 0 10px 30px;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .takeaway-item:last-child {
+            border-bottom: none;
+        }
+
+        .takeaway-item::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Going Deeper & Math Details - Expandable sections */
+        .going-deeper,
+        .math-details {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .going-deeper summary,
+        .math-details summary {
+            cursor: pointer;
+            padding: 15px 20px;
+            list-style: none;
+        }
+
+        .going-deeper summary::-webkit-details-marker,
+        .math-details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .going-deeper summary h3,
+        .math-details summary h3 {
+            display: inline;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .going-deeper summary h3::before,
+        .math-details summary h3::before {
+            content: "▶ ";
+            font-size: 0.8rem;
+            margin-right: 8px;
+        }
+
+        .going-deeper[open] summary h3::before,
+        .math-details[open] summary h3::before {
+            content: "▼ ";
+        }
+
+        .going-deeper[open] summary h3,
+        .math-details[open] summary h3 {
+            color: var(--accent);
+        }
+
+        .going-deeper > p,
+        .math-details > pre {
+            padding: 0 20px 20px 20px;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .math-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            margin: 0;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        /* Technical term tooltips */
+        .term {
+            color: var(--accent);
+            cursor: help;
+            border-bottom: 1px dotted var(--accent);
+            position: relative;
+        }
+
+        .term:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface-hover);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--accent);
+            font-size: 0.85rem;
+            white-space: nowrap;
+            max-width: 300px;
+            white-space: normal;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
         /* Responsive */
         @media (max-width: 600px) {
             .hero h1 { font-size: 2rem; }
@@ -344,6 +541,7 @@ MODIFIED: 2025-12-11
             .lesson-icon-large { font-size: 3rem; }
             .control-row { flex-direction: column; align-items: stretch; }
             .control-row label { min-width: auto; margin-bottom: 5px; }
+            .term:hover::after { left: 0; transform: none; }
         }
     </style>
 </head>
